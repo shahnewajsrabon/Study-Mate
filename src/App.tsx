@@ -1,24 +1,45 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import SubjectDetails from './pages/SubjectDetails';
 import Settings from './pages/Settings';
 import Analytics from './pages/Analytics';
 import AllChapters from './pages/AllChapters';
 import Layout from './components/Layout';
+import Login from './pages/Login';
+import { AuthProvider, useAuth } from './context/AuthContext';
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div>Loading...</div>;
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  return <>{children}</>;
+}
 
 function App() {
   return (
-    <BrowserRouter basename="/Study-Track/">
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="subject/:id" element={<SubjectDetails />} />
-          <Route path="analytics" element={<Analytics />} />
-          <Route path="chapters" element={<AllChapters />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter basename="/Study-Track/">
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Dashboard />} />
+            <Route path="subject/:id" element={<SubjectDetails />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="chapters" element={<AllChapters />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
