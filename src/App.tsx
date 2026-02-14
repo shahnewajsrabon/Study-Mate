@@ -8,7 +8,7 @@ import Layout from './components/Layout';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/Study-Track/">
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
