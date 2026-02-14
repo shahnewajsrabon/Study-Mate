@@ -61,45 +61,53 @@ const STORAGE_KEY = 'study-tracker-data';
 const StudyContext = createContext<StudyContextType | undefined>(undefined);
 
 export function StudyProvider({ children }: { children: React.ReactNode }) {
-    const [userProfile, setUserProfile] = useState<UserProfile>(initialProfile);
-    const [subjects, setSubjects] = useState<Subject[]>([]);
-    const [isLoaded, setIsLoaded] = useState(false);
-
-    // Load from LocalStorage
-    useEffect(() => {
-        const savedData = localStorage.getItem(STORAGE_KEY);
-        if (savedData) {
-            try {
+    // Load from LocalStorage (Lazy Initialization)
+    const [userProfile, setUserProfile] = useState<UserProfile>(() => {
+        try {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
                 const parsed = JSON.parse(savedData);
-                if (parsed.userProfile) setUserProfile(parsed.userProfile);
+                if (parsed.userProfile) return parsed.userProfile;
+            }
+        } catch (e) {
+            console.error('Failed to load user profile:', e);
+        }
+        return initialProfile;
+    });
 
-                // Migration: Ensure chapters have topics array if loading from old data
+    const [subjects, setSubjects] = useState<Subject[]>(() => {
+        try {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
                 if (parsed.subjects) {
-                    const migratedSubjects = parsed.subjects.map((sub: any) => ({
+                    // Migration: Ensure chapters have topics array if loading from old data
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return parsed.subjects.map((sub: any) => ({
                         ...sub,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         chapters: sub.chapters.map((chap: any) => ({
                             ...chap,
                             topics: chap.topics || []
                         }))
                     }));
-                    setSubjects(migratedSubjects);
                 }
-            } catch (e) {
-                console.error('Failed to load data:', e);
             }
+        } catch (e) {
+            console.error('Failed to load subjects:', e);
         }
-        setIsLoaded(true);
-    }, []);
+        return [];
+    });
+
+    // const [isLoaded, setIsLoaded] = useState(true); // Removed as lazy init handles it
 
     // Save to LocalStorage
     useEffect(() => {
-        if (isLoaded) {
-            localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify({ userProfile, subjects })
-            );
-        }
-    }, [userProfile, subjects, isLoaded]);
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({ userProfile, subjects })
+        );
+    }, [userProfile, subjects]);
 
     // --- Actions ---
     const updateProfile = (profile: Partial<UserProfile>) => {
@@ -335,6 +343,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useStudy() {
     const context = useContext(StudyContext);
     if (context === undefined) {

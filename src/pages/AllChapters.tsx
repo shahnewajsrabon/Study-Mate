@@ -94,7 +94,7 @@ export default function AllChapters() {
 
                     <select
                         value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value as any)}
+                        onChange={(e) => setFilterStatus(e.target.value as 'all' | 'completed' | 'pending')}
                         className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none"
                     >
                         <option value="all">All Status</option>
