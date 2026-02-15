@@ -111,7 +111,6 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     // Effect: Load/Sync data
     useEffect(() => {
         if (user) {
-            console.log("Syncing with Firestore for user:", user.uid);
             // --- Authenticated Mode: Sync with Firestore ---
             const userDocRef = doc(db, 'users', user.uid);
 
@@ -123,7 +122,6 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                     if (data.subjects) setSubjects(data.subjects);
                 } else {
                     // No data in cloud (New user or first login) -> Migrate LocalStorage
-                    console.log("No cloud data found. Attempting migration...");
 
                     // We can use the current state values which are lazy-loaded from localStorage
                     const dataToUpload = {
@@ -154,7 +152,6 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
 
                     // Upload to Firestore
                     setDoc(userDocRef, dataToUpload)
-                        .then(() => console.log("Migration successful"))
                         .catch(err => console.error("Migration failed", err));
                 }
             }, (error) => {
