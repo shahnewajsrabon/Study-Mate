@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 
 interface SoundContextType {
@@ -25,6 +26,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     // Initialize AudioContext on first user interaction to comply with browser policies
     const initAudio = () => {
         if (!audioContextRef.current) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
         }
         if (audioContextRef.current.state === 'suspended') {
@@ -37,6 +39,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
 
         // Ensure context exists
         if (!audioContextRef.current) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
         }
 

@@ -10,7 +10,7 @@ interface BadgeProps {
     dateEarned?: string;
 }
 
-const BADGE_CONFIG: Record<BadgeType, { icon: any, label: string, description: string, color: string }> = {
+const BADGE_CONFIG: Record<BadgeType, { icon: React.ElementType, label: string, description: string, color: string }> = {
     start_strong: {
         icon: CheckCircle2,
         label: 'Start Strong',

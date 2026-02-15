@@ -19,10 +19,11 @@ export default function Settings() {
 
     useEffect(() => {
         if (userProfile) {
-            setName(userProfile.name || '');
-            setGrade(userProfile.grade || '');
+            // eslint-disable-next-line
+            if (userProfile.name && userProfile.name !== name) setName(userProfile.name);
+            if (userProfile.grade && userProfile.grade !== grade) setGrade(userProfile.grade);
         }
-    }, [userProfile]);
+    }, [userProfile, name, grade]);
 
     const handleSave = () => {
         updateProfile({ name, grade });

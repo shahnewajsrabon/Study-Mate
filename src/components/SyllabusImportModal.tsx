@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStudy } from '../context/StudyContext';
-import { SYLLABUS_TEMPLATES, type TemplateSubject } from '../data/syllabusTemplates';
+import { SYLLABUS_TEMPLATES, type SyllabusTemplate } from '../data/syllabusTemplates';
 import { X, Check, BookOpen, Download } from 'lucide-react';
 
 interface SyllabusImportModalProps {
@@ -62,8 +62,8 @@ export default function SyllabusImportModal({ onClose }: SyllabusImportModalProp
                                         setSelectedSubjects(new Set());
                                     }}
                                     className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${selectedTemplateId === t.id
-                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                                         }`}
                                 >
                                     {t.name}
@@ -92,13 +92,13 @@ export default function SyllabusImportModal({ onClose }: SyllabusImportModalProp
                                     key={subject.name}
                                     onClick={() => toggleSubject(subject.name)}
                                     className={`relative flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all ${selectedSubjects.has(subject.name)
-                                            ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10'
-                                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                        ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10'
+                                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                         }`}
                                 >
                                     <div className={`mt-1 flex-shrink-0 w-5 h-5 rounded border flex items-center justify-center transition-colors ${selectedSubjects.has(subject.name)
-                                            ? 'bg-blue-500 border-blue-500'
-                                            : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600'
+                                        ? 'bg-blue-500 border-blue-500'
+                                        : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600'
                                         }`}>
                                         {selectedSubjects.has(subject.name) && <Check className="w-3.5 h-3.5 text-white" />}
                                     </div>
@@ -141,10 +141,9 @@ export default function SyllabusImportModal({ onClose }: SyllabusImportModalProp
     );
 }
 
-// Separate component to handle the import logic with context
 interface ImportButtonProps {
     count: number;
-    currentTemplate?: any; // Using any to avoid strict type issues with TemplateSubject for now
+    currentTemplate?: SyllabusTemplate;
     selectedSubjects: Set<string>;
     onClose: () => void;
 }
@@ -155,7 +154,7 @@ function ImportButton({ count, currentTemplate, selectedSubjects, onClose }: Imp
     const handleImportClick = () => {
         if (count === 0 || !currentTemplate) return;
 
-        const subjectsToImport = currentTemplate.subjects.filter((s: TemplateSubject) => selectedSubjects.has(s.name));
+        const subjectsToImport = currentTemplate.subjects.filter((s) => selectedSubjects.has(s.name));
         importSyllabusData(subjectsToImport);
 
         onClose();

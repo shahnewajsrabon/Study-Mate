@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { db } from '../lib/firebase';
+import type { TemplateSubject } from '../data/syllabusTemplates';
 import { doc, onSnapshot, setDoc, collection, addDoc } from 'firebase/firestore';
 
 // --- Types ---
@@ -60,7 +61,7 @@ interface StudyContextType {
     resetData: () => void;
     exportData: () => void;
     importData: (jsonData: string) => boolean;
-    importSyllabusData: (subjects: any[]) => void; // Using any[] temporarily for TemplateSubject to avoid circular type dependency or duplication
+    importSyllabusData: (subjects: TemplateSubject[]) => void;
     saveStudySession: (durationInSeconds: number, subjectId?: string) => Promise<void>;
 }
 
@@ -396,7 +397,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const importSyllabusData = (templateSubjects: any[]) => {
+    const importSyllabusData = (templateSubjects: TemplateSubject[]) => {
         // templateSubjects is Array of { name, icon, color, chapters: [{ name, topics: [{ name }] }] }
 
         const newSubjectsToAdd: Subject[] = templateSubjects.map(ts => {
@@ -406,14 +407,14 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                 name: ts.name,
                 color: ts.color,
                 icon: ts.icon,
-                chapters: ts.chapters.map((tc: any) => {
+                chapters: ts.chapters.map((tc) => { // Removed :any, inferred from TemplateSubject
                     const chapterId = crypto.randomUUID();
                     return {
                         id: chapterId,
                         name: tc.name,
                         isCompleted: false,
                         completedAt: null,
-                        topics: tc.topics.map((tt: any) => ({
+                        topics: tc.topics.map((tt) => ({ // Removed :any
                             id: crypto.randomUUID(),
                             name: tt.name,
                             isCompleted: false,

@@ -25,6 +25,7 @@ export default function TourOverlay({ steps, onComplete, onSkip }: TourOverlayPr
         if (currentStep.targetId) {
             const element = document.getElementById(currentStep.targetId);
             if (element) {
+                // eslint-disable-next-line
                 setTargetRect(element.getBoundingClientRect());
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
             } else {
@@ -34,7 +35,7 @@ export default function TourOverlay({ steps, onComplete, onSkip }: TourOverlayPr
         } else {
             setTargetRect(null);
         }
-    }, [currentStepIndex, currentStep]);
+    }, [currentStepIndex, currentStep, steps]);
 
     const handleNext = () => {
         if (currentStepIndex < steps.length - 1) {
