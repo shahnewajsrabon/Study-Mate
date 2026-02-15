@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>TrackEd - Redirecting...</title>
+  <script type="text/javascript">
+    // SPA Redirect for GitHub Pages
+    // Explicitly for /Study-Mate/ base path
+
+    var segment = 1; // 1 because /Study-Mate is the first segment (index 1 in split)
+    var repoName = 'Study-Mate';
+
+    var l = window.location;
+    var pathSegments = l.pathname.split('/');
+
+    // Reconstruct the base path (e.g., /Study-Mate)
+    // If we are already at /Study-Mate/foo, we want to keep /Study-Mate
+    // And move /foo to the query string
+
+    var repoIndex = pathSegments.indexOf(repoName);
+    var basePath = '';
+
+    if (repoIndex > -1) {
+      // Found repo name in path (e.g. ['', 'Study-Mate', 'login']) -> index 1
+      // We want slice(0, 2) => ['', 'Study-Mate']
+      basePath = pathSegments.slice(0, repoIndex + 1).join('/');
+    } else {
+      // Fallback if accessed via custom domain root or something unexpected
+      // But since we know it's shahnewajsrabon.github.io/Study-Mate
+      basePath = '/' + repoName;
+    }
+
+    l.replace(
+      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+      basePath + '/?/' +
+      l.pathname.slice(basePath.length).split('/').filter(Boolean).join('/').replace(/&/g, '~and~') +
+      (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+      l.hash
+    );
+  </script>
+</head>
+
+<body>
+  Redirecting...
+</body>
+
+</html>

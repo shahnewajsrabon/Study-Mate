@@ -23,15 +23,15 @@ export default function StatCard({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, type: 'spring' }}
-            className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center justify-between"
+            className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-between transition-colors"
         >
             <div>
-                <h3 className="text-slate-400 font-medium text-sm flex items-center gap-1.5 mb-2">
+                <h3 className="text-slate-400 dark:text-slate-400 font-medium text-sm flex items-center gap-1.5 mb-2">
                     <Icon className={`w-4 h-4 ${colorClass}`} /> {title}
                 </h3>
-                <div className="text-3xl font-bold text-slate-800">{value}</div>
+                <div className="text-3xl font-bold text-slate-800 dark:text-white transition-colors">{value}</div>
             </div>
-            <div className={`w-12 h-12 ${bgClass} rounded-full flex items-center justify-center`}>
+            <div className={`w-12 h-12 ${bgClass} rounded-full flex items-center justify-center transition-colors`}>
                 <Icon className={`w-6 h-6 ${colorClass}`} />
             </div>
         </motion.div>

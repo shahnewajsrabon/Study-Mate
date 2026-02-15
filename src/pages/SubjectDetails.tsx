@@ -60,7 +60,7 @@ export default function SubjectDetails() {
         <AnimatedPage className="max-w-3xl mx-auto pb-12">
             {/* Header */}
             <div className="mb-8">
-                <Link to="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors group">
+                <Link to="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 mb-6 transition-colors group">
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                     Back to Dashboard
                 </Link>
@@ -71,15 +71,15 @@ export default function SubjectDetails() {
                             <BookOpen className="w-3 h-3" />
                             {subject.name}
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-slate-800">{subject.name}</h1>
-                        <p className="text-slate-500 mt-2">
+                        <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-white transition-colors">{subject.name}</h1>
+                        <p className="text-slate-500 dark:text-slate-400 mt-2 transition-colors">
                             {completedChapters} of {totalChapters} chapters completed
                         </p>
                     </div>
 
                     <button
                         onClick={handleDeleteSubject}
-                        className="self-start text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                        className="self-start text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 dark:hover:text-red-400 p-2 rounded-lg transition-colors"
                         title="Delete Subject"
                     >
                         <Trash2 className="w-5 h-5" />
@@ -89,10 +89,10 @@ export default function SubjectDetails() {
                 {/* Progress Bar */}
                 <div className="mt-6">
                     <div className="flex justify-between items-end mb-2">
-                        <span className="text-3xl font-bold text-slate-800">{progress}%</span>
-                        <span className="text-sm font-medium text-slate-400">Progress</span>
+                        <span className="text-3xl font-bold text-slate-800 dark:text-white transition-colors">{progress}%</span>
+                        <span className="text-sm font-medium text-slate-400 dark:text-slate-500 transition-colors">Progress</span>
                     </div>
-                    <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-3 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden transition-colors">
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${progress}%` }}
@@ -104,21 +104,21 @@ export default function SubjectDetails() {
             </div>
 
             {/* Chapters Section */}
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
-                    <h2 className="text-lg font-bold text-slate-800">Syllabus / Chapters</h2>
+            <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden transition-colors">
+                <div className="p-6 border-b border-slate-50 dark:border-slate-700 flex items-center justify-between bg-slate-50/50 dark:bg-slate-700/30 transition-colors">
+                    <h2 className="text-lg font-bold text-slate-800 dark:text-white transition-colors">Syllabus / Chapters</h2>
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setIsAddOpen(true)}
-                        className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+                        className="bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
                     >
                         <Plus className="w-4 h-4" />
                         Add Chapter
                     </motion.button>
                 </div>
 
-                <div className="divide-y divide-slate-50">
+                <div className="divide-y divide-slate-50 dark:divide-slate-700 transition-colors">
                     {subject.chapters.length > 0 ? (
                         subject.chapters.map((chapter) => (
                             <ChapterItem
@@ -131,13 +131,13 @@ export default function SubjectDetails() {
                         ))
                     ) : (
                         <div className="p-12 text-center">
-                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <BookOpen className="w-6 h-6 text-slate-300" />
+                            <div className="w-16 h-16 bg-slate-50 dark:bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-3 transition-colors">
+                                <BookOpen className="w-6 h-6 text-slate-300 dark:text-slate-500" />
                             </div>
-                            <p className="text-slate-500 mb-4">No chapters added yet.</p>
+                            <p className="text-slate-500 dark:text-slate-400 mb-4 transition-colors">No chapters added yet.</p>
                             <button
                                 onClick={() => setIsAddOpen(true)}
-                                className="text-blue-600 font-medium hover:underline"
+                                className="text-blue-600 dark:text-blue-400 font-medium hover:underline transition-colors"
                             >
                                 Add your first chapter
                             </button>

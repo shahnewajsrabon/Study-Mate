@@ -23,7 +23,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <BrowserRouter basename="/Study-Track/">
+    <BrowserRouter basename="/Study-Mate/">
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={

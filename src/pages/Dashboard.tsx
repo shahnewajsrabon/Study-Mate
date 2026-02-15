@@ -67,11 +67,11 @@ export default function Dashboard() {
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-800">
-                        Welcome back, <span className="bg-gradient-to-r from-blue-700 to-teal-600 bg-clip-text text-transparent">{userProfile.name}</span>!
+                    <h1 className="text-3xl font-bold text-slate-800 dark:text-white transition-colors">
+                        Welcome back, <span className="bg-gradient-to-r from-blue-700 to-teal-600 dark:from-blue-400 dark:to-teal-400 bg-clip-text text-transparent">{userProfile.name}</span>!
                     </h1>
-                    <p className="text-slate-500 mt-1">
-                        You're currently in <span className="font-semibold text-slate-700">{userProfile.grade}</span>. Let's make progress!
+                    <p className="text-slate-500 dark:text-slate-400 mt-1 transition-colors">
+                        You're currently in <span className="font-semibold text-slate-700 dark:text-slate-300">{userProfile.grade}</span>. Let's make progress!
                     </p>
                 </div>
                 <motion.button
@@ -92,7 +92,7 @@ export default function Dashboard() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, type: 'spring' }}
-                    className="md:col-span-1 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white text-center md:text-left relative overflow-hidden shadow-lg shadow-blue-500/20"
+                    className="md:col-span-1 bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 rounded-2xl p-6 text-white text-center md:text-left relative overflow-hidden shadow-lg shadow-blue-500/20"
                 >
                     <div className="relative z-10">
                         <h3 className="text-blue-100 font-medium mb-1 flex items-center justify-center md:justify-start gap-2">
@@ -111,7 +111,7 @@ export default function Dashboard() {
                     value={completedChapters}
                     icon={Trophy}
                     colorClass="text-amber-500"
-                    bgClass="bg-amber-50"
+                    bgClass="bg-amber-50 dark:bg-amber-900/20"
                     delay={0.1}
                 />
 
@@ -121,16 +121,16 @@ export default function Dashboard() {
                     value={totalChapters - completedChapters}
                     icon={BookMarked}
                     colorClass="text-violet-500"
-                    bgClass="bg-violet-50"
+                    bgClass="bg-violet-50 dark:bg-violet-900/20"
                     delay={0.2}
                 />
             </div>
 
             {/* Subjects Grid */}
             <div>
-                <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2 transition-colors">
                     Your Subjects
-                    <span className="text-sm font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{subjects.length}</span>
+                    <span className="text-sm font-normal text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">{subjects.length}</span>
                 </h2>
 
                 {subjects.length > 0 ? (
@@ -152,9 +152,9 @@ export default function Dashboard() {
                             whileHover={{ scale: 1.02, backgroundColor: 'rgba(239, 246, 255, 0.5)' }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => setIsAddOpen(true)}
-                            className="group border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-slate-400 hover:border-blue-400 hover:text-blue-600 transition-all cursor-pointer h-full min-h-[180px] w-full"
+                            className="group border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all cursor-pointer h-full min-h-[180px] w-full"
                         >
-                            <div className="w-12 h-12 rounded-full bg-slate-100 group-hover:bg-blue-100 flex items-center justify-center mb-3 transition-colors">
+                            <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/20 flex items-center justify-center mb-3 transition-colors">
                                 <Plus className="w-6 h-6" />
                             </div>
                             <span className="font-medium">Add Another Subject</span>
@@ -164,13 +164,13 @@ export default function Dashboard() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200"
+                        className="text-center py-16 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 transition-colors"
                     >
-                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <BookMarked className="w-8 h-8 text-slate-300" />
+                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <BookMarked className="w-8 h-8 text-slate-300 dark:text-slate-500" />
                         </div>
-                        <h3 className="text-lg font-semibold text-slate-700 mb-2">No subjects yet</h3>
-                        <p className="text-slate-500 max-w-sm mx-auto mb-6">
+                        <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-2">No subjects yet</h3>
+                        <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto mb-6">
                             Start by adding the subjects you want to track to organize your study plan.
                         </p>
                         <button

@@ -7,6 +7,9 @@
   --font-google: "Google Sans", "Product Sans", sans-serif;
 }
 
+/* Custom variant for class-based dark mode in Tailwind v4 */
+@variant dark (&:where(.dark, .dark *));
+
 .font-google-sans {
   font-family: "Google Sans", "Product Sans", sans-serif;
 }

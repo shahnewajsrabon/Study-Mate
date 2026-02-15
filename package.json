@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://channeldatatransfer-ship-it.github.io/Study-Track",
+  "homepage": "https://shahnewajsrabon.github.io/Study-Mate",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

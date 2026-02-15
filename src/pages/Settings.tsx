@@ -19,34 +19,34 @@ export default function Settings() {
     return (
         <AnimatedPage className="max-w-xl mx-auto space-y-6">
             <div className="flex items-center gap-3 mb-6">
-                <UserCircle className="w-8 h-8 text-blue-600" />
-                <h1 className="text-2xl font-bold text-slate-800">My Profile Settings</h1>
+                <UserCircle className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-white transition-colors">My Profile Settings</h1>
             </div>
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4"
+                className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 space-y-4 transition-colors"
             >
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Student Name</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 transition-colors">Student Name</label>
                     <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                        className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                         placeholder="Enter your name"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Class / Grade</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 transition-colors">Class / Grade</label>
                     <input
                         type="text"
                         value={grade}
                         onChange={(e) => setGrade(e.target.value)}
-                        className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                        className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                         placeholder="e.g. HSC 2026"
                     />
                 </div>
@@ -54,7 +54,7 @@ export default function Settings() {
                 <div className="pt-4">
                     <button
                         onClick={handleSave}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                        className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-medium py-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                     >
                         <Save className="w-5 h-5" />
                         Save Profile
@@ -66,21 +66,21 @@ export default function Settings() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4"
+                className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 space-y-4 transition-colors"
             >
-                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <Download className="w-5 h-5 text-slate-500" />
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2 transition-colors">
+                    <Download className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                     Data Management
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <button
                         onClick={exportData}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-50 text-slate-700 font-medium rounded-xl border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-all"
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium rounded-xl border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 hover:border-slate-300 dark:hover:border-slate-500 transition-all"
                     >
                         <Download className="w-4 h-4" />
                         Export Backup
                     </button>
-                    <label className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-50 text-slate-700 font-medium rounded-xl border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer">
+                    <label className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium rounded-xl border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 hover:border-slate-300 dark:hover:border-slate-500 transition-all cursor-pointer">
                         <Upload className="w-4 h-4" />
                         Import Backup
                         <input
@@ -110,9 +110,9 @@ export default function Settings() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-2xl border border-slate-100 p-6 mt-8 space-y-4"
+                className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 mt-8 space-y-4 transition-colors"
             >
-                <h3 className="text-slate-800 font-semibold mb-2 flex items-center gap-2">
+                <h3 className="text-slate-800 dark:text-white font-semibold mb-2 flex items-center gap-2 transition-colors">
                     <UserCircle className="w-5 h-5" />
                     Account
                 </h3>
@@ -120,19 +120,19 @@ export default function Settings() {
                     {user?.photoURL ? (
                         <img src={user.photoURL} alt={user.displayName || 'User'} className="w-12 h-12 rounded-full" />
                     ) : (
-                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl">
+                        <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xl">
                             {user?.displayName ? user.displayName[0] : (user?.email ? user.email[0].toUpperCase() : 'U')}
                         </div>
                     )}
                     <div>
-                        <p className="font-medium text-slate-900">{user?.displayName || 'User'}</p>
-                        <p className="text-sm text-slate-500">{user?.email}</p>
+                        <p className="font-medium text-slate-900 dark:text-white transition-colors">{user?.displayName || 'User'}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 transition-colors">{user?.email}</p>
                     </div>
                 </div>
 
                 <button
                     onClick={logout}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-100 hover:text-slate-900 transition-colors text-sm flex items-center justify-center gap-2"
+                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 hover:text-slate-900 dark:hover:text-white transition-colors text-sm flex items-center justify-center gap-2"
                 >
                     <LogOut className="w-4 h-4" />
                     Sign Out
@@ -143,13 +143,13 @@ export default function Settings() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
-                className="bg-red-50 rounded-2xl border border-red-100 p-6"
+                className="bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/30 p-6 transition-colors"
             >
-                <h3 className="text-red-700 font-semibold mb-2 flex items-center gap-2">
+                <h3 className="text-red-700 dark:text-red-400 font-semibold mb-2 flex items-center gap-2 transition-colors">
                     <Trash2 className="w-5 h-5" />
                     Danger Zone
                 </h3>
-                <p className="text-red-600/80 text-sm mb-4">
+                <p className="text-red-600/80 dark:text-red-400/80 text-sm mb-4 transition-colors">
                     This will permanently delete all your subjects, chapters, and progress data. This action cannot be undone.
                 </p>
                 <button
@@ -158,7 +158,7 @@ export default function Settings() {
                             resetData();
                         }
                     }}
-                    className="w-full px-4 py-2 bg-white border border-red-200 text-red-600 font-medium rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors text-sm"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 font-medium rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 transition-colors text-sm"
                 >
                     Reset All Data
                 </button>

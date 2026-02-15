@@ -39,36 +39,36 @@ export default function AllChapters() {
 
     return (
         <AnimatedPage className="max-w-4xl mx-auto pb-12">
-            <h1 className="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-3">
-                <BookOpen className="w-8 h-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-8 flex items-center gap-3 transition-colors">
+                <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 All Chapters Tracker
             </h1>
 
             {/* Overall Progress */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-8">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm mb-8 transition-colors">
                 <div className="flex justify-between items-end mb-2">
                     <div>
-                        <h2 className="text-lg font-bold text-slate-800">Overall Progress</h2>
-                        <p className="text-slate-500 text-sm">
+                        <h2 className="text-lg font-bold text-slate-800 dark:text-white transition-colors">Overall Progress</h2>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm transition-colors">
                             {allChapters.filter(c => c.isCompleted).length} of {allChapters.length} chapters completed
                         </p>
                     </div>
-                    <span className="text-3xl font-bold text-blue-600">
+                    <span className="text-3xl font-bold text-blue-600 dark:text-blue-400 transition-colors">
                         {allChapters.length > 0 ? Math.round((allChapters.filter(c => c.isCompleted).length / allChapters.length) * 100) : 0}%
                     </span>
                 </div>
-                <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-4 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden transition-colors">
                     <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${allChapters.length > 0 ? Math.round((allChapters.filter(c => c.isCompleted).length / allChapters.length) * 100) : 0}%` }}
                         transition={{ duration: 1, ease: 'easeOut' }}
-                        className="h-full bg-blue-600"
+                        className="h-full bg-blue-600 dark:bg-blue-500"
                     />
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 flex flex-col md:flex-row gap-4">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm mb-6 flex flex-col md:flex-row gap-4 transition-colors">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
@@ -76,7 +76,7 @@ export default function AllChapters() {
                         placeholder="Search chapters or subjects..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-colors"
                     />
                 </div>
 
@@ -84,7 +84,7 @@ export default function AllChapters() {
                     <select
                         value={selectedSubject}
                         onChange={(e) => setSelectedSubject(e.target.value)}
-                        className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none"
+                        className="px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-600 dark:text-slate-300 focus:outline-none transition-colors"
                     >
                         <option value="all">All Subjects</option>
                         {subjects.map(sub => (
@@ -95,7 +95,7 @@ export default function AllChapters() {
                     <select
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value as 'all' | 'completed' | 'pending')}
-                        className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none"
+                        className="px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-600 dark:text-slate-300 focus:outline-none transition-colors"
                     >
                         <option value="all">All Status</option>
                         <option value="completed">Completed</option>
@@ -108,8 +108,8 @@ export default function AllChapters() {
             <div className="space-y-4">
                 {filteredChapters.length > 0 ? (
                     filteredChapters.map((chapter) => (
-                        <div key={chapter.id} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-                            <div className="bg-slate-50/50 px-4 py-1 text-xs font-semibold text-slate-500 border-b border-slate-50 flex items-center justify-between">
+                        <div key={chapter.id} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden transition-colors">
+                            <div className="bg-slate-50/50 dark:bg-slate-700/30 px-4 py-1 text-xs font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-50 dark:border-slate-700 flex items-center justify-between transition-colors">
                                 <span className={chapter.subjectColor}>{chapter.subjectName}</span>
                             </div>
                             <ChapterItem
@@ -121,8 +121,8 @@ export default function AllChapters() {
                         </div>
                     ))
                 ) : (
-                    <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200">
-                        <p className="text-slate-500">No chapters found matching your filters.</p>
+                    <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 transition-colors">
+                        <p className="text-slate-500 dark:text-slate-400">No chapters found matching your filters.</p>
                     </div>
                 )}
             </div>

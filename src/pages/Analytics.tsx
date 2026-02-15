@@ -29,8 +29,8 @@ export default function Analytics() {
 
     return (
         <AnimatedPage className="max-w-4xl mx-auto pb-12">
-            <h1 className="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-3">
-                <TrendingUp className="w-8 h-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-8 flex items-center gap-3 transition-colors">
+                <TrendingUp className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 Study Analytics
             </h1>
 
@@ -47,7 +47,7 @@ export default function Analytics() {
                         value={`${calcStreak} days`}
                         icon={Award}
                         colorClass="text-orange-500"
-                        bgClass="bg-orange-50"
+                        bgClass="bg-orange-50 dark:bg-orange-900/20"
                         delay={0.1}
                     />
                 </div>
@@ -57,7 +57,7 @@ export default function Analytics() {
                         value={`${completedTopics} / ${totalTopics}`}
                         icon={BookOpen}
                         colorClass="text-blue-500"
-                        bgClass="bg-blue-50"
+                        bgClass="bg-blue-50 dark:bg-blue-900/20"
                         delay={0.2}
                     />
                 </div>
@@ -67,7 +67,7 @@ export default function Analytics() {
                         value={`${completedChapters} / ${totalChapters}`}
                         icon={Trophy}
                         colorClass="text-amber-500"
-                        bgClass="bg-amber-50"
+                        bgClass="bg-amber-50 dark:bg-amber-900/20"
                         delay={0.3}
                     />
                 </div>
@@ -77,7 +77,7 @@ export default function Analytics() {
                         value={`${completionPercentage}%`}
                         icon={CheckCircle2}
                         colorClass="text-emerald-500"
-                        bgClass="bg-emerald-50"
+                        bgClass="bg-emerald-50 dark:bg-emerald-900/20"
                         delay={0.4}
                     />
                 </div>
@@ -89,21 +89,21 @@ export default function Analytics() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="md:col-span-2 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm"
+                    className="md:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm transition-colors"
                 >
-                    <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2 transition-colors">
                         <BarChart3 className="w-5 h-5 text-slate-400" />
                         Last 7 Days Activity
                     </h2>
                     <div className="flex items-end justify-between gap-2 h-48">
                         {activityData.map((data, index) => (
                             <div key={data.date} className="flex-1 flex flex-col items-center gap-2 group">
-                                <div className="w-full bg-slate-100 rounded-t-lg relative h-full flex items-end overflow-hidden">
+                                <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-t-lg relative h-full flex items-end overflow-hidden transition-colors">
                                     <motion.div
                                         initial={{ height: 0 }}
                                         animate={{ height: `${(data.count / maxCount) * 100}%` }}
                                         transition={{ duration: 1, delay: index * 0.1, ease: 'easeOut' }}
-                                        className="w-full bg-blue-500 rounded-t-lg transition-colors duration-300 group-hover:bg-blue-600 relative"
+                                        className="w-full bg-blue-500 dark:bg-blue-600 rounded-t-lg transition-colors duration-300 group-hover:bg-blue-600 dark:group-hover:bg-blue-500 relative"
                                     >
                                         {/* Tooltip */}
                                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
@@ -111,7 +111,7 @@ export default function Analytics() {
                                         </div>
                                     </motion.div>
                                 </div>
-                                <span className="text-xs text-slate-400 font-medium">
+                                <span className="text-xs text-slate-400 dark:text-slate-500 font-medium transition-colors">
                                     {new Date(data.date).toLocaleDateString('en-US', { weekday: 'short' })}
                                 </span>
                             </div>
@@ -124,9 +124,9 @@ export default function Analytics() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm"
+                    className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm transition-colors"
                 >
-                    <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2 transition-colors">
                         <BookOpen className="w-5 h-5 text-slate-400" />
                         Subject Progress
                     </h2>
@@ -139,10 +139,10 @@ export default function Analytics() {
                             return (
                                 <div key={sub.id}>
                                     <div className="flex justify-between items-center mb-1">
-                                        <span className="text-sm font-medium text-slate-700">{sub.name}</span>
-                                        <span className="text-xs text-slate-400">{sProg}%</span>
+                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors">{sub.name}</span>
+                                        <span className="text-xs text-slate-400 dark:text-slate-500 transition-colors">{sProg}%</span>
                                     </div>
-                                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden transition-colors">
                                         <motion.div
                                             initial={{ width: 0 }}
                                             animate={{ width: `${sProg}%` }}
