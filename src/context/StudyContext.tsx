@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { db } from '../lib/firebase';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, collection, addDoc } from 'firebase/firestore';
 
 // --- Types ---
 export type Topic = {
@@ -31,6 +31,7 @@ export type UserProfile = {
     name: string;
     grade: string; // e.g., "HSC 2026"
     language: 'en' | 'bn';
+    totalStudyTime: number; // in seconds
 };
 
 interface StudyContextType {
@@ -49,6 +50,7 @@ interface StudyContextType {
     resetData: () => void;
     exportData: () => void;
     importData: (jsonData: string) => boolean;
+    saveStudySession: (durationInSeconds: number, subjectId?: string) => Promise<void>;
 }
 
 // --- Initial Data ---
@@ -56,6 +58,7 @@ const initialProfile: UserProfile = {
     name: 'Student',
     grade: 'Class 10',
     language: 'en',
+    totalStudyTime: 0,
 };
 
 const STORAGE_KEY = 'study-tracker-data';
@@ -389,6 +392,33 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const saveStudySession = async (durationInSeconds: number, subjectId?: string) => {
+        // Optimistic update for total time
+        const newTotalTime = (userProfile.totalStudyTime || 0) + durationInSeconds;
+        const newProfile = { ...userProfile, totalStudyTime: newTotalTime };
+        updateProfile(newProfile);
+
+        if (user) {
+            try {
+                // 1. Add session record
+                await addDoc(collection(db, 'study_sessions'), {
+                    userId: user.uid,
+                    userName: user.displayName || userProfile.name,
+                    startTime: new Date(Date.now() - durationInSeconds * 1000).toISOString(),
+                    endTime: new Date().toISOString(),
+                    durationInSeconds,
+                    subjectId: subjectId || null,
+                    createdAt: new Date().toISOString()
+                });
+
+                // 2. Update user profile totals (already handled by updateProfile -> setDoc, but strictly ensure it)
+                // The updateProfile call above triggers saveData which writes to Firestore users/{uid}
+            } catch (error) {
+                console.error("Error saving study session:", error);
+            }
+        }
+    };
+
     return (
         <StudyContext.Provider
             value={{
@@ -406,6 +436,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                 resetData,
                 exportData,
                 importData,
+                saveStudySession,
             }}
         >
             {children}

@@ -1,5 +1,5 @@
 import { Link, useLocation, useOutlet } from 'react-router-dom';
-import { BookOpen, Settings as SettingsIcon, LayoutDashboard, TrendingUp, List, LogOut } from 'lucide-react';
+import { BookOpen, Settings as SettingsIcon, LayoutDashboard, TrendingUp, List, LogOut, Timer } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { AnimatePresence } from 'framer-motion';
 import { cloneElement } from 'react';
@@ -71,6 +71,17 @@ export default function Layout() {
                             Chapters
                         </Link>
                         <Link
+                            to="/timer"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === '/timer'
+                                ? 'bg-blue-50 text-blue-700 font-medium'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                }`}
+                        >
+                            <Timer className="w-5 h-5" />
+                            Timer
+                        </Link>
+
+                        <Link
                             to="/settings"
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive('/settings')
                                 ? 'bg-blue-50 text-blue-700 font-medium'
@@ -130,6 +141,14 @@ export default function Layout() {
                 >
                     <List className="w-6 h-6" />
                     <span>Chapters</span>
+                </Link>
+                <Link
+                    to="/timer"
+                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/timer') ? 'text-blue-600 font-medium' : 'text-slate-400'
+                        }`}
+                >
+                    <Timer className="w-6 h-6" />
+                    <span>Timer</span>
                 </Link>
                 <Link
                     to="/settings"
