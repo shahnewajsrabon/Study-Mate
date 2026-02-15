@@ -4,6 +4,7 @@ import { useStudy } from '../context/StudyContext';
 import SubjectCard from '../components/SubjectCard';
 import StatCard from '../components/StatCard';
 import AddSubjectModal from '../components/AddSubjectModal';
+import Badge from '../components/Badge';
 import { Plus, Trophy, BookMarked, PieChart } from 'lucide-react';
 // import AnimatedPage from '../components/AnimatedPage'; // Removed direct usage to control staggering explicitly
 
@@ -75,6 +76,7 @@ export default function Dashboard() {
                     </p>
                 </div>
                 <motion.button
+                    id="add-subject-btn"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setIsAddOpen(true)}
@@ -125,6 +127,28 @@ export default function Dashboard() {
                     delay={0.2}
                 />
             </div>
+
+            {/* Badges Section */}
+            {userProfile.earnedBadges && userProfile.earnedBadges.length > 0 && (
+                <motion.div
+                    variants={item}
+                    className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm transition-colors"
+                >
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                        <Trophy className="w-5 h-5 text-yellow-500" />
+                        Recent Achievements
+                    </h2>
+                    <div className="flex flex-wrap gap-4">
+                        {userProfile.earnedBadges.map((badge, index) => (
+                            <Badge
+                                key={`${badge.type}-${index}`}
+                                type={badge.type}
+                                dateEarned={badge.earnedAt}
+                            />
+                        ))}
+                    </div>
+                </motion.div>
+            )}
 
             {/* Subjects Grid */}
             <div>

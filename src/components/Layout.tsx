@@ -1,9 +1,37 @@
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useOutlet } from 'react-router-dom';
 import { BookOpen, Settings as SettingsIcon, LayoutDashboard, TrendingUp, List, LogOut, Timer, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { AnimatePresence } from 'framer-motion';
 import { cloneElement } from 'react';
+import TourOverlay, { type TourStep } from './TourOverlay';
+
+const TOUR_STEPS: TourStep[] = [
+    {
+        title: 'Welcome to TrackEd! 🚀',
+        description: 'Your personal companion for academic success. Let\'s take a quick tour to get you started.',
+        position: 'center'
+    },
+    {
+        targetId: 'add-subject-btn',
+        title: 'Add Your Subjects 📚',
+        description: 'Start by adding the subjects you want to track. You can organize them by chapters and topics.',
+        position: 'bottom'
+    },
+    {
+        targetId: 'nav-timer',
+        title: 'Focus Timer ⏱️',
+        description: 'Use the Pomodoro timer or stopwatch to track your study sessions and build streaks.',
+        position: 'right'
+    },
+    {
+        targetId: 'nav-settings',
+        title: 'Customize Experience ⚙️',
+        description: 'Manage your profile, data, and switch between light/dark modes here.',
+        position: 'top'
+    }
+];
 
 export default function Layout() {
     const { logout } = useAuth();
@@ -11,10 +39,35 @@ export default function Layout() {
     const location = useLocation();
     const element = useOutlet();
 
+    // Tour State
+    const [showTour, setShowTour] = useState(false);
+
+    useEffect(() => {
+        const tourCompleted = localStorage.getItem('tracked_tour_completed');
+        if (!tourCompleted) {
+            // Small delay to ensure render
+            setTimeout(() => setShowTour(true), 1000);
+        }
+    }, []);
+
+    const handleTourComplete = () => {
+        setShowTour(false);
+        localStorage.setItem('tracked_tour_completed', 'true');
+    };
+
     const isActive = (path: string) => location.pathname === path;
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 pb-20 md:pb-0 font-sans transition-colors duration-300">
+
+            {showTour && (
+                <TourOverlay
+                    steps={TOUR_STEPS}
+                    onComplete={handleTourComplete}
+                    onSkip={handleTourComplete}
+                />
+            )}
+
             {/* Mobile Header */}
             <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10 px-4 py-3 flex items-center justify-between md:hidden transition-colors duration-300">
                 <div className="flex items-center gap-2">
@@ -92,6 +145,7 @@ export default function Layout() {
                         </Link>
                         <Link
                             to="/timer"
+                            id="nav-timer"
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === '/timer'
                                 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
                                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'
@@ -103,6 +157,7 @@ export default function Layout() {
 
                         <Link
                             to="/settings"
+                            id="nav-settings"
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive('/settings')
                                 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
                                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'

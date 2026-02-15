@@ -1,15 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useStudy } from '../context/StudyContext';
-import { Save, UserCircle, Trash2, Download, Upload, LogOut } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useSound } from '../context/SoundContext';
+import { UserCircle, Save, Download, Upload, Trash2, LogOut, Volume2, VolumeX, BookOpen } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedPage from '../components/AnimatedPage';
+import SyllabusImportModal from '../components/SyllabusImportModal';
 
 export default function Settings() {
     const { user, logout } = useAuth();
     const { userProfile, updateProfile, resetData, exportData, importData } = useStudy();
-    const [name, setName] = useState(userProfile.name);
-    const [grade, setGrade] = useState(userProfile.grade);
+    const { isMuted, toggleMute } = useSound();
+
+    // Initialize state with userProfile data when available
+    const [name, setName] = useState('');
+    const [grade, setGrade] = useState('');
+    const [showSyllabusModal, setShowSyllabusModal] = useState(false);
+
+    useEffect(() => {
+        if (userProfile) {
+            setName(userProfile.name || '');
+            setGrade(userProfile.grade || '');
+        }
+    }, [userProfile]);
 
     const handleSave = () => {
         updateProfile({ name, grade });
@@ -59,6 +72,31 @@ export default function Settings() {
                         <Save className="w-5 h-5" />
                         Save Profile
                     </button>
+                </div>
+            </motion.div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 }}
+                className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white shadow-lg shadow-blue-500/20"
+            >
+                <div className="flex items-start justify-between">
+                    <div>
+                        <h3 className="text-lg font-bold flex items-center gap-2 mb-1">
+                            <BookOpen className="w-5 h-5 text-white/90" />
+                            Academic Syllabus
+                        </h3>
+                        <p className="text-blue-100/90 text-sm mb-4">
+                            Import complete subjects and chapters for your class (HSC, SSC).
+                        </p>
+                        <button
+                            onClick={() => setShowSyllabusModal(true)}
+                            className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/20 rounded-lg text-sm font-semibold transition-colors"
+                        >
+                            Browse Templates
+                        </button>
+                    </div>
                 </div>
             </motion.div>
 
@@ -163,6 +201,38 @@ export default function Settings() {
                     Reset All Data
                 </button>
             </motion.div>
+
+            {/* Sound Settings */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 transition-colors"
+            >
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${isMuted ? 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}`}>
+                            {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                        </div>
+                        <div>
+                            <h3 className="text-slate-800 dark:text-white font-semibold transition-colors">Sound Effects</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 transition-colors">Play sounds for actions and timer.</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={toggleMute}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${!isMuted ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-600'}`}
+                    >
+                        <span
+                            className={`${!isMuted ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                        />
+                    </button>
+                </div>
+            </motion.div>
+
+            <AnimatePresence>
+                {showSyllabusModal && <SyllabusImportModal onClose={() => setShowSyllabusModal(false)} />}
+            </AnimatePresence>
         </AnimatedPage>
     );
 }

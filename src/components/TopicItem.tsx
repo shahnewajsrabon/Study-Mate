@@ -8,12 +8,15 @@ interface TopicItemProps {
     topic: Topic;
 }
 
+import { useSound } from '../context/SoundContext';
+
 export default function TopicItem({
     subjectId,
     chapterId,
     topic
 }: TopicItemProps) {
     const { toggleTopic, deleteTopic } = useStudy();
+    const { playSound } = useSound();
 
     return (
         <motion.div
@@ -25,7 +28,10 @@ export default function TopicItem({
         >
             <motion.button
                 whileTap={{ scale: 0.8 }}
-                onClick={() => toggleTopic(subjectId, chapterId, topic.id)}
+                onClick={() => {
+                    toggleTopic(subjectId, chapterId, topic.id);
+                    if (!topic.isCompleted) playSound('pop');
+                }}
                 className={`flex-shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${topic.isCompleted
                     ? 'border-emerald-500 bg-emerald-500 text-white'
                     : 'border-slate-300 dark:border-slate-500 text-transparent hover:border-slate-400 dark:hover:border-slate-400'

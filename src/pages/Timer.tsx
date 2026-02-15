@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useStudy } from '../context/StudyContext';
 import { useAuth } from '../context/AuthContext';
+import { useSound } from '../context/SoundContext';
 import { Play, Pause, Save, Trophy, Clock, Timer as TimerIcon, RotateCcw, Volume2, VolumeX, Target, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
@@ -29,40 +30,15 @@ export default function Timer() {
 
     const [selectedSubject, setSelectedSubject] = useState<string>('');
     const [sessionSaved, setSessionSaved] = useState(false);
-    const [soundEnabled, setSoundEnabled] = useState(true);
+    // const [soundEnabled, setSoundEnabled] = useState(true); // Replaced by global SoundContext
 
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
 
     const intervalRef = useRef<number | null>(null);
-    const audioContextRef = useRef<AudioContext | null>(null);
+    const { playSound, isMuted, toggleMute } = useSound();
 
-    // --- Audio Feedback ---
-    const playBeep = useCallback(() => {
-        if (!soundEnabled) return;
-        try {
-            if (!audioContextRef.current) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-            }
-            const ctx = audioContextRef.current;
-            const oscillator = ctx.createOscillator();
-            const gainNode = ctx.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(ctx.destination);
-
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(880, ctx.currentTime); // A5
-            gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-
-            oscillator.start();
-            gainNode.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.5);
-            oscillator.stop(ctx.currentTime + 0.5);
-        } catch (e) {
-            console.error("Audio play failed", e);
-        }
-    }, [soundEnabled]);
+    // --- Timer Logic ---
 
     // --- Timer Logic ---
     useEffect(() => {
@@ -76,7 +52,7 @@ export default function Timer() {
                         if (prev <= 1) {
                             // Timer Finished
                             setIsActive(false);
-                            playBeep();
+                            playSound('complete');
                             return 0;
                         }
                         return prev - 1;
@@ -89,7 +65,7 @@ export default function Timer() {
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, [isActive, mode, playBeep]);
+    }, [isActive, mode, playSound]);
 
     // Initialize Timer based on Mode
     useEffect(() => {
@@ -210,10 +186,10 @@ export default function Timer() {
                     <p className="text-slate-500 dark:text-slate-400 transition-colors">Focus, track, and compete.</p>
                 </div>
                 <button
-                    onClick={() => setSoundEnabled(!soundEnabled)}
+                    onClick={toggleMute}
                     className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
                 >
-                    {soundEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
+                    {!isMuted ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
                 </button>
             </header>
 

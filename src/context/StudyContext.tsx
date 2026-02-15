@@ -4,6 +4,13 @@ import { db } from '../lib/firebase';
 import { doc, onSnapshot, setDoc, collection, addDoc } from 'firebase/firestore';
 
 // --- Types ---
+export type BadgeType = 'start_strong' | 'streak_master' | 'subject_conqueror' | 'night_owl';
+
+export type BadgeEntry = {
+    type: BadgeType;
+    earnedAt: string;
+};
+
 export type Topic = {
     id: string;
     name: string;
@@ -32,6 +39,9 @@ export type UserProfile = {
     grade: string; // e.g., "HSC 2026"
     language: 'en' | 'bn';
     totalStudyTime: number; // in seconds
+    earnedBadges: BadgeEntry[];
+    lastStudyDate?: string; // ISO Date string (YYYY-MM-DD)
+    currentStreak: number;
 };
 
 interface StudyContextType {
@@ -50,6 +60,7 @@ interface StudyContextType {
     resetData: () => void;
     exportData: () => void;
     importData: (jsonData: string) => boolean;
+    importSyllabusData: (subjects: any[]) => void; // Using any[] temporarily for TemplateSubject to avoid circular type dependency or duplication
     saveStudySession: (durationInSeconds: number, subjectId?: string) => Promise<void>;
 }
 
@@ -59,6 +70,8 @@ const initialProfile: UserProfile = {
     grade: 'Class 10',
     language: 'en',
     totalStudyTime: 0,
+    earnedBadges: [],
+    currentStreak: 0
 };
 
 const STORAGE_KEY = 'study-tracker-data';
@@ -383,6 +396,38 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const importSyllabusData = (templateSubjects: any[]) => {
+        // templateSubjects is Array of { name, icon, color, chapters: [{ name, topics: [{ name }] }] }
+
+        const newSubjectsToAdd: Subject[] = templateSubjects.map(ts => {
+            const subjectId = crypto.randomUUID();
+            return {
+                id: subjectId,
+                name: ts.name,
+                color: ts.color,
+                icon: ts.icon,
+                chapters: ts.chapters.map((tc: any) => {
+                    const chapterId = crypto.randomUUID();
+                    return {
+                        id: chapterId,
+                        name: tc.name,
+                        isCompleted: false,
+                        completedAt: null,
+                        topics: tc.topics.map((tt: any) => ({
+                            id: crypto.randomUUID(),
+                            name: tt.name,
+                            isCompleted: false,
+                            completedAt: null
+                        }))
+                    };
+                })
+            };
+        });
+
+        // Append to existing subjects
+        saveData(userProfile, [...subjects, ...newSubjectsToAdd]);
+    };
+
     const resetData = () => {
         if (confirm('Are you sure you want to reset all data?')) {
             saveData(initialProfile, []);
@@ -390,9 +435,56 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     };
 
     const saveStudySession = async (durationInSeconds: number, subjectId?: string) => {
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+
         // Optimistic update for total time
         const newTotalTime = (userProfile.totalStudyTime || 0) + durationInSeconds;
-        const newProfile = { ...userProfile, totalStudyTime: newTotalTime };
+
+        // Streak Logic
+        let newStreak = userProfile.currentStreak || 0;
+        let lastDate = userProfile.lastStudyDate;
+
+        if (lastDate !== todayStr) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            if (lastDate === yesterdayStr) {
+                newStreak += 1;
+            } else {
+                newStreak = 1; // Reset or start new
+            }
+            lastDate = todayStr;
+        }
+
+        // Badge Logic
+        const currentBadges = [...(userProfile.earnedBadges || [])];
+        const newBadges: BadgeEntry[] = [];
+
+        // 3. Night Owl: Study between 10PM (22) and 4AM (4)
+        const hour = now.getHours();
+        const isNight = hour >= 22 || hour < 4;
+        const hasNightOwl = currentBadges.some(b => b.type === 'night_owl');
+
+        if (isNight && !hasNightOwl) {
+            newBadges.push({ type: 'night_owl', earnedAt: now.toISOString() });
+        }
+
+        // 4. Streak Master: 3 days streak
+        const hasStreakMaster = currentBadges.some(b => b.type === 'streak_master');
+        if (newStreak >= 3 && !hasStreakMaster) {
+            newBadges.push({ type: 'streak_master', earnedAt: now.toISOString() });
+        }
+
+        const newProfile: UserProfile = {
+            ...userProfile,
+            totalStudyTime: newTotalTime,
+            currentStreak: newStreak,
+            lastStudyDate: lastDate,
+            earnedBadges: [...currentBadges, ...newBadges]
+        };
+
         updateProfile(newProfile);
 
         if (user) {
@@ -433,6 +525,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                 resetData,
                 exportData,
                 importData,
+                importSyllabusData,
                 saveStudySession,
             }}
         >

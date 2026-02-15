@@ -8,6 +8,9 @@ import ErrorBoundary from './components/ErrorBoundary.tsx'
 
 import { AuthProvider } from './context/AuthContext.tsx'
 import { ThemeProvider } from './context/ThemeContext.tsx'
+import { SoundProvider } from './context/SoundContext.tsx'
+
+console.log('TrackEd v1.1 - Dark Mode Enabled');
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -15,7 +18,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <StudyProvider>
           <ThemeProvider>
-            <App />
+            <SoundProvider>
+              <App />
+            </SoundProvider>
           </ThemeProvider>
         </StudyProvider>
       </AuthProvider>
