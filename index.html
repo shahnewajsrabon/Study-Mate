@@ -24,12 +24,19 @@
     }(window.location))
   </script>
   <!-- End Single Page Apps for GitHub Pages -->
-  <script type="module" crossorigin src="/Study-Mate/assets/index-Uua3RTi1.js"></script>
-  <link rel="stylesheet" crossorigin href="/Study-Mate/assets/index-vXEa4-Lq.css">
+  <script type="module" crossorigin src="/Study-Mate/assets/index-Dr5FOAHh.js"></script>
+  <link rel="stylesheet" crossorigin href="/Study-Mate/assets/index-BEX_a0JG.css">
 <link rel="manifest" href="/Study-Mate/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Study-Mate/registerSW.js"></script></head>
 
 <body>
   <div id="root"></div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js');
+      });
+    }
+  </script>
 </body>
 
 </html>
