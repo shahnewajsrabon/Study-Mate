@@ -105,7 +105,102 @@ export default function Dashboard() {
 
             {/* Dashboard Widgets - Mobile Carousel / Desktop Grid */}
             <div className="flex overflow-x-auto snap-x snap-mandatory -mx-4 px-4 pb-4 gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:mx-0 md:px-0 md:pb-0 md:overflow-visible no-scrollbar">
-                {/* ... widgets ... */}
+
+                {/* Continue Learning */}
+                <div className="snap-center shrink-0 w-[85vw] md:w-auto lg:col-span-1 h-full">
+                    <ContinueLearningCard />
+                </div>
+
+                {/* Daily Goal & Quote */}
+                <div className="snap-center shrink-0 w-[85vw] md:w-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-6 h-full">
+                    <DailyGoalCard />
+                    <QuoteCard />
+                </div>
+
+                {/* Stats Summary */}
+                <div className="snap-center shrink-0 w-[85vw] md:w-auto grid grid-cols-1 gap-4 lg:gap-6 h-full">
+                    {/* Overall Progress (Circular) */}
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-3 opacity-10">
+                            <PieChart className="w-32 h-32 text-blue-500" />
+                        </div>
+
+                        <div className="flex items-center justify-between relative z-10 h-full">
+                            <div>
+                                <h3 className="text-slate-500 dark:text-slate-400 font-medium mb-1 flex items-center gap-2 text-sm">
+                                    <Trophy className="w-4 h-4 text-amber-500" /> Syllabus Progress
+                                </h3>
+
+                                <div className="mt-4 space-y-3">
+                                    <div>
+                                        <div className="flex items-end gap-2 mb-1">
+                                            <span className="text-2xl font-bold text-slate-800 dark:text-white">{completedChapters}</span>
+                                            <span className="text-sm text-slate-400 dark:text-slate-500 mb-1">/ {totalChapters} Chapters</span>
+                                        </div>
+                                        <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${(completedChapters / (totalChapters || 1)) * 100}%` }}
+                                                className="h-full bg-blue-500 rounded-full"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="flex items-end gap-2 mb-1">
+                                            <span className="text-2xl font-bold text-slate-800 dark:text-white">{overallProgress}%</span>
+                                            <span className="text-sm text-slate-400 dark:text-slate-500 mb-1">Total Completion</span>
+                                        </div>
+                                        <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${overallProgress}%` }}
+                                                className="h-full bg-emerald-500 rounded-full"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Circular Progress SVG */}
+                            <div className="relative w-28 h-28 flex-shrink-0">
+                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                    <circle
+                                        className="text-slate-100 dark:text-slate-700"
+                                        strokeWidth="8"
+                                        stroke="currentColor"
+                                        fill="transparent"
+                                        r="40"
+                                        cx="50"
+                                        cy="50"
+                                    />
+                                    <motion.circle
+                                        className="text-blue-600 dark:text-blue-500 drop-shadow-lg"
+                                        strokeWidth="8"
+                                        strokeDasharray={251.2}
+                                        strokeDashoffset={251.2 - (251.2 * overallProgress) / 100}
+                                        strokeLinecap="round"
+                                        stroke="currentColor"
+                                        fill="transparent"
+                                        r="40"
+                                        cx="50"
+                                        cy="50"
+                                        initial={{ strokeDashoffset: 251.2 }}
+                                        animate={{ strokeDashoffset: 251.2 - (251.2 * overallProgress) / 100 }}
+                                        transition={{ duration: 1.5, ease: "easeOut" }}
+                                    />
+                                </svg>
+                                <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center flex-col">
+                                    <span className="text-xl font-bold text-slate-800 dark:text-white">{overallProgress}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Leaderboard */}
+                <div className="snap-center shrink-0 w-[85vw] md:w-auto lg:col-span-1 h-full min-h-[400px]">
+                    <Leaderboard />
+                </div>
             </div>
 
             {/* Ad Placeholder */}
