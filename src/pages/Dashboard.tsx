@@ -8,6 +8,7 @@ import WelcomeModal from '../components/WelcomeModal';
 import DailyGoalCard from '../components/DailyGoalCard';
 import ContinueLearningCard from '../components/ContinueLearningCard';
 import QuoteCard from '../components/QuoteCard';
+import Leaderboard from '../components/Leaderboard';
 import { Plus, Trophy, BookMarked, PieChart } from 'lucide-react';
 // import AnimatedPage from '../components/AnimatedPage'; // Removed direct usage to control staggering explicitly
 
@@ -187,6 +188,11 @@ export default function Dashboard() {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Leaderboard */}
+                <div className="snap-center shrink-0 w-[85vw] md:w-auto lg:col-span-1 h-full min-h-[400px]">
+                    <Leaderboard />
                 </div>
 
             </div>

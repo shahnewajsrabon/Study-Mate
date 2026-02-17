@@ -47,6 +47,7 @@ export type UserProfile = {
     todayStudyTime: number; // in seconds
     weeklyStudyTime: number;
     monthlyStudyTime: number;
+    syllabusCompletionPercentage?: number;
 };
 
 interface StudyContextType {
@@ -220,15 +221,32 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
 
     // Helper: Save to Source of Truth
     const saveData = React.useCallback(async (newProfile: UserProfile, newSubjects: Subject[]) => {
+
+        // Calculate Syllabus Completion Percentage
+        const totalChapters = newSubjects.reduce((acc, sub) => acc + sub.chapters.length, 0);
+        let totalProgressSum = 0;
+        newSubjects.forEach(sub => {
+            sub.chapters.forEach(ch => {
+                if (ch.topics && ch.topics.length > 0) {
+                    totalProgressSum += (ch.topics.filter(t => t.isCompleted).length / ch.topics.length) * 100;
+                } else {
+                    totalProgressSum += ch.isCompleted ? 100 : 0;
+                }
+            });
+        });
+        const completionPercentage = totalChapters === 0 ? 0 : Math.round(totalProgressSum / totalChapters);
+
+        const updatedProfile = { ...newProfile, syllabusCompletionPercentage: completionPercentage };
+
         // Always update local state immediately (Optimistic UI)
-        setUserProfile(newProfile);
+        setUserProfile(updatedProfile);
         setSubjects(newSubjects);
 
         if (user) {
             // Save to Cloud
             try {
                 await setDoc(doc(db, 'users', user.uid), {
-                    userProfile: newProfile,
+                    userProfile: updatedProfile,
                     subjects: newSubjects
                 });
             } catch (e) {
@@ -238,7 +256,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         } else {
             // Save to LocalStorage
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                userProfile: newProfile,
+                userProfile: updatedProfile,
                 subjects: newSubjects
             }));
         }
