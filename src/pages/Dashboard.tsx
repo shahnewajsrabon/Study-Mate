@@ -9,7 +9,6 @@ import DailyGoalCard from '../components/DailyGoalCard';
 import ContinueLearningCard from '../components/ContinueLearningCard';
 import QuoteCard from '../components/QuoteCard';
 import Leaderboard from '../components/Leaderboard';
-import AdBanner from '../components/AdBanner';
 import { Plus, Trophy, BookMarked, PieChart } from 'lucide-react';
 // import AnimatedPage from '../components/AnimatedPage'; // Removed direct usage to control staggering explicitly
 
@@ -202,9 +201,6 @@ export default function Dashboard() {
                     <Leaderboard />
                 </div>
             </div>
-
-            {/* Ad Placeholder */}
-            <AdBanner dataAdSlot="1234567890" className="max-w-[728px] mx-auto" />
 
             {/* Badges Section */}
             {userProfile.earnedBadges && userProfile.earnedBadges.length > 0 && (
