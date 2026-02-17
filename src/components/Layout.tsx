@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useOutlet } from 'react-router-dom';
-import { BookOpen, Settings as SettingsIcon, LayoutDashboard, TrendingUp, List, LogOut, Timer, Moon, Sun } from 'lucide-react';
+import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, MessageCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { AnimatePresence } from 'framer-motion';
 import { cloneElement } from 'react';
 import TourOverlay, { type TourStep } from './TourOverlay';
+import logo from '../assets/logo.png';
 
 const TOUR_STEPS: TourStep[] = [
     {
@@ -43,11 +44,8 @@ export default function Layout() {
     const [showTour, setShowTour] = useState(false);
 
     useEffect(() => {
-        const tourCompleted = localStorage.getItem('tracked_tour_completed');
-        if (!tourCompleted) {
-            // Small delay to ensure render
-            setTimeout(() => setShowTour(true), 1000);
-        }
+        // Temporarily disable auto-tour to fix blocking issue
+        localStorage.setItem('tracked_tour_completed', 'true');
     }, []);
 
     const handleTourComplete = () => {
@@ -69,55 +67,51 @@ export default function Layout() {
             )}
 
             {/* Mobile Header */}
-            <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10 px-4 py-3 flex items-center justify-between md:hidden transition-colors duration-300">
+            <header className="glass sticky top-0 z-20 px-4 py-3 flex items-center justify-between md:hidden transition-colors duration-300">
                 <div className="flex items-center gap-2">
-                    <div className="bg-blue-600 p-1.5 rounded-lg">
-                        <BookOpen className="w-5 h-5 text-white" />
-                    </div>
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-blue-700 to-teal-600 bg-clip-text text-transparent">
+                    <img src={logo} alt="TrackEd Logo" className="w-9 h-9 rounded-xl object-contain shadow-sm" />
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                         TrackEd
                     </h1>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={toggleTheme}
-                        className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 rounded-full transition-colors backdrop-blur-sm"
                         aria-label="Toggle Theme"
                     >
                         {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                     </button>
-                    <Link to="/settings" className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                    <Link to="/settings" className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 rounded-full transition-colors backdrop-blur-sm">
                         <SettingsIcon className="w-5 h-5" />
                     </Link>
                 </div>
             </header>
 
             {/* Desktop Sidebar & Content Wrapper */}
-            <div className="md:flex max-w-5xl mx-auto">
+            <div className="md:flex max-w-7xl mx-auto">
                 {/* Desktop Sidebar (Hidden on Mobile) */}
-                <aside className="hidden md:flex flex-col w-64 h-screen sticky top-0 p-6 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 transition-colors duration-300">
-                    <div className="flex items-center justify-between mb-10">
-                        <div className="flex items-center gap-2">
-                            <div className="bg-blue-600 p-2 rounded-lg">
-                                <BookOpen className="w-6 h-6 text-white" />
-                            </div>
-                            <h1 className="text-2xl font-bold text-slate-800 dark:text-white">TrackEd</h1>
+                <aside className="hidden md:flex flex-col w-72 h-[calc(100vh-2rem)] sticky top-4 m-4 rounded-3xl glass shadow-2xl shadow-slate-200/60 dark:shadow-slate-900/50 p-6 transition-all duration-300 z-10">
+                    <div className="flex items-center justify-between mb-10 pl-2">
+                        <div className="flex items-center gap-3">
+                            <img src={logo} alt="TrackEd Logo" className="w-10 h-10 rounded-xl object-contain shadow-md" />
+                            <h1 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">TrackEd</h1>
                         </div>
                         <button
                             onClick={toggleTheme}
-                            className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                            className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-700/50 rounded-xl transition-colors"
                             aria-label="Toggle Theme"
                         >
                             {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                         </button>
                     </div>
 
-                    <nav className="space-y-2 flex-1">
+                    <nav className="space-y-1.5 flex-1">
                         <Link
                             to="/"
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive('/')
-                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive('/')
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 font-medium translate-x-1'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
                                 }`}
                         >
                             <LayoutDashboard className="w-5 h-5" />
@@ -125,42 +119,42 @@ export default function Layout() {
                         </Link>
                         <Link
                             to="/analytics"
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive('/analytics')
-                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive('/analytics')
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 font-medium translate-x-1'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
                                 }`}
                         >
                             <TrendingUp className="w-5 h-5" />
                             Analytics
                         </Link>
-                        <Link
-                            to="/chapters"
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive('/chapters')
-                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
-                                }`}
-                        >
-                            <List className="w-5 h-5" />
-                            Chapters
-                        </Link>
+
                         <Link
                             to="/timer"
                             id="nav-timer"
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === '/timer'
-                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'
+                            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${location.pathname === '/timer'
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 font-medium translate-x-1'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
                                 }`}
                         >
                             <Timer className="w-5 h-5" />
                             Timer
                         </Link>
-
+                        <Link
+                            to="/chat"
+                            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive('/chat')
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 font-medium translate-x-1'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                                }`}
+                        >
+                            <MessageCircle className="w-5 h-5" />
+                            Community
+                        </Link>
                         <Link
                             to="/settings"
                             id="nav-settings"
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive('/settings')
-                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive('/settings')
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 font-medium translate-x-1'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
                                 }`}
                         >
                             <SettingsIcon className="w-5 h-5" />
@@ -168,17 +162,17 @@ export default function Layout() {
                         </Link>
                     </nav>
 
-                    <div className="mt-auto pt-6 border-t border-slate-100 dark:border-slate-700">
+                    <div className="mt-auto pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
                         <button
                             onClick={logout}
-                            className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-400 transition-colors w-full text-left mb-4"
+                            className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors w-full text-left mb-4 group"
                         >
-                            <LogOut className="w-5 h-5" />
+                            <LogOut className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
                             Sign Out
                         </button>
-                        <div className="text-xs text-slate-400 dark:text-slate-500">
+                        <div className="text-xs text-center text-slate-400 dark:text-slate-500 font-medium">
                             <p>Empowering Students</p>
-                            <p className="mt-1">© 2026 TrackEd</p>
+                            <p className="mt-1 opacity-70">© 2026 TrackEd</p>
                         </div>
                     </div>
                 </aside>
@@ -209,14 +203,7 @@ export default function Layout() {
                     <TrendingUp className="w-6 h-6" />
                     <span>Stats</span>
                 </Link>
-                <Link
-                    to="/chapters"
-                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/chapters') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
-                        }`}
-                >
-                    <List className="w-6 h-6" />
-                    <span>Chapters</span>
-                </Link>
+
                 <Link
                     to="/timer"
                     className={`flex flex-col items-center gap-1 text-xs ${isActive('/timer') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
@@ -224,6 +211,14 @@ export default function Layout() {
                 >
                     <Timer className="w-6 h-6" />
                     <span>Timer</span>
+                </Link>
+                <Link
+                    to="/chat"
+                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/chat') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
+                        }`}
+                >
+                    <MessageCircle className="w-6 h-6" />
+                    <span>Comm..</span>
                 </Link>
                 <Link
                     to="/settings"

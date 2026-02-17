@@ -3,8 +3,8 @@ import Dashboard from './pages/Dashboard';
 import SubjectDetails from './pages/SubjectDetails';
 import Settings from './pages/Settings';
 import Analytics from './pages/Analytics';
-import AllChapters from './pages/AllChapters';
 import Timer from './pages/Timer';
+import Chat from './pages/Chat';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import { useAuth } from './context/AuthContext';
@@ -34,8 +34,8 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="subject/:id" element={<SubjectDetails />} />
           <Route path="analytics" element={<Analytics />} />
-          <Route path="chapters" element={<AllChapters />} />
           <Route path="timer" element={<Timer />} />
+          <Route path="chat" element={<Chat />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>

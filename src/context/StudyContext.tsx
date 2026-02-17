@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { db } from '../lib/firebase';
-import type { TemplateSubject } from '../data/syllabusTemplates';
+import { SYLLABUS_TEMPLATES, type TemplateSubject } from '../data/syllabusTemplates';
 import { doc, onSnapshot, setDoc, collection, addDoc } from 'firebase/firestore';
 
 // --- Types ---
@@ -43,6 +43,10 @@ export type UserProfile = {
     earnedBadges: BadgeEntry[];
     lastStudyDate?: string; // ISO Date string (YYYY-MM-DD)
     currentStreak: number;
+    dailyGoal: number; // in seconds (default 7200 = 2 hours)
+    todayStudyTime: number; // in seconds
+    weeklyStudyTime: number;
+    monthlyStudyTime: number;
 };
 
 interface StudyContextType {
@@ -50,19 +54,22 @@ interface StudyContextType {
     subjects: Subject[];
     updateProfile: (profile: Partial<UserProfile>) => void;
     addSubject: (subject: Omit<Subject, 'id' | 'chapters'>) => void;
+    editSubject: (id: string, updates: Partial<Subject>) => void;
     deleteSubject: (id: string) => void;
     addChapter: (subjectId: string, chapterName: string) => void;
+    editChapter: (subjectId: string, chapterId: string, newName: string) => void;
     toggleChapter: (subjectId: string, chapterId: string) => void;
     deleteChapter: (subjectId: string, chapterId: string) => void;
     // Topic Actions
     addTopic: (subjectId: string, chapterId: string, topicName: string) => void;
+    editTopic: (subjectId: string, chapterId: string, topicId: string, newName: string) => void;
     toggleTopic: (subjectId: string, chapterId: string, topicId: string) => void;
     deleteTopic: (subjectId: string, chapterId: string, topicId: string) => void;
     resetData: () => void;
     exportData: () => void;
     importData: (jsonData: string) => boolean;
     importSyllabusData: (subjects: TemplateSubject[]) => void;
-    saveStudySession: (durationInSeconds: number, subjectId?: string) => Promise<void>;
+    saveStudySession: (durationInSeconds: number, subjectId?: string, sessionGoal?: string) => Promise<void>;
 }
 
 // --- Initial Data ---
@@ -72,10 +79,40 @@ const initialProfile: UserProfile = {
     language: 'en',
     totalStudyTime: 0,
     earnedBadges: [],
-    currentStreak: 0
+    currentStreak: 0,
+    dailyGoal: 7200, // 2 hours default
+    todayStudyTime: 0,
+    weeklyStudyTime: 0,
+    monthlyStudyTime: 0
 };
 
 const STORAGE_KEY = 'study-tracker-data';
+
+// --- Helpers ---
+const generateDefaultSubjects = (): Subject[] => {
+    // Default to HSC Science (index 0)
+    const template = SYLLABUS_TEMPLATES[0];
+    if (!template) return [];
+
+    return template.subjects.map(ts => ({
+        id: crypto.randomUUID(),
+        name: ts.name,
+        color: ts.color,
+        icon: ts.icon,
+        chapters: ts.chapters.map(tc => ({
+            id: crypto.randomUUID(),
+            name: tc.name,
+            isCompleted: false,
+            completedAt: null,
+            topics: tc.topics.map(tt => ({
+                id: crypto.randomUUID(),
+                name: tt.name,
+                isCompleted: false,
+                completedAt: null
+            }))
+        }))
+    }));
+};
 
 // --- Context ---
 const StudyContext = createContext<StudyContextType | undefined>(undefined);
@@ -103,7 +140,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
             const savedData = localStorage.getItem(STORAGE_KEY);
             if (savedData) {
                 const parsed = JSON.parse(savedData);
-                if (parsed.subjects) {
+                if (parsed.subjects && parsed.subjects.length > 0) {
                     // Migration logic for old data format if present
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     return parsed.subjects.map((sub: any) => ({
@@ -117,9 +154,10 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                 }
             }
         } catch (e) {
-            console.error('Failed to load subjects:', e);
+            console.error('Failed to load subjects, falling back to default:', e);
         }
-        return [];
+        // Fallback to default syllabus if no data found
+        return generateDefaultSubjects();
     });
 
     // Effect: Load/Sync data
@@ -140,7 +178,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                     // We can use the current state values which are lazy-loaded from localStorage
                     const dataToUpload = {
                         userProfile: initialProfile,
-                        subjects: [] as Subject[]
+                        subjects: subjects.length > 0 ? subjects : generateDefaultSubjects()
                     };
 
                     try {
@@ -164,7 +202,6 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                         console.error("Error reading local storage for migration:", e);
                     }
 
-                    // Upload to Firestore
                     setDoc(userDocRef, dataToUpload)
                         .catch(err => console.error("Migration failed", err));
                 }
@@ -177,10 +214,12 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
             // --- Guest Mode ---
             // LocalStorage loading is already done via lazy initialization
         }
-    }, [user]); // Only re-run if user changes logic
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user]); // Only re-run if user changes logic (re-subscribing on subjects change would be bad)
+
 
     // Helper: Save to Source of Truth
-    const saveData = async (newProfile: UserProfile, newSubjects: Subject[]) => {
+    const saveData = React.useCallback(async (newProfile: UserProfile, newSubjects: Subject[]) => {
         // Always update local state immediately (Optimistic UI)
         setUserProfile(newProfile);
         setSubjects(newSubjects);
@@ -203,7 +242,97 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                 subjects: newSubjects
             }));
         }
-    };
+    }, [user]);
+
+
+    // --- Sync Default Subjects Effect ---
+    useEffect(() => {
+        // Ensure all subjects from the default template (HSC Science) are present
+        // and have their topics populated if they are currently empty.
+        const template = SYLLABUS_TEMPLATES[0]; // Currently targeting HSC Science
+        if (!template) return;
+
+        let hasChanges = false;
+        // Create a copy to modify
+        const currentSubjects = [...subjects];
+
+        // 1. Check for missing or incomplete subjects
+        template.subjects.forEach(templateSubject => {
+            const existingSubjectIndex = currentSubjects.findIndex(s => s.name === templateSubject.name);
+
+            if (existingSubjectIndex === -1) {
+                // Subject missing from user's list -> Add it
+                // console.log(`Adding missing default subject: ${templateSubject.name}`);
+                const newSubject: Subject = {
+                    id: crypto.randomUUID(),
+                    name: templateSubject.name,
+                    color: templateSubject.color,
+                    icon: templateSubject.icon,
+                    chapters: templateSubject.chapters.map(tc => ({
+                        id: crypto.randomUUID(),
+                        name: tc.name, // e.g. "অধ্যায় ১ - ভৌতজগত ও পরিমাপ"
+                        isCompleted: false,
+                        completedAt: null,
+                        topics: tc.topics.map(tt => ({
+                            id: crypto.randomUUID(),
+                            name: tt.name,
+                            isCompleted: false,
+                            completedAt: null
+                        }))
+                    }))
+                };
+                currentSubjects.push(newSubject);
+                hasChanges = true;
+            } else {
+                // Subject exists -> Check for empty topics (legacy data fix) & Color fix
+                const existingSubject = currentSubjects[existingSubjectIndex];
+                let subjectChanged = false;
+
+                // Fix: Migrate legacy text- colors to bg- colors
+                let newColor = existingSubject.color;
+                if (newColor.startsWith('text-')) {
+                    newColor = newColor.replace('text-', 'bg-');
+                    subjectChanged = true;
+                }
+
+                const updatedChapters = existingSubject.chapters.map(ch => {
+                    const templateCh = templateSubject.chapters.find(tc => tc.name === ch.name);
+
+                    // Logic: If chapter exists in template AND current chapter has 0 topics BUT template has topics
+                    // Then we populate the topics from the template.
+                    if (templateCh && ch.topics.length === 0 && templateCh.topics.length > 0) {
+                        subjectChanged = true;
+                        return {
+                            ...ch,
+                            topics: templateCh.topics.map(tt => ({
+                                id: crypto.randomUUID(),
+                                name: tt.name,
+                                isCompleted: false,
+                                completedAt: null
+                            }))
+                        };
+                    }
+                    return ch;
+                });
+
+                if (subjectChanged) {
+                    // console.log(`Updating subject (topics/color): ${existingSubject.name}`);
+                    currentSubjects[existingSubjectIndex] = {
+                        ...existingSubject,
+                        color: newColor,
+                        chapters: updatedChapters
+                    };
+                    hasChanges = true;
+                }
+            }
+        });
+
+        if (hasChanges) {
+            console.log("Syncing default subjects...");
+            saveData(userProfile, currentSubjects);
+        }
+
+    }, [subjects, userProfile, saveData]); // Safe dependency: hasChanges ensures we only save (and trigger re-run) when needed.
 
 
     // --- Actions (Updated to use saveData) ---
@@ -215,6 +344,16 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         const id = crypto.randomUUID();
         const subject: Subject = { ...newSubject, id, chapters: [] };
         saveData(userProfile, [...subjects, subject]);
+    };
+
+    const editSubject = (id: string, updates: Partial<Subject>) => {
+        const newSubjects = subjects.map((sub) => {
+            if (sub.id === id) {
+                return { ...sub, ...updates };
+            }
+            return sub;
+        });
+        saveData(userProfile, newSubjects);
     };
 
     const deleteSubject = (id: string) => {
@@ -235,6 +374,24 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                             topics: [],
                         },
                     ],
+                };
+            }
+            return sub;
+        });
+        saveData(userProfile, newSubjects);
+    };
+
+    const editChapter = (subjectId: string, chapterId: string, newName: string) => {
+        const newSubjects = subjects.map((sub) => {
+            if (sub.id === subjectId) {
+                return {
+                    ...sub,
+                    chapters: sub.chapters.map((ch) => {
+                        if (ch.id === chapterId) {
+                            return { ...ch, name: newName };
+                        }
+                        return ch;
+                    }),
                 };
             }
             return sub;
@@ -296,6 +453,32 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                                         completedAt: null,
                                     }
                                 ]
+                            };
+                        }
+                        return ch;
+                    }),
+                };
+            }
+            return sub;
+        });
+        saveData(userProfile, newSubjects);
+    };
+
+    const editTopic = (subjectId: string, chapterId: string, topicId: string, newName: string) => {
+        const newSubjects = subjects.map((sub) => {
+            if (sub.id === subjectId) {
+                return {
+                    ...sub,
+                    chapters: sub.chapters.map((ch) => {
+                        if (ch.id === chapterId) {
+                            return {
+                                ...ch,
+                                topics: ch.topics.map((t) => {
+                                    if (t.id === topicId) {
+                                        return { ...t, name: newName };
+                                    }
+                                    return t;
+                                }),
                             };
                         }
                         return ch;
@@ -435,16 +618,17 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const saveStudySession = async (durationInSeconds: number, subjectId?: string) => {
+    const saveStudySession = async (durationInSeconds: number, subjectId?: string, sessionGoal?: string) => {
         const now = new Date();
         const todayStr = now.toISOString().split('T')[0];
 
         // Optimistic update for total time
         const newTotalTime = (userProfile.totalStudyTime || 0) + durationInSeconds;
 
-        // Streak Logic
+        // Streak Logic & Daily Time
         let newStreak = userProfile.currentStreak || 0;
         let lastDate = userProfile.lastStudyDate;
+        let newTodayStudyTime = userProfile.todayStudyTime || 0;
 
         if (lastDate !== todayStr) {
             const yesterday = new Date();
@@ -457,7 +641,38 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                 newStreak = 1; // Reset or start new
             }
             lastDate = todayStr;
+            newTodayStudyTime = durationInSeconds; // Reset for new day
+        } else {
+            newTodayStudyTime += durationInSeconds; // Add to today's total
         }
+
+        // --- Weekly & Monthly Logic ---
+        let newWeeklyTime = userProfile.weeklyStudyTime || 0;
+        let newMonthlyTime = userProfile.monthlyStudyTime || 0;
+
+        // Use lastStudyDate from profile to check relative to last session
+        const originalLastDateObj = userProfile.lastStudyDate ? new Date(userProfile.lastStudyDate) : new Date(0);
+
+        // Helper to get Monday of the week
+        const getMondayStr = (d: Date) => {
+            const date = new Date(d);
+            const day = date.getDay(),
+                diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+            return new Date(date.setDate(diff)).toDateString();
+        }
+
+        // Check if Week Changed
+        if (getMondayStr(originalLastDateObj) !== getMondayStr(now)) {
+            newWeeklyTime = 0;
+        }
+
+        // Check if Month Changed
+        if (originalLastDateObj.getMonth() !== now.getMonth() || originalLastDateObj.getFullYear() !== now.getFullYear()) {
+            newMonthlyTime = 0;
+        }
+
+        newWeeklyTime += durationInSeconds;
+        newMonthlyTime += durationInSeconds;
 
         // Badge Logic
         const currentBadges = [...(userProfile.earnedBadges || [])];
@@ -481,9 +696,13 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         const newProfile: UserProfile = {
             ...userProfile,
             totalStudyTime: newTotalTime,
+            todayStudyTime: newTodayStudyTime,
             currentStreak: newStreak,
             lastStudyDate: lastDate,
-            earnedBadges: [...currentBadges, ...newBadges]
+            earnedBadges: [...currentBadges, ...newBadges],
+            dailyGoal: userProfile.dailyGoal || 7200, // Ensure valid default
+            weeklyStudyTime: newWeeklyTime,
+            monthlyStudyTime: newMonthlyTime
         };
 
         updateProfile(newProfile);
@@ -498,6 +717,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                     endTime: new Date().toISOString(),
                     durationInSeconds,
                     subjectId: subjectId || null,
+                    sessionGoal: sessionGoal || null,
                     createdAt: new Date().toISOString()
                 });
 
@@ -516,11 +736,14 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                 subjects,
                 updateProfile,
                 addSubject,
+                editSubject,
                 deleteSubject,
                 addChapter,
+                editChapter,
                 toggleChapter,
                 deleteChapter,
                 addTopic,
+                editTopic,
                 toggleTopic,
                 deleteTopic,
                 resetData,

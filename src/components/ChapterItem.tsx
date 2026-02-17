@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Plus, Trash2, CheckCircle2, Circle } from 'lucide-react';
+import { ChevronDown, Plus, Trash2, CheckCircle2, Circle, Pencil } from 'lucide-react';
 import { useStudy, type Chapter } from '../context/StudyContext';
 import TopicItem from './TopicItem';
+import EditChapterModal from './EditChapterModal';
 
 interface ChapterItemProps {
     subjectId: string;
@@ -19,6 +20,7 @@ export default function ChapterItem({
 }: ChapterItemProps) {
     const { deleteChapter, addTopic } = useStudy();
     const [isAddingTopic, setIsAddingTopic] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
 
     const handleAddTopic = (e: React.FormEvent) => {
         e.preventDefault();
@@ -90,6 +92,18 @@ export default function ChapterItem({
                         whileTap={{ scale: 0.9 }}
                         onClick={(e) => {
                             e.stopPropagation();
+                            setIsEditOpen(true);
+                        }}
+                        className="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30 dark:hover:text-amber-400 rounded-lg transition-colors"
+                        title="Edit Chapter"
+                    >
+                        <Pencil className="w-4 h-4" />
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => {
+                            e.stopPropagation();
                             if (confirm('Delete this chapter?')) deleteChapter(subjectId, chapter.id);
                         }}
                         className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors"
@@ -150,6 +164,15 @@ export default function ChapterItem({
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {isEditOpen && (
+                <EditChapterModal
+                    subjectId={subjectId}
+                    chapterId={chapter.id}
+                    currentName={chapter.name}
+                    onClose={() => setIsEditOpen(false)}
+                />
+            )}
         </div>
     );
 }

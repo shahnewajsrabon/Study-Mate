@@ -22,261 +22,623 @@ export interface SyllabusTemplate {
 
 export const SYLLABUS_TEMPLATES: SyllabusTemplate[] = [
     {
-        id: 'hsc-science-2026',
-        name: 'HSC Science (2026)',
+        id: 'hsc-science-2026-bn',
+        name: 'HSC Science',
         subjects: [
             {
-                name: 'Physics 1st Paper',
-                icon: 'Zap',
-                color: 'text-violet-500',
+                name: 'বাংলা ১ম পত্র', icon: 'Book', color: 'bg-emerald-500',
                 chapters: [
-                    { name: 'Physical World and Measurement', topics: [{ name: 'Units' }, { name: 'Dimensions' }] },
-                    { name: 'Vectors', topics: [{ name: 'Scalar & Vector' }, { name: 'Vector Addition' }, { name: 'Dot & Cross Product' }] },
-                    { name: 'Dynamics', topics: [{ name: 'Newton’s Laws' }, { name: 'Friction' }, { name: 'Banking of Roads' }] },
-                    { name: 'Newtonian Mechanics', topics: [] },
-                    { name: 'Work, Energy and Power', topics: [] },
-                    { name: 'Gravitation and Gravity', topics: [] },
-                    { name: 'Structural Properties of Matter', topics: [] },
-                    { name: 'Periodic Motion', topics: [] },
-                    { name: 'Ideal Gas and Kinetics of Gas', topics: [] }
+                    {
+                        name: 'গদ্য',
+                        topics: [
+                            { name: 'অপরিচিতা' },
+                            { name: 'বিলাসী' },
+                            { name: 'মাসি-পিসি' },
+                            { name: 'রেইনকোট' },
+                            { name: 'বাঙ্গালার নব লেখকদের প্রতি নিবেদন' },
+                            { name: 'সাহিত্যে খেলা' },
+                            { name: 'অর্ধাঙ্গী' },
+                            { name: 'যৌবনের গান' },
+                            { name: 'জীবন ও বৃক্ষ' },
+                            { name: 'গন্তব্য কাবুল' },
+                            { name: 'কপিলদাস মুর্মুর শেষ কাজ' },
+                            { name: 'নেকলেস' }
+                        ]
+                    },
+                    {
+                        name: 'পদ্য',
+                        topics: [
+                            { name: 'সোনার তরী' },
+                            { name: 'বিদ্রোহী' },
+                            { name: 'প্রতিদান' },
+                            { name: 'তাহারেই পড়ে মনে' },
+                            { name: 'ফেব্রুয়ারি ১৯৬৯' },
+                            { name: 'ঋতু-বর্ণন' },
+                            { name: 'বিভীষণের প্রতি মেঘনাদ' },
+                            { name: 'সুচেতনা' },
+                            { name: 'পদ্মা' },
+                            { name: 'আঠারো বছর বয়স' },
+                            { name: 'আমি কিংবদন্তির কথা বলছি' },
+                            { name: 'প্রত্যাবর্তনের লজ্জা' }
+                        ]
+                    },
+                    { name: 'উপন্যাস', topics: [{ name: 'লালসালু' }] },
+                    { name: 'নাটক', topics: [{ name: 'সিরাজউদ্দৌলা' }] }
                 ]
             },
             {
-                name: 'Physics 2nd Paper',
-                icon: 'Zap',
-                color: 'text-violet-500',
+                name: 'বাংলা ২য় পত্র', icon: 'Book', color: 'bg-emerald-500',
                 chapters: [
-                    { name: 'Thermodynamics', topics: [] },
-                    { name: 'Static Electricity', topics: [] },
-                    { name: 'Current Electricity', topics: [] },
-                    { name: 'Magnetic Effects of Current', topics: [] },
-                    { name: 'Electromagnetic Induction', topics: [] },
-                    { name: 'Geometrical Optics', topics: [] },
-                    { name: 'Physical Optics', topics: [] },
-                    { name: 'Modern Physics', topics: [] },
-                    { name: 'Atomic Model', topics: [] },
-                    { name: 'Semiconductors', topics: [] }
+                    { name: 'ব্যাকরণ', topics: [{ name: 'উচ্চারণ' }, { name: 'বানান' }, { name: 'বাক্যতত্ত্ব' }] },
+                    { name: 'নির্মিতি', topics: [{ name: 'পারিভাষিক শব্দ' }, { name: 'দিনলিপি' }, { name: 'সারাংশ' }, { name: 'ভাবসম্প্রসারণ' }] }
                 ]
             },
             {
-                name: 'Chemistry 1st Paper',
-                icon: 'Beaker',
-                color: 'text-teal-500',
+                name: 'পদার্থবিজ্ঞান ১ম পত্র',
+                icon: 'Book',
+                color: 'bg-teal-500',
                 chapters: [
-                    { name: 'Qualitative Chemistry', topics: [] },
-                    { name: 'Periodic Properties', topics: [] },
-                    { name: 'Chemical Bonding', topics: [] },
-                    { name: 'Chemical Changes', topics: [] },
-                    { name: 'Work Oriented Chemistry', topics: [] }
+                    {
+                        name: 'অধ্যায় ১ - ভৌতজগত ও পরিমাপ',
+                        topics: [
+                            { name: 'পদার্থবিজ্ঞানের সূচনা' },
+                            { name: 'রাশি ও পরিমাপ' },
+                            { name: 'বিভিন্ন বিজ্ঞানীর অবদান' },
+                            { name: 'পরিমাপের ত্রুটি' },
+                            { name: 'পরিমাপের কয়েকটি যন্ত্র' }
+                        ]
+                    },
+                    {
+                        name: 'অধ্যায় ২ - ভেক্টর',
+                        topics: [
+                            { name: 'ভেক্টর রাশির পরিচয়' },
+                            { name: 'ভেক্টর বীজগণিত' },
+                            { name: 'সামান্তরিক সূত্র' },
+                            { name: 'ভেক্টর বিভাজন' },
+                            { name: 'বাস্তব জীবনের সমস্যা' },
+                            { name: 'আপেক্ষিক বেগ' },
+                            { name: 'ভেক্টরের ত্রিমাত্রিক উপাংশ' },
+                            { name: 'ভেক্টর ক্যালকুলাস' },
+                            { name: 'যোগজীকরণ এর প্রাথমিক ধারণা' },
+                            { name: 'অন্তরীকরণ এর প্রাথমিক ধারণা' },
+                            { name: 'ভেক্টরের ক্রস গুণন' },
+                            { name: 'ভেক্টরের ডট গুণন' }
+                        ]
+                    },
+                    {
+                        name: 'অধ্যায় ৩ - গতিবিদ্যা',
+                        topics: [
+                            { name: 'গতিবিদ্যার প্রাথমিক ধারণা' },
+                            { name: 'বাস্তব জীবনের সমস্যা' },
+                            { name: 'পড়ন্ত বস্তু' },
+                            { name: 'গতির সমীকরণ প্রতিপাদন' },
+                            { name: 'গতির রাশিমালা ও লেখচিত্র' },
+                            { name: 'প্রাসের রাশিমালা' },
+                            { name: 'প্রাস' },
+                            { name: 'অনুভূমিকের সাপেক্ষের নিক্ষিপ্ত বস্তুর গতিপথ' },
+                            { name: 'বৃত্তীয় বা বৃত্তাকার গতি' },
+                            { name: 'প্রাসের গাণিতিক সমস্যা' },
+                            { name: 'কৌণিক গতির গাণিতিক সমস্যা' },
+                            { name: 'কৌণিক ও কেন্দ্রমুখী ত্বরণ' }
+                        ]
+                    },
+                    {
+                        name: 'অধ্যায় ৪ - নিউটনীয় বলবিদ্যা',
+                        topics: [
+                            { name: 'বলের পরিচয়' },
+                            { name: 'নিউটনের গতির প্রথম সূত্র' },
+                            { name: 'নিউটনের গতির দ্বিতীয় সূত্র' },
+                            { name: 'নিউটনের গতির তৃতীয় সূত্র' },
+                            { name: 'গতিসূত্রের পারস্পরিক সম্পর্ক' },
+                            { name: 'বাস্তব জীবনের ব্যবহার' },
+                            { name: 'ঘূর্ণন গতি' },
+                            { name: 'কেন্দ্রমুখী বল ও কেন্দ্রবিমুখী বল' },
+                            { name: 'জড়তার ভ্রামকের উপপাদ্য' },
+                            { name: 'কৌণিক ভরবেগের নিত্যতা' },
+                            { name: 'কৌণিক ভরবেগ ও টর্ক' },
+                            { name: 'সংঘর্ষ ও ঘর্ষণ' }
+                        ]
+                    },
+                    {
+                        name: 'অধ্যায় ৫ - কাজ, ক্ষমতা ও শক্তি',
+                        topics: [
+                            { name: 'কাজ কি ও কাজের প্রকারভেদ' },
+                            { name: 'পরিবর্তনশীল বল দ্বারা কৃত কাজ' },
+                            { name: 'শক্তি' },
+                            { name: 'গতিশক্তি' },
+                            { name: 'বিভব শক্তি বা স্থিতি শক্তি' },
+                            { name: 'শক্তির সংরক্ষণশীলতা নীতি' },
+                            { name: 'ক্ষমতা' }
+                        ]
+                    },
+                    {
+                        name: 'অধ্যায় ৬ - মহাকর্ষ ও অভিকর্ষ',
+                        topics: [
+                            { name: 'মহাকর্ষ' },
+                            { name: 'কেপলারের সূত্র' },
+                            { name: 'অভিকর্ষ ও অভিকর্ষজ ত্বরণ' },
+                            { name: 'বিভিন্ন উচ্চতায় অভিকর্ষজ ত্বরণ' },
+                            { name: 'পৃথিবীর ঘূর্ণন ক্রিয়া' },
+                            { name: 'মহাকর্ষীয় ক্ষেত্র ও প্রাবল্য' },
+                            { name: 'মহাকর্ষ সূত্রের প্রয়াগ' },
+                            { name: 'মুক্তি বেগ' },
+                            { name: 'কৃত্রিম ও ভূ-স্থির উপগ্রহ' }
+                        ]
+                    },
+                    {
+                        name: 'অধ্যায় ৭ - পদার্থের গাঠনিক ধর্ম',
+                        topics: [
+                            { name: 'পদার্থের বন্ধন' },
+                            { name: 'স্থিতিস্থাপকতা' },
+                            { name: 'হুকের সূত্র' },
+                            { name: 'পয়সনের অনুপাত' },
+                            { name: 'পৃষ্ঠটান ও পৃষ্ঠশক্তি' },
+                            { name: 'স্পর্শ কোণ' },
+                            { name: 'পৃষ্ঠটান সম্পর্কিত কয়েকটি ঘটনা' }
+                        ]
+                    },
+                    {
+                        name: 'অধ্যায় ৮ - পর্যাবৃত্ত গতি',
+                        topics: [
+                            { name: 'পর্যাবৃত্ত গতি' },
+                            { name: 'সরল ছন্দিত গতি' },
+                            { name: 'সরল দোলন গতি সম্পর্কিত বিভিন্ন রাশি' },
+                            { name: 'সরল দোলন গতি সম্পন্ন কণার বেগ ও ত্বরণ' },
+                            { name: 'সরল দোলকের ক্ষেত্রে শক্তি' },
+                            { name: 'স্প্রিং ও সরল দোলক' },
+                            { name: 'সরল দোলকের ব্যবহার' }
+                        ]
+                    },
+                    {
+                        name: 'অধ্যায় ৯ - তরঙ্গ',
+                        topics: [
+                            { name: 'তরঙ্গের পরিচয়' },
+                            { name: 'বিভিন্ন তরঙ্গের রাশি' },
+                            { name: 'কম্পন ও তীব্রতা' },
+                            { name: 'বিট বা স্বরকম্প' },
+                            { name: 'সুশ্রাব্য শব্দ' },
+                            { name: 'তারের কম্পাঙ্ক' },
+                            { name: 'বায়ু স্তম্ভের কম্পন' }
+                        ]
+                    },
+                    {
+                        name: 'অধ্যায় ১০ - আদর্শ গ্যাস ও গ্যাসের গতিতত্ত্ব',
+                        topics: [
+                            { name: 'গ্যাসের সূত্র' },
+                            { name: 'আদর্শ গ্যাস' },
+                            { name: 'আণবিক গতিতত্ত্ব' },
+                            { name: 'আদর্শ গ্যাসের চাপের সূত্র' },
+                            { name: 'আদর্শ গ্যাসের সূত্র ও গড় মুক্ত পথ' },
+                            { name: 'স্বাধীনতার মাত্রা' },
+                            { name: 'জলীয় বাষ্প ও বায়ুর চাপ' },
+                            { name: 'আপেক্ষিক আদ্রতা' },
+                            { name: 'আপেক্ষিক আদ্রতা ব্যবহার' }
+                        ]
+                    }
                 ]
             },
             {
-                name: 'Chemistry 2nd Paper',
-                icon: 'Beaker',
-                color: 'text-teal-500',
+                name: 'পদার্থবিজ্ঞান ২য় পত্র', icon: 'Zap', color: 'bg-violet-500',
                 chapters: [
-                    { name: 'Environmental Chemistry', topics: [] },
-                    { name: 'Organic Chemistry', topics: [] },
-                    { name: 'Quantitative Chemistry', topics: [] },
-                    { name: 'Electrochemistry', topics: [] },
-                    { name: 'Economic Chemistry', topics: [] }
+                    {
+                        name: 'তাপগতিবিদ্যা',
+                        topics: [
+                            { name: 'তাপমাত্রার স্কেল' },
+                            { name: 'তাপগতিবিদ্যার প্রথম সূত্র' },
+                            { name: 'সমোষ্ণ ও রুদ্ধতাপীয় প্রক্রিয়া' },
+                            { name: 'কার্নোর ইঞ্জিন ও দক্ষতা' },
+                            { name: 'এন্ট্রপি' },
+                            { name: 'তাপগতিবিদ্যার দ্বিতীয় সূত্র' }
+                        ]
+                    },
+                    {
+                        name: 'স্থির তড়িৎ',
+                        topics: [
+                            { name: 'কুলম্বের সূত্র' },
+                            { name: 'তড়িৎ ক্ষেত্র ও প্রাবল্য' },
+                            { name: 'তড়িৎ বিভব' },
+                            { name: 'তড়িৎ দ্বিমেরু' },
+                            { name: 'ধারক ও ধারকত্ব' },
+                            { name: 'গাউসের সূত্র' }
+                        ]
+                    },
+                    {
+                        name: 'চল তড়িৎ',
+                        topics: [
+                            { name: 'ওহমের সূত্র ও রোধ' },
+                            { name: 'রোধের সন্নিবেশ' },
+                            { name: 'কারশফের সূত্র' },
+                            { name: 'হুইটস্টোন ব্রিজ' },
+                            { name: 'পটেনশিওমিটার' },
+                            { name: 'তড়িৎ প্রবাহের তাপীয় ফল' }
+                        ]
+                    },
+                    { name: 'তড়িৎ প্রবাহের চৌম্বক ক্রিয়া', topics: [{ name: 'বায়ো-সাভার্ট সূত্র' }, { name: 'এম্পিয়ারের সূত্র' }, { name: 'লরেন্জ বল' }, { name: 'হল প্রভাব' }] },
+                    { name: 'তাড়িতচৌম্বক আবেশ', topics: [{ name: 'ফ্যারাডের সূত্র' }, { name: 'লেঞ্জের সূত্র' }, { name: 'স্বকীয় আবেশ ও পারস্পরিক আবেশ' }, { name: 'ট্রান্সফরমার' }] },
+                    { name: 'জ্যামিতিক আলোকবিজ্ঞান', topics: [{ name: 'প্রিজম' }, { name: 'লেন্স ও লেন্সের সমবায়' }, { name: 'অণুবীক্ষণ ও দূরবীক্ষণ যন্ত্র' }, { name: 'ফার্মাটের নীতি' }] },
+                    { name: 'ভৌত আলোকবিজ্ঞান', topics: [{ name: 'হাইগেনসের নীতি' }, { name: 'ব্যতিচার' }, { name: 'অপবর্তন' }, { name: 'সমবর্তন' }] },
+                    { name: 'আধুনিক পদার্থবিজ্ঞানের সূচনা', topics: [{ name: 'আইনস্টাইনের আপেক্ষিকতা তত্ত্ব' }, { name: 'ভর-শক্তি সমীকরণ' }, { name: 'ফোটোইলেকট্রিক ক্রিয়া' }, { name: 'ডি-ব্রগলি তরঙ্গ' }, { name: 'এক্স-রে' }] },
+                    { name: 'পরমাণুর মডেল', topics: [{ name: 'রাদারফোর্ড ও বোর মডেল' }, { name: 'হাইড্রোজেন বর্ণালি' }, { name: 'রেডিওঅ্যাক্টিভিটি' }, { name: 'অর্ধায়ু ও গড় আয়ু' }, { name: 'নিউক্লিয়ার ফিশন ও ফিউশন' }] },
+                    { name: 'সেমিকন্ডাক্টর ও ইলেকট্রনিক্স', topics: [{ name: 'ব্যান্ড তত্ত্ব' }, { name: 'পি-এন জংশন' }, { name: 'ট্রানজিস্টর' }, { name: 'লজিক গেট' }, { name: 'রেকটিফায়ার' }] }
                 ]
             },
             {
-                name: 'Higher Math 1st Paper',
-                icon: 'Calculator',
-                color: 'text-blue-500',
+                name: 'রসায়ন ১ম পত্র', icon: 'Beaker', color: 'bg-rose-500',
                 chapters: [
-                    { name: 'Matrices and Determinants', topics: [] },
-                    { name: 'Vectors', topics: [] },
-                    { name: 'Straight Lines', topics: [] },
-                    { name: 'Circle', topics: [] },
-                    { name: 'Permutation and Combination', topics: [] },
-                    { name: 'Trigonometry', topics: [] },
-                    { name: 'Functions', topics: [] },
-                    { name: 'Differentiation', topics: [] },
-                    { name: 'Integration', topics: [] }
+                    {
+                        name: 'ল্যাবরেটরির নিরাপদ ব্যবহার',
+                        topics: [
+                            { name: 'ল্যাবরেটরি ব্যবহার বিধি' },
+                            { name: 'গ্লাস সামগ্রী পরিষ্কারকরণ' },
+                            { name: 'ব্যালেন্স ও ওজন পরিমাপ' },
+                            { name: 'দ্রবণ প্রস্তুতি' },
+                            { name: 'হ্যাজার্ড প্রতীক' }
+                        ]
+                    },
+                    {
+                        name: 'গুণগত রসায়ন',
+                        topics: [
+                            { name: 'পরমাণুর মডেল (বোর ও রাদারফোর্ড)' },
+                            { name: 'কোয়ান্টাম সংখ্যা' },
+                            { name: 'আউফবাউ, হুন্ড ও পাউলির নীতি' },
+                            { name: 'ইলেকট্রন বিন্যাস' },
+                            { name: 'তড়িৎ চুম্বকীয় বর্ণালী' },
+                            { name: 'হাইড্রোজেন বর্ণালী' },
+                            { name: 'দ্রাব্যতা ও দ্রাব্যতা গুণফল' },
+                            { name: 'আয়ন শনাক্তকরণ' },
+                            { name: 'ক্রোম্যাটোগ্রাফি' }
+                        ]
+                    },
+                    {
+                        name: 'মৌলের পর্যায়বৃত্ত ধর্ম',
+                        topics: [
+                            { name: 'মৌলের শ্রেণিবিভাগ (s, p, d, f ব্লক)' },
+                            { name: 'পর্যায়বৃত্ত ধর্ম (আয়নীকরণ শক্তি, ইলেকট্রন আসক্তি)' },
+                            { name: 'তড়িৎ ঋণাত্মকতা' },
+                            { name: 'অক্সাইডের প্রকৃতি' },
+                            { name: 'সংকরায়ন (Hybridization)' },
+                            { name: 'VSEPR তত্ত্ব ও অণুর আকৃতি' },
+                            { name: 'হাইড্রোজেন বন্ধন' },
+                            { name: 'পোলারিটি ও পোলারায়ন' }
+                        ]
+                    },
+                    {
+                        name: 'রাসায়নিক পরিবর্তন',
+                        topics: [
+                            { name: 'বিক্রিয়ার হার ও প্রভাবক' },
+                            { name: 'রাসায়নিক সাম্যাবস্থা' },
+                            { name: 'লা-শাতেলিয়ার নীতি' },
+                            { name: 'ভরক্রিয়া সূত্র ও Kc, Kp' },
+                            { name: 'এসিড-ক্ষার তত্ত্ব' },
+                            { name: 'pH ও বাফার দ্রবণ' },
+                            { name: 'বিক্রিয়ার তাপ ও হেসের সূত্র' }
+                        ]
+                    },
+                    {
+                        name: 'কর্মমুখী রসায়ন',
+                        topics: [
+                            { name: 'খাদ্য নিরাপত্তা ও রসায়ন' },
+                            { name: 'খাদ্য সংরক্ষণ (ভিনেগার, লবণ)' },
+                            { name: 'টয়লেট্রিজ ও পারফিউমারি' },
+                            { name: ' সাসপেনশন ও কোয়াগুলেশন' }
+                        ]
+                    }
                 ]
             },
             {
-                name: 'Higher Math 2nd Paper',
-                icon: 'Calculator',
-                color: 'text-blue-500',
+                name: 'রসায়ন ২য় পত্র', icon: 'Beaker', color: 'bg-rose-500',
                 chapters: [
-                    { name: 'Real Numbers', topics: [] },
-                    { name: 'Linear Programming', topics: [] },
-                    { name: 'Complex Numbers', topics: [] },
-                    { name: 'Polynomials', topics: [] },
-                    { name: 'Binomial Expansion', topics: [] },
-                    { name: 'Conics', topics: [] },
-                    { name: 'Inverse Trigonometry', topics: [] },
-                    { name: 'Statics', topics: [] },
-                    { name: 'Dynamics', topics: [] },
-                    { name: 'Probability', topics: [] }
+                    {
+                        name: 'পরিবেশ রসায়ন',
+                        topics: [
+                            { name: 'গ্যাসের সূত্রসমূহ (বয়েল, চার্লস)' },
+                            { name: 'আদর্শ ও বাস্তব গ্যাস' },
+                            { name: 'ডাল্টনের আংশিক চাপ সূত্র' },
+                            { name: 'গ্রাহামের ব্যাপন সূত্র' },
+                            { name: 'বায়ুমন্ডলের উপাদান ও স্তর' },
+                            { name: 'গ্রিনহাউস প্রভাব ও এসিড বৃষ্টি' },
+                            { name: 'পানি দূষণ ও মানদণ্ড (BOD, COD)' }
+                        ]
+                    },
+                    {
+                        name: 'জৈব রসায়ন',
+                        topics: [
+                            { name: 'জৈব যৌগের শ্রেণিবিভাগ ও সমগোত্রীয় শ্রেণী' },
+                            { name: 'সমানুতা' },
+                            { name: 'নামকরণ (IUPAC)' },
+                            { name: 'হাইড্রোকার্বন (অ্যালকেন, অ্যালকিন, অ্যালকাইন)' },
+                            { name: 'অ্যারোমেটিক হাইড্রোকার্বন ও বেনজিন' },
+                            { name: 'অ্যালকাইল হ্যালাইড' },
+                            { name: 'অ্যালকোহল ও ইথার' },
+                            { name: 'অ্যালডিহাইড ও কিটোন' },
+                            { name: 'কার্বক্সিলিক এসিড ও এর জাতক' },
+                            { name: 'অ্যামিন' },
+                            { name: 'জৈব বিক্রিয়ার কৌশল' }
+                        ]
+                    },
+                    {
+                        name: 'পরিমাণগত রসায়ন',
+                        topics: [
+                            { name: 'রাসায়নিক গণনা ও মোল ধারণা' },
+                            { name: 'দ্রবণের ঘনমাত্রা (মোলারিটি, পিপিএম)' },
+                            { name: 'এসিড-ক্ষার টাইট্রেশন' },
+                            { name: 'জারণ-বিজারণ টাইট্রেশন' },
+                            { name: 'নির্দেশক' },
+                            { name: 'বিয়ার-ল্যাম্বার্ট সূত্র' }
+                        ]
+                    },
+                    {
+                        name: 'তড়িৎ রসায়ন',
+                        topics: [
+                            { name: 'তড়িৎ পরিবাহী ও প্রকার' },
+                            { name: 'ফ্যারাডের সূত্র' },
+                            { name: 'তড়িৎ রাসায়নিক কোষ' },
+                            { name: 'তড়িৎদ্বার বিভব ও নার্নস্ট সমীকরণ' },
+                            { name: 'ব্যাটারি ও ফুয়েল সেল' },
+                            { name: 'pH পরিমাপ' }
+                        ]
+                    },
+                    { name: 'অর্থনৈতিক রসায়ন', topics: [{ name: 'প্রাকৃতিক গ্যাস ও কয়লা' }, { name: 'ইউরিয়া সার উৎপাদন' }, { name: 'কাঁচ ও সিরামিক শিল্প' }, { name: 'কাগজ ও পাল্প শিল্প' }, { name: 'চামড়া শিল্প ও ট্যানিং' }] }
                 ]
             },
             {
-                name: 'Biology 1st Paper',
-                icon: 'Dna',
-                color: 'text-green-500',
+                name: 'উচ্চতর গণিত ১ম পত্র', icon: 'Calculator', color: 'bg-blue-500',
                 chapters: [
-                    { name: 'Cell and its Structure', topics: [] },
-                    { name: 'Cell Division', topics: [] },
-                    { name: 'Cell Chemistry', topics: [] },
-                    { name: 'Bioenergetics', topics: [] },
-                    { name: 'Algae and Fungi', topics: [] },
-                    { name: 'Bryophyta and Pteridophyta', topics: [] },
-                    { name: 'Naked Seed and Covered Seed Plants', topics: [] },
-                    { name: 'Tissue and Tissue System', topics: [] },
-                    { name: 'Plant Physiology', topics: [] },
-                    { name: 'Plant Reproduction', topics: [] },
-                    { name: 'Biotechnology', topics: [] }
+                    { name: 'ম্যাট্রিক্স ও নির্ণায়ক', topics: [{ name: 'ম্যাট্রিক্সের প্রকারভেদ' }, { name: 'ম্যাট্রিক্সের যোগ, বিয়োগ ও গুণ' }, { name: 'নির্ণায়ক ও এর ধর্মাবলি' }, { name: 'বিপরীত ম্যাট্রিক্স' }, { name: 'ক্রেমারের নিয়ম' }] },
+                    { name: 'ভেক্টর', topics: [{ name: 'ভেক্টরের প্রকারভেদ' }, { name: 'ভেক্টর যোগ ও বিয়োগ' }, { name: 'ডট ও ক্রস গুণন' }, { name: 'ভেক্টর ক্যালকুলাস' }] },
+                    { name: 'সরলরেখা', topics: [{ name: 'কার্তেসীয় ও পোলার স্থানাঙ্ক' }, { name: 'সরলরেখার ঢাল ও সমীকরণ' }, { name: 'দুটি সরলরেখার ছেদবিন্দু' }, { name: 'কোণ ও লম্ব দূরত্ব' }] },
+                    { name: 'বৃত্ত', topics: [{ name: 'বৃত্তের সমীকরণ' }, { name: 'স্পর্শক ও অভিলম্ব' }, { name: 'দুটি বৃত্তের ছেদ' }] },
+                    { name: 'বিন্যাস ও সমাবেশ', topics: [{ name: 'গণনার যোজন ও গুণন বিধি' }, { name: 'বিন্যাস' }, { name: 'সমাবেশ' }, { name: 'শর্তসাপেক্ষে বিন্যাস ও সমাবেশ' }] },
+                    { name: 'ত্রিকোণমিতি', topics: [{ name: 'সংযুক্ত কোণের ত্রিকোণমিতিক অনুপাত' }, { name: 'যৌগিক কোণ' }, { name: 'ত্রিভুজের ধর্মাবলি' }, { name: 'লেখচিত্র' }] },
+                    { name: 'ফাংশন ও ফাংশনের লেখচিত্র', topics: [{ name: 'ফাংশন ও ডোমেন-রেঞ্জ' }, { name: 'এক-এক ও সার্বিক ফাংশন' }, { name: 'বিপরীত ফাংশন' }, { name: 'ফাংশনের লেখচিত্র' }] },
+                    { name: 'অন্তরীকরণ', topics: [{ name: 'লিমিট বা সীমা' }, { name: 'অবিচ্ছিন্নতা' }, { name: 'মূল নিয়মে অন্তরীকরণ' }, { name: 'পর্যায়ক্রমিক অন্তরীকরণ' }, { name: 'গুরুমান ও লঘুমান' }] },
+                    { name: 'যোগজীকরণ', topics: [{ name: 'অনির্দিষ্ট যোগজ' }, { name: 'প্রতিস্থাপন পদ্ধতি' }, { name: 'আংশিক ভগ্নাংশ' }, { name: 'নির্দিষ্ট যোগজ' }, { name: 'ক্ষেত্রফল নির্ণয়' }] }
                 ]
             },
             {
-                name: 'Biology 2nd Paper',
-                icon: 'Dna',
-                color: 'text-green-500',
+                name: 'উচ্চতর গণিত ২য় পত্র', icon: 'Calculator', color: 'bg-blue-500',
                 chapters: [
-                    { name: 'Animal Diversity and Classification', topics: [] },
-                    { name: 'Introduction to Animal', topics: [] },
-                    { name: 'Digestion and Absorption', topics: [] },
-                    { name: 'Blood and Circulation', topics: [] },
-                    { name: 'Breathing and Respiration', topics: [] },
-                    { name: 'Excretion and Osmoregulation', topics: [] },
-                    { name: 'Locomotion and Movement', topics: [] },
-                    { name: 'Coordination and Control', topics: [] },
-                    { name: 'Human Reproduction', topics: [] },
-                    { name: 'Human Immunity', topics: [] },
-                    { name: 'Genetics and Evolution', topics: [] },
-                    { name: 'Animal Behavior', topics: [] }
+                    { name: 'বাস্তব সংখ্যা ও অসমতা', topics: [{ name: 'বাস্তব সংখ্যার স্বীকার্য' }, { name: 'পরমমান ও অসমতা' }, { name: 'অসমতার সমাধান' }] },
+                    { name: 'যোগাশ্রয়ী প্রোগ্রাম', topics: [{ name: 'যোগাশ্রয়ী প্রোগ্রামের ধারণা' }, { name: 'শর্ত গঠন' }, { name: 'লেখচিত্রের সাহায্যে সমাধান' }] },
+                    { name: 'জটিল সংখ্যা', topics: [{ name: 'জটিল সংখ্যার জ্যামিতিক রূপ' }, { name: 'মডুলাস ও আর্গুমেন্ট' }, { name: 'এককের ঘনমূল' }, { name: 'বর্গমূল নির্ণয়' }] },
+                    { name: 'বহুপদী ও বহুপদী সমীকরণ', topics: [{ name: 'দ্বিঘাত সমীকরণ' }, { name: 'মূল ও সহগের সম্পর্ক' }, { name: 'নিশ্চায়ক ও মূলের প্রকৃতি' }, { name: 'বহুপদীর মান নির্ণয়' }] },
+                    { name: 'দ্বিপদী বিস্তৃতি', topics: [{ name: 'প্যাসকেলের ত্রিভুজ' }, { name: 'সাধারণ পদ নির্ণয়' }, { name: 'মধ্যপদ' }, { name: 'অসীম ধারার বিস্তৃতি' }] },
+                    { name: 'কণিক', topics: [{ name: 'পরাবৃত্ত (Parabola)' }, { name: 'উপবৃত্ত (Ellipse)' }, { name: 'অধিবৃত্ত (Hyperbola)' }, { name: 'স্পর্শকের সমীকরণ' }] },
+                    { name: 'বিপরীত ত্রিকোণমিতিক ফাংশন', topics: [{ name: 'বিপরীত ফাংশনের মুখ্য মান' }, { name: 'বিপরীত ফাংশনের সূত্রাবলি' }, { name: 'ত্রিকোণমিতিক সমীকরণের সমাধান' }] },
+                    { name: 'স্থিতিবিদ্যা', topics: [{ name: 'লব্ধি ও সামান্তরিক সূত্র' }, { name: 'বলের সাম্যাবস্থা' }, { name: 'লামির উপপাদ্য' }, { name: 'সদৃশ ও অসদৃশ সমান্তরাল বল' }] },
+                    { name: 'গতিবিদ্যা', topics: [{ name: 'সমত্বরণে গতি' }, { name: 'প্রাস' }, { name: 'আপেক্ষিক গতি' }, { name: 'লিফটের গতি' }] },
+                    { name: 'বিস্তার পরিমাপ ও সম্ভাবনা', topics: [{ name: 'গড়, মধ্যক, প্রচুরক' }, { name: 'পরিমিত ব্যবধান ও ভেদাঙ্ক' }, { name: 'সম্ভাবনার ধারণা' }, { name: 'বর্জনশীল ও অবর্জনশীল ঘটনা' }, { name: 'শর্তাধীন সম্ভাবনা' }] }
                 ]
             },
             {
-                name: 'ICT',
-                icon: 'Cpu',
-                color: 'text-indigo-500',
+                name: 'জীববিজ্ঞান ১ম পত্র', icon: 'Dna', color: 'bg-green-500',
                 chapters: [
-                    { name: 'Information and Communication Technology: World and Bangladesh', topics: [] },
-                    { name: 'Communication Systems and Networking', topics: [] },
-                    { name: 'Number Systems and Digital Devices', topics: [] },
-                    { name: 'Web Design and HTML', topics: [] },
-                    { name: 'Programming Language (C)', topics: [] },
-                    { name: 'Database Management System', topics: [] }
+                    {
+                        name: 'কোষ ও এর গঠন',
+                        topics: [
+                            { name: 'কোষ প্রাচীর ও কোষ ঝিল্লি' },
+                            { name: 'মাইটোকন্ড্রিয়া ও প্লাস্টিড' },
+                            { name: 'রাইবোসোম ও লাইসোসোম' },
+                            { name: 'নিউক্লিয়াস' },
+                            { name: 'ক্রোমোজোম' },
+                            { name: 'DNA ও RNA এর গঠন' },
+                            { name: 'DNA অনুলিপন' },
+                            { name: 'ট্রান্সক্রিপশন ও ট্রান্সলেশন' }
+                        ]
+                    },
+                    {
+                        name: 'কোষ বিভাজন',
+                        topics: [
+                            { name: 'অ্যামাইটোসিস ও মাইটোসিস' },
+                            { name: 'কোষ চক্র' },
+                            { name: 'মিয়োসিস ও এর গুরুত্ব' },
+                            { name: 'ক্রসিং ওভার' }
+                        ]
+                    },
+                    // { name: 'কোষ রসায়ন', topics: [] }, // Short syllabus excluded
+                    {
+                        name: 'অণুজীব',
+                        topics: [
+                            { name: 'ভাইরাসের গঠন ও প্রকারভেদ' },
+                            { name: 'ব্যাকটেরিওফাজ' },
+                            { name: 'ব্যাকটেরিয়ার গঠন ও জনন' },
+                            { name: 'ম্যালেরিয়া পরজীবী' }
+                        ]
+                    },
+                    // { name: 'শৈবাল ও ছত্রাক', topics: [] }, // Short syllabus excluded
+                    {
+                        name: 'ব্রায়োফাইটা ও টেরিডোফাইটা',
+                        topics: [
+                            { name: 'রিকসিয়া (Riccia)' },
+                            { name: 'টেরিস (Pteris)' }
+                        ]
+                    },
+                    {
+                        name: 'নগ্নবীজী ও আবৃতবীজী',
+                        topics: [
+                            { name: 'সাইকাস (Cycas)' },
+                            { name: 'পোয়াসি (Poaceae) গোত্র' },
+                            { name: 'মালভেসী (Malvaceae) গোত্র' }
+                        ]
+                    },
+                    {
+                        name: 'টিস্যু ও টিস্যুতন্ত্র',
+                        topics: [
+                            { name: 'ভাজক টিস্যু' },
+                            { name: 'স্থায়ী টিস্যু' },
+                            { name: 'ভাস্কুলার বান্ডল' },
+                            { name: 'একবীজপত্রী ও দ্বিবীজপত্রী মূল/কান্ড' }
+                        ]
+                    },
+                    {
+                        name: 'উদ্ভিদ শরীরতত্ত্ব',
+                        topics: [
+                            { name: 'খনিজ লবণ পরিশোষণ' },
+                            { name: 'প্রস্বেদন' },
+                            { name: 'সালোকসংশ্লেষণ (আলোক ও অন্ধকার পর্যায়)' },
+                            { name: 'C3 ও C4 চক্র' },
+                            { name: 'শ্বসন (সবাত ও অবাত)' },
+                            { name: 'গ্লাইকোলাইসিস ও ক্রেবস চক্র' }
+                        ]
+                    },
+                    {
+                        name: 'উদ্ভিদ প্রজনন',
+                        topics: [
+                            { name: 'নিষেক প্রক্রিয়া' },
+                            { name: 'ভ্রূণ ও শস্য গঠন' },
+                            { name: 'পার্থেনোজেনেসিস' }
+                        ]
+                    },
+                    {
+                        name: 'জীবপ্রযুক্তি',
+                        topics: [
+                            { name: ' টিস্যু কালচার' },
+                            { name: 'রিকম্বিনেন্ট DNA প্রযুক্তি' },
+                            { name: 'ইনসুলিন উৎপাদন' },
+                            { name: 'জিনোম সিকোয়েন্সিং' }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: 'জীববিজ্ঞান ২য় পত্র', icon: 'Dna', color: 'bg-green-500',
+                chapters: [
+                    {
+                        name: 'প্রাণীর বিভিন্নতা ও শ্রেণিবিন্যাস',
+                        topics: [
+                            { name: 'শ্রেণিবিন্যাসের ভিত্তি' },
+                            { name: 'নন-কর্ডাটা পর্বসমূহ (Major Phyla)' },
+                            { name: 'কর্ডাটা ও এর শ্রেণিবিভাগ' }
+                        ]
+                    },
+                    {
+                        name: 'প্রাণীর পরিচিতি',
+                        topics: [
+                            { name: 'হাইড্রা (গঠন, চলন, জনন)' },
+                            { name: 'ঘাসফড়িং (গঠন, পরিপাক, রক্ত সংবহন)' },
+                            { name: 'রুই মাছ (গঠন, রক্ত সংবহন, শ্বসন)' }
+                        ]
+                    },
+                    {
+                        name: 'পরিপাক ও শোষণ',
+                        topics: [
+                            { name: 'পৌষ্টিক নালী ও গ্রন্থি' },
+                            { name: 'খাদ্য পরিপাক প্রক্রিয়া (শর্করা, প্রোটিন, ফ্যাট)' },
+                            { name: 'যকৃত ও অগ্ন্যাশয়ের কাজ' },
+                            { name: 'স্থূলতা' }
+                        ]
+                    },
+                    {
+                        name: 'রক্ত ও সংবহন',
+                        topics: [
+                            { name: 'রক্তের উপাদান ও কাজ' },
+                            { name: 'রক্ত তঞ্চন' },
+                            { name: 'হৃদপিণ্ড গঠন ও কাজ' },
+                            { name: 'কার্ডিয়াক চক্র' },
+                            { name: 'রক্তচাপ ও ব্যারোরিসেপ্টর' }
+                        ]
+                    },
+                    {
+                        name: 'শ্বসন ও শ্বাসক্রিয়া',
+                        topics: [
+                            { name: 'শ্বসনতন্ত্রের গঠন' },
+                            { name: 'গ্যাসীয় বিনিময়' },
+                            { name: 'শ্বসন রঞ্জক' }
+                        ]
+                    },
+                    // { name: 'বর্জ্য ও নিষ্কাশন', topics: [] }, // Short syllabus excluded
+                    {
+                        name: 'চলন ও অঙ্গচালনা',
+                        topics: [
+                            { name: 'কঙ্কালতন্ত্রের পরিচিতি' },
+                            { name: 'পেশি টিস্যু' },
+                            { name: 'হাড় ও তরুণাস্থি' },
+                            { name: 'লিভার ও লিভারের শ্রেণিবিভাগ' }
+                        ]
+                    },
+                    // { name: 'সমন্বয় ও নিয়ন্ত্রণ', topics: [] }, // Short syllabus excluded
+                    // { name: 'মানব জীবনের ধারাবাহিকতা', topics: [] }, // Short syllabus excluded
+                    // { name: 'মানব দেহের প্রতিরক্ষা', topics: [] }, // Short syllabus excluded
+                    {
+                        name: 'জিনতত্ত্ব ও বিবর্তন',
+                        topics: [
+                            { name: 'মেন্ডেলের সূত্র ও ব্যতিক্রম' },
+                            { name: 'সেক্স লিংকড ডিজঅর্ডার' },
+                            { name: 'ব্লাড গ্রুপ' },
+                            { name: 'বিবর্তন' }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: 'তথ্য ও যোগাযোগ প্রযুক্তি', icon: 'Cpu', color: 'bg-indigo-500',
+                chapters: [
+                    {
+                        name: 'অধ্যায় ১ - বিশ্ব ও বাংলাদেশ প্রেক্ষিত',
+                        topics: [
+                            { name: 'ভার্চুয়াল রিয়েলিটি' },
+                            { name: 'কৃত্রিম বুদ্ধিমত্তা' },
+                            { name: 'রোবোটিক্স' },
+                            { name: 'ক্রায়োসার্জারি' },
+                            { name: 'মহাকাশ অভিযান' },
+                            { name: 'বায়োমেট্রিক্স' },
+                            { name: 'বায়োইনফরমেটিক্স' },
+                            { name: 'জেনেটিক ইঞ্জিনিয়ারিং' },
+                            { name: 'ন্যানোটেকনোলজি' }
+                        ]
+                    },
+                    {
+                        name: 'অধ্যায় ২ - কমিউনিকেশন সিস্টেমস',
+                        topics: [
+                            { name: 'ডেটা কমিউনিকেশন মেথড ও মোড' },
+                            { name: 'ব্যান্ডউইথ' },
+                            { name: 'ট্রান্সমিশন মিডিয়া (ফাইবার অপটিক)' },
+                            { name: 'ওয়্যারলেস কমিউনিকেশন (Bluetooth, WiFi, WiMax)' },
+                            { name: 'মোবাইল প্রজন্ম' },
+                            { name: 'কম্পিউটার নেটওয়ার্ক ও টপোলজি' },
+                            { name: 'ক্লাউড কম্পিউটিং' }
+                        ]
+                    },
+                    {
+                        name: 'অধ্যায় ৩ - সংখ্যা পদ্ধতি ও ডিজিটাল ডিভাইস',
+                        topics: [
+                            { name: 'সংখ্যা পদ্ধতির রূপান্তর' },
+                            { name: '২ এর পরিপূরক' },
+                            { name: 'কোড (BCD, ASCII)' },
+                            { name: 'বুলিয়ান অ্যালজেবরা' },
+                            { name: 'লজিক গেট (মৌলিক ও সার্বজনীন)' },
+                            { name: 'এনকোডার ও ডিকোডার' },
+                            { name: 'অ্যাডার (হাফ ও ফুল)' },
+                            { name: 'রেজিস্টার ও কাউন্টার' }
+                        ]
+                    },
+                    {
+                        name: 'অধ্যায় ৪ - ওয়েব ডিজাইন পরিচিতি',
+                        topics: [
+                            { name: 'ওয়েবসাইটের কাঠামো' },
+                            { name: 'HTML মৌলিক ট্যাগ' },
+                            { name: 'টেবিল ও লিস্ট তৈরি' },
+                            { name: 'হাইপারলিংক ও ইমেজ' },
+                            { name: 'ফরম ডিজাইন' },
+                            { name: 'ওয়েব পাবলিশিং' }
+                        ]
+                    },
+                    {
+                        name: 'অধ্যায় ৫ - প্রোগ্রামিং ভাষা (C)',
+                        topics: [
+                            { name: 'প্রোগ্রামিং এর ধারণা' },
+                            { name: 'অ্যালগরিদম ও ফ্লোচার্ট' },
+                            { name: 'ডেটা টাইপ ও ভেরিয়েবল' },
+                            { name: 'ইনপুট ও আউটপুট' },
+                            { name: 'কন্ডিশনাল স্টেটমেন্ট (if-else)' },
+                            { name: 'লুপ (for, while)' },
+                            { name: 'অ্যারে' },
+                            { name: 'ফাংশন' }
+                        ]
+                    }
                 ]
             }
         ]
     },
-    {
-        id: 'ssc-science-2026',
-        name: 'SSC Science (2026)',
-        subjects: [
-            {
-                name: 'Physics',
-                icon: 'Zap',
-                color: 'text-violet-500',
-                chapters: [
-                    { name: 'Physical Quantities and Their Measurement', topics: [] },
-                    { name: 'Motion', topics: [] },
-                    { name: 'Force', topics: [] },
-                    { name: 'Work, Power and Energy', topics: [] },
-                    { name: 'State of Matter and Pressure', topics: [] },
-                    { name: 'Effect of Heat on Matter', topics: [] },
-                    { name: 'Waves and Sound', topics: [] },
-                    { name: 'Reflection of Light', topics: [] },
-                    { name: 'Refraction of Light', topics: [] },
-                    { name: 'Static Electricity', topics: [] },
-                    { name: 'Current Electricity', topics: [] },
-                    { name: 'Magnetic Effect of Current', topics: [] },
-                    { name: 'Modern Physics and Electronics', topics: [] },
-                    { name: 'Previously Saved Lives', topics: [] }
-                ]
-            },
-            {
-                name: 'Chemistry',
-                icon: 'Beaker',
-                color: 'text-teal-500',
-                chapters: [
-                    { name: 'Concept of Chemistry', topics: [] },
-                    { name: 'State of Matter', topics: [] },
-                    { name: 'Structure of Matter', topics: [] },
-                    { name: 'Periodic Table', topics: [] },
-                    { name: 'Chemical Bond', topics: [] },
-                    { name: 'Mole and Chemical Equation', topics: [] },
-                    { name: 'Chemical Reaction', topics: [] },
-                    { name: 'Chemistry and Energy', topics: [] },
-                    { name: 'Acid-Base Balance', topics: [] },
-                    { name: 'Mineral Resources: Metal-Nonmetal', topics: [] },
-                    { name: 'Mineral Resources: Fossils', topics: [] },
-                    { name: 'Chemistry in Our Lives', topics: [] }
-                ]
-            },
-            {
-                name: 'Higher Math',
-                icon: 'Calculator',
-                color: 'text-blue-500',
-                chapters: [
-                    { name: 'Set And Function', topics: [] },
-                    { name: 'Algebraic Expression', topics: [] },
-                    { name: 'Geometry', topics: [] },
-                    { name: 'Geometric Construction', topics: [] },
-                    { name: 'Equation', topics: [] },
-                    { name: 'Inequality', topics: [] },
-                    { name: 'Infinite Series', topics: [] },
-                    { name: 'Trigonometry', topics: [] },
-                    { name: 'Exponent and Logarithm', topics: [] },
-                    { name: 'Binomial Expansion', topics: [] },
-                    { name: 'Coordinate Geometry', topics: [] },
-                    { name: 'Planar Vector', topics: [] },
-                    { name: 'Solid Geometry', topics: [] },
-                    { name: 'Probability', topics: [] }
-                ]
-            },
-            {
-                name: 'General Math',
-                icon: 'Calculator',
-                color: 'text-blue-500',
-                chapters: [
-                    { name: 'Real Number', topics: [] },
-                    { name: 'Set and Function', topics: [] },
-                    { name: 'Algebraic Expression', topics: [] },
-                    { name: 'Exponents and Logarithms', topics: [] },
-                    { name: 'Equation in One Variable', topics: [] },
-                    { name: 'Lines, Angles, and Triangles', topics: [] },
-                    { name: 'Practical Geometry', topics: [] },
-                    { name: 'Circle', topics: [] },
-                    { name: 'Trigonometric Ratio', topics: [] },
-                    { name: 'Distance and Elevation', topics: [] },
-                    { name: 'Algebraic Ratio and Proportion', topics: [] },
-                    { name: 'Simple Simultaneous Equations in Two Variables', topics: [] },
-                    { name: 'Finite Series', topics: [] },
-                    { name: 'Ratio, Symmetry, and Rotation', topics: [] },
-                    { name: 'Area Related Theorems and Constructions', topics: [] },
-                    { name: 'Mensurement', topics: [] },
-                    { name: 'Statistics', topics: [] }
-                ]
-            },
-            {
-                name: 'Biology',
-                icon: 'Dna',
-                color: 'text-green-500',
-                chapters: [
-                    { name: 'Lessons on Life', topics: [] },
-                    { name: 'Cells and Tissues of Organisms', topics: [] },
-                    { name: 'Cell Division', topics: [] },
-                    { name: 'Bioenergetics', topics: [] },
-                    { name: 'Food, Nutrition and Digestion', topics: [] },
-                    { name: 'Transport in Organisms', topics: [] },
-                    { name: 'Gas Exchange', topics: [] },
-                    { name: 'Excretion', topics: [] },
-                    { name: 'Firmness and Locomotion', topics: [] },
-                    { name: 'Coordination', topics: [] },
-                    { name: 'Reproduction in Organisms', topics: [] },
-                    { name: 'Heredity in Organisms and Evolution', topics: [] },
-                    { name: 'Environment of Organisms', topics: [] },
-                    { name: 'Biotechnology', topics: [] }
-                ]
-            }
-        ]
-    }
+
 ];

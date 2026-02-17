@@ -54,7 +54,7 @@ export default function TourOverlay({ steps, onComplete, onSkip }: TourOverlayPr
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
             {/* Backdrop with hole */}
-            <div className="absolute inset-0 bg-black/60 pointer-events-auto" />
+            <div className="absolute inset-0 bg-black/60 pointer-events-none" />
 
             {/* Highlight Hole (using box-shadow hack or just standard absolute highlight) */}
             {/* A simpler approach for custom tour: Just place the popover near the target, and maybe a glowing border on the target if possible. 

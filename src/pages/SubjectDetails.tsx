@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, BookOpen } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, BookOpen, Pencil } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStudy } from '../context/StudyContext';
 import AddChapterModal from '../components/AddChapterModal';
+import EditSubjectModal from '../components/EditSubjectModal';
 import AnimatedPage from '../components/AnimatedPage';
 import ChapterItem from '../components/ChapterItem';
 
@@ -12,6 +13,7 @@ export default function SubjectDetails() {
     const navigate = useNavigate();
     const { subjects, deleteSubject } = useStudy();
     const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
     const [expandedChapters, setExpandedChapters] = useState<Record<string, boolean>>({});
 
     const subject = subjects.find(s => s.id === id);
@@ -77,13 +79,22 @@ export default function SubjectDetails() {
                         </p>
                     </div>
 
-                    <button
-                        onClick={handleDeleteSubject}
-                        className="self-start text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 dark:hover:text-red-400 p-2 rounded-lg transition-colors"
-                        title="Delete Subject"
-                    >
-                        <Trash2 className="w-5 h-5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setIsEditOpen(true)}
+                            className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 p-2 rounded-lg transition-colors"
+                            title="Edit Subject"
+                        >
+                            <Pencil className="w-5 h-5" />
+                        </button>
+                        <button
+                            onClick={handleDeleteSubject}
+                            className="text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 dark:hover:text-red-400 p-2 rounded-lg transition-colors"
+                            title="Delete Subject"
+                        >
+                            <Trash2 className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Progress Bar */}
@@ -147,6 +158,7 @@ export default function SubjectDetails() {
             </div>
 
             {isAddOpen && <AddChapterModal subjectId={subject.id} onClose={() => setIsAddOpen(false)} />}
+            {isEditOpen && <EditSubjectModal subject={subject} onClose={() => setIsEditOpen(false)} />}
         </AnimatedPage>
     );
 }

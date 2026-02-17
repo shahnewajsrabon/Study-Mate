@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
 import { useStudy } from '../context/StudyContext';
 import SubjectCard from '../components/SubjectCard';
-import StatCard from '../components/StatCard';
 import AddSubjectModal from '../components/AddSubjectModal';
 import Badge from '../components/Badge';
+import WelcomeModal from '../components/WelcomeModal';
+import DailyGoalCard from '../components/DailyGoalCard';
+import ContinueLearningCard from '../components/ContinueLearningCard';
+import QuoteCard from '../components/QuoteCard';
 import { Plus, Trophy, BookMarked, PieChart } from 'lucide-react';
 // import AnimatedPage from '../components/AnimatedPage'; // Removed direct usage to control staggering explicitly
 
@@ -39,6 +42,9 @@ export default function Dashboard() {
     const { userProfile, subjects } = useStudy();
     const [isAddOpen, setIsAddOpen] = useState(false);
 
+    // Show welcome modal for new users (default name is 'Student')
+    const isNewUser = userProfile.name === 'Student';
+
     // Stats
     const totalChapters = subjects.reduce((acc, sub) => acc + sub.chapters.length, 0);
     const completedChapters = subjects.reduce((acc, sub) => acc + sub.chapters.filter(c => c.isCompleted).length, 0);
@@ -59,73 +65,130 @@ export default function Dashboard() {
 
     return (
         <motion.div
-            className="space-y-8"
+            className="space-y-6 md:space-y-8"
             variants={container}
             initial="hidden"
             animate="show"
             exit="exit"
         >
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-800 dark:text-white transition-colors">
-                        Welcome back, <span className="bg-gradient-to-r from-blue-700 to-teal-600 dark:from-blue-400 dark:to-teal-400 bg-clip-text text-transparent">{userProfile.name}</span>!
+                    <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-white transition-colors tracking-tight">
+                        Hello, <span className="bg-gradient-to-r from-blue-600 to-teal-500 dark:from-blue-400 dark:to-teal-400 bg-clip-text text-transparent">{userProfile.name}</span>
+                        <span className="inline-block animate-wave ml-2">👋</span>
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1 transition-colors">
-                        You're currently in <span className="font-semibold text-slate-700 dark:text-slate-300">{userProfile.grade}</span>. Let's make progress!
+                    <p className="text-base text-slate-500 dark:text-slate-400 mt-2 transition-colors">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-md mr-2">{userProfile.grade}</span>
+                        Ready to crush your goals today?
                     </p>
                 </div>
                 <motion.button
                     id="add-subject-btn"
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(37, 99, 235, 0.4)" }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setIsAddOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium flex items-center justify-center gap-2 shadow-sm transition-colors"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 transition-all text-sm md:text-base w-full md:w-auto"
                 >
                     <Plus className="w-5 h-5" />
-                    Add Subject
+                    New Subject
                 </motion.button>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Overall Progress */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, type: 'spring' }}
-                    className="md:col-span-1 bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 rounded-2xl p-6 text-white text-center md:text-left relative overflow-hidden shadow-lg shadow-blue-500/20"
-                >
-                    <div className="relative z-10">
-                        <h3 className="text-blue-100 font-medium mb-1 flex items-center justify-center md:justify-start gap-2">
-                            <PieChart className="w-4 h-4" /> Overall Syllabus
-                        </h3>
-                        <div className="text-4xl font-bold mb-2">{overallProgress}%</div>
-                        <p className="text-blue-100 text-sm">Completed across {subjects.length} subjects</p>
+            {/* Dashboard Widgets - Mobile Carousel / Desktop Grid */}
+            <div className="flex overflow-x-auto snap-x snap-mandatory -mx-4 px-4 pb-4 gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:mx-0 md:px-0 md:pb-0 md:overflow-visible no-scrollbar">
+
+                {/* Continue Learning */}
+                <div className="snap-center shrink-0 w-[85vw] md:w-auto lg:col-span-1 h-full">
+                    <ContinueLearningCard />
+                </div>
+
+                {/* Daily Goal & Quote */}
+                <div className="snap-center shrink-0 w-[85vw] md:w-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-6 h-full">
+                    <DailyGoalCard />
+                    <QuoteCard />
+                </div>
+
+                {/* Stats Summary */}
+                <div className="snap-center shrink-0 w-[85vw] md:w-auto grid grid-cols-1 gap-4 lg:gap-6 h-full">
+                    {/* Overall Progress (Circular) */}
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-3 opacity-10">
+                            <PieChart className="w-32 h-32 text-blue-500" />
+                        </div>
+
+                        <div className="flex items-center justify-between relative z-10 h-full">
+                            <div>
+                                <h3 className="text-slate-500 dark:text-slate-400 font-medium mb-1 flex items-center gap-2 text-sm">
+                                    <Trophy className="w-4 h-4 text-amber-500" /> Syllabus Progress
+                                </h3>
+
+                                <div className="mt-4 space-y-3">
+                                    <div>
+                                        <div className="flex items-end gap-2 mb-1">
+                                            <span className="text-2xl font-bold text-slate-800 dark:text-white">{completedChapters}</span>
+                                            <span className="text-sm text-slate-400 dark:text-slate-500 mb-1">/ {totalChapters} Chapters</span>
+                                        </div>
+                                        <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${(completedChapters / (totalChapters || 1)) * 100}%` }}
+                                                className="h-full bg-blue-500 rounded-full"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="flex items-end gap-2 mb-1">
+                                            <span className="text-2xl font-bold text-slate-800 dark:text-white">{overallProgress}%</span>
+                                            <span className="text-sm text-slate-400 dark:text-slate-500 mb-1">Total Completion</span>
+                                        </div>
+                                        <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${overallProgress}%` }}
+                                                className="h-full bg-emerald-500 rounded-full"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Circular Progress SVG */}
+                            <div className="relative w-28 h-28 flex-shrink-0">
+                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                    <circle
+                                        className="text-slate-100 dark:text-slate-700"
+                                        strokeWidth="8"
+                                        stroke="currentColor"
+                                        fill="transparent"
+                                        r="40"
+                                        cx="50"
+                                        cy="50"
+                                    />
+                                    <motion.circle
+                                        className="text-blue-600 dark:text-blue-500 drop-shadow-lg"
+                                        strokeWidth="8"
+                                        strokeDasharray={251.2}
+                                        strokeDashoffset={251.2 - (251.2 * overallProgress) / 100}
+                                        strokeLinecap="round"
+                                        stroke="currentColor"
+                                        fill="transparent"
+                                        r="40"
+                                        cx="50"
+                                        cy="50"
+                                        initial={{ strokeDashoffset: 251.2 }}
+                                        animate={{ strokeDashoffset: 251.2 - (251.2 * overallProgress) / 100 }}
+                                        transition={{ duration: 1.5, ease: "easeOut" }}
+                                    />
+                                </svg>
+                                <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center flex-col">
+                                    <span className="text-xl font-bold text-slate-800 dark:text-white">{overallProgress}%</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    {/* Decorative Circle */}
-                    <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-                </motion.div>
+                </div>
 
-                {/* Chapters Done */}
-                <StatCard
-                    title="Chapters Completed"
-                    value={completedChapters}
-                    icon={Trophy}
-                    colorClass="text-amber-500"
-                    bgClass="bg-amber-50 dark:bg-amber-900/20"
-                    delay={0.1}
-                />
-
-                {/* Pending Chapters */}
-                <StatCard
-                    title="Chapters Pending"
-                    value={totalChapters - completedChapters}
-                    icon={BookMarked}
-                    colorClass="text-violet-500"
-                    bgClass="bg-violet-50 dark:bg-violet-900/20"
-                    delay={0.2}
-                />
             </div>
 
             {/* Badges Section */}
@@ -208,6 +271,9 @@ export default function Dashboard() {
             </div>
 
             {isAddOpen && <AddSubjectModal onClose={() => setIsAddOpen(false)} />}
+
+            {/* Welcome Modal for New Users */}
+            {isNewUser && <WelcomeModal />}
         </motion.div>
     );
 }
