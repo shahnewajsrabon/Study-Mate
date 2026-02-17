@@ -103,40 +103,40 @@ export default function Dashboard() {
             // ... inside Dashboard component ...
 
             {/* Dashboard Widgets - Mobile Carousel / Desktop Grid */}
-            <div className="flex overflow-x-auto snap-x snap-mandatory -mx-4 px-4 pb-4 gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:mx-0 md:px-0 md:pb-0 md:overflow-visible no-scrollbar">
+            <div className="flex overflow-x-auto snap-x snap-mandatory -mx-4 px-4 pb-4 gap-3 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:mx-0 md:px-0 md:pb-0 md:overflow-visible no-scrollbar">
 
                 {/* Continue Learning */}
-                <div className="snap-center shrink-0 w-[85vw] md:w-auto lg:col-span-1 h-full">
+                <div className="snap-center shrink-0 w-[70vw] sm:w-[50vw] md:w-auto lg:col-span-1 h-full">
                     <ContinueLearningCard />
                 </div>
 
                 {/* Daily Goal & Quote */}
-                <div className="snap-center shrink-0 w-[85vw] md:w-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-6 h-full">
+                <div className="snap-center shrink-0 w-[70vw] sm:w-[50vw] md:w-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-6 h-full">
                     <DailyGoalCard />
                     <QuoteCard />
                 </div>
 
                 {/* Stats Summary */}
-                <div className="snap-center shrink-0 w-[85vw] md:w-auto grid grid-cols-1 gap-4 lg:gap-6 h-full">
+                <div className="snap-center shrink-0 w-[70vw] sm:w-[50vw] md:w-auto grid grid-cols-1 gap-3 lg:gap-6 h-full">
                     {/* Overall Progress (Circular) */}
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl p-4 md:p-6 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-3 opacity-10">
-                            <PieChart className="w-32 h-32 text-blue-500" />
+                            <PieChart className="w-24 h-24 md:w-32 md:h-32 text-blue-500" />
                         </div>
 
                         <div className="flex items-center justify-between relative z-10 h-full">
                             <div>
-                                <h3 className="text-slate-500 dark:text-slate-400 font-medium mb-1 flex items-center gap-2 text-sm">
-                                    <Trophy className="w-4 h-4 text-amber-500" /> Syllabus Progress
+                                <h3 className="text-slate-500 dark:text-slate-400 font-medium mb-1 flex items-center gap-2 text-xs md:text-sm">
+                                    <Trophy className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-500" /> Syllabus Progress
                                 </h3>
 
-                                <div className="mt-4 space-y-3">
+                                <div className="mt-3 md:mt-4 space-y-2 md:space-y-3">
                                     <div>
                                         <div className="flex items-end gap-2 mb-1">
-                                            <span className="text-2xl font-bold text-slate-800 dark:text-white">{completedChapters}</span>
-                                            <span className="text-sm text-slate-400 dark:text-slate-500 mb-1">/ {totalChapters} Chapters</span>
+                                            <span className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white">{completedChapters}</span>
+                                            <span className="text-xs md:text-sm text-slate-400 dark:text-slate-500 mb-0.5 md:mb-1">/ {totalChapters} Chapters</span>
                                         </div>
-                                        <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                        <div className="h-1.5 md:h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${(completedChapters / (totalChapters || 1)) * 100}%` }}
@@ -146,10 +146,10 @@ export default function Dashboard() {
                                     </div>
                                     <div>
                                         <div className="flex items-end gap-2 mb-1">
-                                            <span className="text-2xl font-bold text-slate-800 dark:text-white">{overallProgress}%</span>
-                                            <span className="text-sm text-slate-400 dark:text-slate-500 mb-1">Total Completion</span>
+                                            <span className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white">{overallProgress}%</span>
+                                            <span className="text-xs md:text-sm text-slate-400 dark:text-slate-500 mb-0.5 md:mb-1">Total Completion</span>
                                         </div>
-                                        <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                        <div className="h-1.5 md:h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${overallProgress}%` }}
@@ -161,7 +161,7 @@ export default function Dashboard() {
                             </div>
 
                             {/* Circular Progress SVG */}
-                            <div className="relative w-28 h-28 flex-shrink-0">
+                            <div className="relative w-20 h-20 md:w-28 md:h-28 flex-shrink-0">
                                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                                     <circle
                                         className="text-slate-100 dark:text-slate-700"
@@ -236,7 +236,7 @@ export default function Dashboard() {
                         variants={container}
                         initial="hidden"
                         animate="show"
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                        className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4"
                     >
                         {subjects.map((subject, index) => (
                             <motion.div key={subject.id} variants={item}>
