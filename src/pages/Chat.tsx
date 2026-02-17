@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { db } from '../lib/firebase';
+import { db, storage } from '../lib/firebase';
 import { collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp, Timestamp, updateDoc, doc, deleteDoc, where } from 'firebase/firestore';
-import { Send, MessageCircle, Smile, Reply, X, Heart, ThumbsUp, Laugh, Frown, Trash2, Hash, Menu, ChevronLeft } from 'lucide-react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Send, MessageCircle, Smile, Reply, X, Heart, ThumbsUp, Laugh, Frown, Trash2, Hash, Menu, ChevronLeft, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedPage from '../components/AnimatedPage';
 import UserProfileModal from '../components/UserProfileModal';
@@ -27,6 +28,7 @@ interface Message {
     replyTo?: ReplyInfo;
     reactions?: Record<string, string>; // uid -> emoji
     channelId?: string;
+    imageUrl?: string;
 }
 
 type Channel = {
@@ -51,8 +53,8 @@ const REACTIONS = [
     { emoji: '👍', icon: ThumbsUp },
     { emoji: '😂', icon: Laugh },
     { emoji: '😢', icon: Frown },
-    { emoji: '🔥', icon: Heart }, // Added fire
-    { emoji: '🎉', icon: Heart }, // Added party
+    { emoji: '🔥', icon: Heart },
+    { emoji: '🎉', icon: Heart },
 ];
 
 function cn(...inputs: (string | undefined | null | false)[]) {
@@ -71,7 +73,12 @@ export default function Chat() {
     const [openReactionMenuId, setOpenReactionMenuId] = useState<string | null>(null);
     const [selectedUser, setSelectedUser] = useState<string | null>(null);
     const [activeChannelId, setActiveChannelId] = useState('general');
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile sidebar state
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    // Image Upload State
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // --- Real-time Listener ---
     useEffect(() => {
@@ -97,23 +104,54 @@ export default function Chat() {
 
     // --- Auto-scroll ---
     useEffect(() => {
-        // Only scroll if near bottom or if new message is mine
-        // For simplicity in this version, we scroll to bottom on new batch if it's the latest
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages.length, activeChannelId]);
+    }, [messages.length, activeChannelId, imagePreview]);
+
+    // --- Handlers ---
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const cancelImageUpload = () => {
+        setImageFile(null);
+        setImagePreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim() || !user) return;
+        const text = newMessage.trim();
+
+        // Allow send if there is text OR an image
+        if ((!text && !imageFile) || !user || sending) return;
 
         setSending(true);
         try {
+            let imageUrl = '';
+
+            // Upload Image if present
+            if (imageFile) {
+                const storageRef = ref(storage, `chat_images/${Date.now()}_${imageFile.name}`);
+                const snapshot = await uploadBytes(storageRef, imageFile);
+                imageUrl = await getDownloadURL(snapshot.ref);
+            }
+
             const msgData = {
-                text: newMessage.trim(),
+                text: text,
                 uid: user.uid,
                 displayName: user.displayName || 'Anonymous',
                 createdAt: serverTimestamp(),
                 channelId: activeChannelId,
+                ...(imageUrl && { imageUrl }),
                 ...(replyingTo && {
                     replyTo: {
                         id: replyingTo.id,
@@ -124,8 +162,12 @@ export default function Chat() {
             };
 
             await addDoc(collection(db, 'messages'), msgData);
+
+            // Reset State
             setNewMessage('');
             setReplyingTo(null);
+            cancelImageUpload();
+
         } catch (error) {
             console.error("Error sending message:", error);
             alert("Failed to send message. Please try again.");
@@ -218,7 +260,6 @@ export default function Chat() {
             <AnimatePresence>
                 {(isSidebarOpen || window.innerWidth >= 768) && (
                     <>
-                        {/* Mobile Backdrop */}
                         <motion.div
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             onClick={() => setIsSidebarOpen(false)}
@@ -230,7 +271,7 @@ export default function Chat() {
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
                             className={cn(
                                 "fixed md:static inset-y-0 left-0 z-50 w-72 bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 flex flex-col",
-                                "md:transform-none" // Reset transform on desktop
+                                "md:transform-none"
                             )}
                         >
                             <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
@@ -366,9 +407,23 @@ export default function Chat() {
                                                     isMe
                                                         ? "bg-indigo-600 text-white rounded-2xl rounded-tr-none"
                                                         : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-2xl rounded-tl-none",
-                                                    !isFirstInSequence && (isMe ? "rounded-tr-2xl" : "rounded-tl-2xl")
+                                                    !isFirstInSequence && (isMe ? "rounded-tr-2xl" : "rounded-tl-2xl"),
+                                                    msg.imageUrl ? "p-2" : "" // Reduce padding if image
                                                 )}>
-                                                    {formatMessageText(msg.text)}
+
+                                                    {/* Image Display */}
+                                                    {msg.imageUrl && (
+                                                        <div className="mb-2 rounded-lg overflow-hidden max-w-full">
+                                                            <img
+                                                                src={msg.imageUrl}
+                                                                alt="Shared"
+                                                                className="w-full h-auto max-h-64 object-cover cursor-pointer hover:scale-105 transition-transform"
+                                                                onClick={() => window.open(msg.imageUrl, '_blank')}
+                                                            />
+                                                        </div>
+                                                    )}
+
+                                                    {msg.text && formatMessageText(msg.text)}
 
                                                     {/* Reactions */}
                                                     {hasReactions && (
@@ -442,7 +497,27 @@ export default function Chat() {
 
                 {/* Input Area */}
                 <div className="p-4 bg-white dark:bg-slate-800/90 border-t border-slate-200 dark:border-slate-700 backdrop-blur-sm z-20">
+
+                    {/* Image Preview */}
                     <AnimatePresence>
+                        {imagePreview && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                                className="relative mb-3 w-fit"
+                            >
+                                <img src={imagePreview} alt="Preview" className="h-24 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm" />
+                                <button
+                                    onClick={cancelImageUpload}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </motion.div>
+                        )}
+
+                        {/* Reply Preview */}
                         {replyingTo && (
                             <motion.div
                                 initial={{ opacity: 0, height: 0 }}
@@ -460,20 +535,36 @@ export default function Chat() {
                         )}
                     </AnimatePresence>
 
-                    <form onSubmit={handleSendMessage} className="flex gap-2">
+                    <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            ref={fileInputRef}
+                            onChange={handleFileSelect}
+                            className="hidden"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="p-3 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-xl transition-colors"
+                            title="Upload Image"
+                        >
+                            <ImageIcon className="w-5 h-5" />
+                        </button>
+
                         <input
                             type="text"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
-                            placeholder={`Message #${activeChannel.name}`}
+                            placeholder={imagePreview ? "Add a caption..." : `Message #${activeChannel.name}`}
                             className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-900 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-black transition-all"
                         />
                         <button
                             type="submit"
-                            disabled={!newMessage.trim() || sending}
-                            className="p-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:shadow-none"
+                            disabled={(!newMessage.trim() && !imageFile) || sending}
+                            className="p-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:shadow-none flex items-center justify-center min-w-[3rem]"
                         >
-                            <Send className="w-5 h-5" />
+                            {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                         </button>
                     </form>
                 </div>
