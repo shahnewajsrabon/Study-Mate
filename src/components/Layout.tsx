@@ -7,6 +7,8 @@ import { AnimatePresence } from 'framer-motion';
 import { cloneElement } from 'react';
 import TourOverlay, { type TourStep } from './TourOverlay';
 import logo from '../assets/logo.png';
+import InstallPrompt from './InstallPrompt';
+import { useSmartReminders } from '../hooks/useSmartReminders';
 
 const TOUR_STEPS: TourStep[] = [
     {
@@ -39,6 +41,9 @@ export default function Layout() {
     const { theme, toggleTheme } = useTheme();
     const location = useLocation();
     const element = useOutlet();
+
+    // Initialize Smart Reminders
+    useSmartReminders();
 
     // Tour State
     const [showTour, setShowTour] = useState(false);
@@ -229,6 +234,8 @@ export default function Layout() {
                     <span>Settings</span>
                 </Link>
             </nav>
+
+            <InstallPrompt />
         </div>
     );
 }
