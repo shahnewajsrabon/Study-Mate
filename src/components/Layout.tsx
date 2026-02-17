@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useOutlet } from 'react-router-dom';
-import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, MessageCircle } from 'lucide-react';
+import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, MessageCircle, Download } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { AnimatePresence } from 'framer-motion';
 import { cloneElement } from 'react';
 import TourOverlay, { type TourStep } from './TourOverlay';
 import logo from '../assets/logo.png';
-import InstallPrompt from './InstallPrompt';
+import InstallPrompt, { type BeforeInstallPromptEvent } from './InstallPrompt';
 import { useSmartReminders } from '../hooks/useSmartReminders';
 
 const TOUR_STEPS: TourStep[] = [
@@ -48,14 +48,34 @@ export default function Layout() {
     // Tour State
     const [showTour, setShowTour] = useState(false);
 
+    // Install Prompt State
+    const [installPromptEvent, setInstallPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
+
     useEffect(() => {
         // Temporarily disable auto-tour to fix blocking issue
         localStorage.setItem('tracked_tour_completed', 'true');
+
+        const handler = (e: Event) => {
+            e.preventDefault();
+            setInstallPromptEvent(e as BeforeInstallPromptEvent);
+        };
+
+        window.addEventListener('beforeinstallprompt', handler);
+        return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);
 
     const handleTourComplete = () => {
         setShowTour(false);
         localStorage.setItem('tracked_tour_completed', 'true');
+    };
+
+    const handleInstall = async () => {
+        if (!installPromptEvent) return;
+        installPromptEvent.prompt();
+        const { outcome } = await installPromptEvent.userChoice;
+        if (outcome === 'accepted') {
+            setInstallPromptEvent(null);
+        }
     };
 
     const isActive = (path: string) => location.pathname === path;
@@ -225,6 +245,18 @@ export default function Layout() {
                     <MessageCircle className="w-6 h-6" />
                     <span>Comm..</span>
                 </Link>
+
+                {/* Install Button (Conditionally Rendered) */}
+                {installPromptEvent && (
+                    <button
+                        onClick={handleInstall}
+                        className="flex flex-col items-center gap-1 text-xs text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400"
+                    >
+                        <Download className="w-6 h-6" />
+                        <span>Install</span>
+                    </button>
+                )}
+
                 <Link
                     to="/settings"
                     className={`flex flex-col items-center gap-1 text-xs ${isActive('/settings') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
@@ -235,7 +267,7 @@ export default function Layout() {
                 </Link>
             </nav>
 
-            <InstallPrompt />
+            <InstallPrompt deferredPrompt={installPromptEvent} onInstall={handleInstall} />
         </div>
     );
 }
