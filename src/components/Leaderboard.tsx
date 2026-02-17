@@ -69,8 +69,12 @@ export default function Leaderboard() {
 
             <div className="flex-1 overflow-y-auto pr-2 space-y-3 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
                 {leaders.length === 0 ? (
-                    <div className="text-center text-slate-500 dark:text-slate-400 py-8">
-                        No rankings yet. Start studying to appear here!
+                    <div className="flex flex-col items-center justify-center text-center text-slate-500 dark:text-slate-400 py-8 h-full">
+                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-700/50 rounded-full flex items-center justify-center mb-3">
+                            <Trophy className="w-8 h-8 text-slate-300 dark:text-slate-500 opacity-50" />
+                        </div>
+                        <p className="font-medium text-slate-600 dark:text-slate-300">No champions yet!</p>
+                        <p className="text-xs max-w-[150px] mt-1">Complete chapters to climb the ranks.</p>
                     </div>
                 ) : (
                     leaders.map((leader, index) => {

@@ -403,10 +403,10 @@ export default function Chat() {
 
                                             <div className="relative group/bubble">
                                                 <div className={cn(
-                                                    "px-4 py-2 text-sm shadow-sm relative whitespace-pre-wrap leading-relaxed",
+                                                    "px-4 py-2 text-sm shadow-sm relative whitespace-pre-wrap leading-relaxed break-words min-w-[60px]",
                                                     isMe
-                                                        ? "bg-indigo-600 text-white rounded-2xl rounded-tr-none"
-                                                        : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-2xl rounded-tl-none",
+                                                        ? "bg-indigo-600 text-white rounded-2xl rounded-tr-md"
+                                                        : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-2xl rounded-tl-md",
                                                     !isFirstInSequence && (isMe ? "rounded-tr-2xl" : "rounded-tl-2xl"),
                                                     msg.imageUrl ? "p-2" : "" // Reduce padding if image
                                                 )}>

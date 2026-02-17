@@ -97,7 +97,7 @@ export default function Dashboard() {
             </div>
 
             {/* Dashboard Widgets - Mobile Carousel / Desktop Grid */}
-            <div className="flex overflow-x-auto snap-x snap-mandatory -mx-4 px-4 pb-4 gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:mx-0 md:px-0 md:pb-0 md:overflow-visible no-scrollbar">
+            <div className="flex overflow-x-auto snap-x snap-mandatory -mx-4 px-4 pb-4 gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:mx-0 md:px-0 md:pb-0 md:overflow-visible no-scrollbar">
 
                 {/* Continue Learning */}
                 <div className="snap-center shrink-0 w-[85vw] md:w-auto lg:col-span-1 h-full">
