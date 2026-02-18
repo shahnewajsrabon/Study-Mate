@@ -1,1 +1,0 @@
-if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/Study-Mate/sw.js', { scope: '/Study-Mate/' })})}
