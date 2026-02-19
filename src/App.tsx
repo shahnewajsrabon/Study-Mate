@@ -7,8 +7,11 @@ import Timer from './pages/Timer';
 import Chat from './pages/Chat';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import Planner from './pages/Planner';
 import { useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import { StudyProvider } from './context/StudyContext';
+import { SocialProvider } from './context/SocialContext';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -25,23 +28,28 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <ToastProvider>
-      <BrowserRouter basename="/Study-Mate/">
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Dashboard />} />
-            <Route path="subject/:id" element={<SubjectDetails />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="timer" element={<Timer />} />
-            <Route path="chat" element={<Chat />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <StudyProvider>
+        <SocialProvider>
+          <BrowserRouter basename="/Study-Mate/">
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<Dashboard />} />
+                <Route path="subject/:id" element={<SubjectDetails />} />
+                <Route path="planner" element={<Planner />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="timer" element={<Timer />} />
+                <Route path="chat" element={<Chat />} />
+                <Route path="settings" element={<Settings />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </SocialProvider>
+      </StudyProvider>
     </ToastProvider>
   );
 }

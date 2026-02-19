@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
+import { useToast } from './ToastContext';
 import { db } from '../lib/firebase';
 import { SYLLABUS_TEMPLATES, type TemplateSubject } from '../data/syllabusTemplates';
 import { doc, onSnapshot, setDoc, collection, addDoc } from 'firebase/firestore';
@@ -10,6 +11,32 @@ export type BadgeType = 'start_strong' | 'streak_master' | 'subject_conqueror' |
 export type BadgeEntry = {
     type: BadgeType;
     earnedAt: string;
+};
+
+// --- Leveling System ---
+export const LEVELS = [
+    { level: 1, minXP: 0, title: 'Novice' },
+    { level: 2, minXP: 500, title: 'Apprentice' },
+    { level: 3, minXP: 1200, title: 'Scholar' },
+    { level: 4, minXP: 2500, title: 'Sage' },
+    { level: 5, minXP: 5000, title: 'Master' },
+    { level: 6, minXP: 10000, title: 'Grandmaster' },
+    { level: 7, minXP: 20000, title: 'Legend' },
+];
+
+export const getLevelInfo = (xp: number) => {
+    // Find the highest level where xp >= minXP
+    const current = [...LEVELS].reverse().find(l => xp >= l.minXP) || LEVELS[0];
+    const next = LEVELS.find(l => l.level === current.level + 1);
+
+    return {
+        currentLevel: current.level,
+        currentTitle: current.title,
+        nextLevelXP: next ? next.minXP : null,
+        progress: next
+            ? ((xp - current.minXP) / (next.minXP - current.minXP)) * 100
+            : 100
+    };
 };
 
 export type Topic = {
@@ -48,6 +75,8 @@ export type UserProfile = {
     weeklyStudyTime: number;
     monthlyStudyTime: number;
     syllabusCompletionPercentage?: number;
+    xp: number;
+    level: number;
 };
 
 interface StudyContextType {
@@ -84,7 +113,9 @@ const initialProfile: UserProfile = {
     dailyGoal: 7200, // 2 hours default
     todayStudyTime: 0,
     weeklyStudyTime: 0,
-    monthlyStudyTime: 0
+    monthlyStudyTime: 0,
+    xp: 0,
+    level: 1
 };
 
 const STORAGE_KEY = 'study-tracker-data';
@@ -120,6 +151,7 @@ const StudyContext = createContext<StudyContextType | undefined>(undefined);
 
 export function StudyProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
+    const toast = useToast();
 
     // Lazy init for Guest Mode (LocalStorage) to allow immediate rendering
     // For Authenticated User, this will be overwritten by Firestore data
@@ -261,6 +293,34 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
             }));
         }
     }, [user]);
+
+    // --- XP & Leveling Logic ---
+    const addXP = (amount: number, reason?: string) => {
+        const currentXP = userProfile.xp || 0;
+        const newXP = currentXP + amount;
+
+        const { currentLevel: oldLevel } = getLevelInfo(currentXP);
+        const { currentLevel: newLevel, currentTitle } = getLevelInfo(newXP);
+
+        // Update Profile
+        // We use updateProfile which calls saveData
+        const updatedProfile = {
+            ...userProfile,
+            xp: newXP,
+            level: newLevel
+        };
+
+        updateProfile(updatedProfile);
+
+        // Notifications
+        if (newLevel > oldLevel) {
+            toast.success(`🎉 Level Up! You are now a ${currentTitle}!`);
+            // Play level up sound if available (future)
+        } else if (reason) {
+            // Optional: toast small XP gains? heavy toast usage might be annoying.
+            // keeping it silent for small gains, descriptive for big ones.
+        }
+    };
 
 
     // --- Sync Default Subjects Effect ---
@@ -539,7 +599,37 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
             }
             return sub;
         });
-        saveData(userProfile, newSubjects);
+
+        // Find if topic was just completed to award XP
+        // This is a bit expensive to re-search, but safe.
+        const subject = subjects.find(s => s.id === subjectId);
+        const chapter = subject?.chapters.find(c => c.id === chapterId);
+        const topic = chapter?.topics.find(t => t.id === topicId);
+
+        let xpBonus = 0;
+        if (topic && !topic.isCompleted) {
+            // It is being marked as complete (since logic above flips it)
+            xpBonus = 50;
+        }
+
+        const currentXP = userProfile.xp || 0;
+        const newXP = currentXP + xpBonus;
+        const { currentLevel: newLevel, currentTitle } = getLevelInfo(newXP);
+        const { currentLevel: oldLevel } = getLevelInfo(currentXP);
+
+        const finalProfile = {
+            ...userProfile,
+            xp: newXP,
+            level: newLevel
+        };
+
+        if (newLevel > oldLevel) {
+            toast.success(`🎉 Level Up! You are now a ${currentTitle}!`);
+        } else if (xpBonus > 0) {
+            toast.success("+50 XP: Topic Completed!");
+        }
+
+        saveData(finalProfile, newSubjects);
     };
 
     const deleteTopic = (subjectId: string, chapterId: string, topicId: string) => {
@@ -745,6 +835,13 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                 console.error("Error saving study session:", error);
             }
         }
+
+        // Award XP for study time (e.g., 10 XP per 5 mins = 300s)
+        const xpEarned = Math.floor(durationInSeconds / 300) * 10;
+        if (xpEarned > 0) {
+            addXP(xpEarned, "Study Session");
+            toast.success(`+${xpEarned} XP: Study Session!`);
+        }
     };
 
     return (
@@ -775,6 +872,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         </StudyContext.Provider>
     );
 }
+
 // eslint-disable-next-line react-refresh/only-export-components
 export function useStudy() {
     const context = useContext(StudyContext);

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useOutlet } from 'react-router-dom';
-import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, MessageCircle, Download } from 'lucide-react';
+import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, MessageCircle, Download, Calendar, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { AnimatePresence } from 'framer-motion';
+import { useStudy, getLevelInfo } from '../context/StudyContext';
+import { AnimatePresence, motion } from 'framer-motion';
 import { cloneElement } from 'react';
 import TourOverlay, { type TourStep } from './TourOverlay';
 import logo from '../assets/logo.png';
@@ -40,6 +41,11 @@ const TOUR_STEPS: TourStep[] = [
 export default function Layout() {
     const { logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
+    const { userProfile } = useStudy();
+
+    // Level Info
+    const { currentTitle, nextLevelXP, progress } = getLevelInfo(userProfile.xp || 0);
+    const level = userProfile.level || 1;
     const location = useLocation();
     const element = useOutlet();
 
@@ -95,10 +101,14 @@ export default function Layout() {
             {/* Mobile Header */}
             <header className="glass sticky top-0 z-20 px-4 py-3 flex items-center justify-between md:hidden transition-colors duration-300">
                 <div className="flex items-center gap-2">
-                    <img src={logo} alt="TrackEd Logo" className="w-9 h-9 rounded-xl object-contain shadow-sm" />
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                        TrackEd
-                    </h1>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-md">
+                        {level}
+                    </div>
+                    <div>
+                        <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                            TrackEd
+                        </h1>
+                    </div>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
@@ -132,6 +142,34 @@ export default function Layout() {
                         </button>
                     </div>
 
+                    {/* User Profile & XP (Desktop) */}
+                    <div className="mb-8 px-2">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/30 ring-2 ring-white dark:ring-slate-700">
+                                {level}
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-slate-800 dark:text-white leading-tight">{userProfile.name}</h3>
+                                <p className="text-xs font-medium text-blue-600 dark:text-blue-400">{currentTitle}</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <div className="flex justify-between text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                                <span>{userProfile.xp} XP</span>
+                                <span>{nextLevelXP ? `${nextLevelXP} XP` : 'MAX'}</span>
+                            </div>
+                            <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner ring-1 ring-slate-900/5 dark:ring-white/5">
+                                <motion.div
+                                    className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${progress}%` }}
+                                    transition={{ duration: 1, ease: "easeOut" }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     <nav className="space-y-1.5 flex-1">
                         <Link
                             to="/"
@@ -143,6 +181,23 @@ export default function Layout() {
                             <LayoutDashboard className="w-5 h-5" />
                             Dashboard
                         </Link>
+                        <Link
+                            to="/planner"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${isActive('/planner')
+                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                }`}
+                        >
+                            <Calendar className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive('/planner') ? 'text-white' : 'text-slate-500 group-hover:text-blue-600 dark:text-slate-500 dark:group-hover:text-blue-400'}`} />
+                            <span className="font-medium">Planner</span>
+                            {isActive('/planner') && (
+                                <motion.div
+                                    layoutId="activeTab"
+                                    className="absolute left-0 w-1 h-8 bg-white rounded-r-full opacity-30"
+                                />
+                            )}
+                        </Link>
+
                         <Link
                             to="/analytics"
                             className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive('/analytics')
@@ -167,13 +222,19 @@ export default function Layout() {
                         </Link>
                         <Link
                             to="/chat"
-                            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive('/chat')
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 font-medium translate-x-1'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${isActive('/chat')
+                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                                 }`}
                         >
-                            <MessageCircle className="w-5 h-5" />
-                            Community
+                            <Users className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive('/chat') ? 'text-white' : 'text-slate-500 group-hover:text-blue-600 dark:text-slate-500 dark:group-hover:text-blue-400'}`} />
+                            <span className="font-medium">Study Groups</span>
+                            {isActive('/chat') && (
+                                <motion.div
+                                    layoutId="activeTab"
+                                    className="absolute left-0 w-1 h-8 bg-white rounded-r-full opacity-30"
+                                />
+                            )}
                         </Link>
                         <Link
                             to="/settings"
