@@ -357,7 +357,7 @@ export default function Settings() {
 
                     {/* Report Bug */}
                     <a
-                        href="https://github.com/shahnewajsrabon/Study-Mate/issues/new?title=Bug%3A%20&body=%23%23%20Bug%20Description"
+                        href="https://chat.whatsapp.com/K9mUpCp6Moo4poVbW5zgfr"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
@@ -368,7 +368,7 @@ export default function Settings() {
                             </div>
                             <div>
                                 <h3 className="text-slate-800 dark:text-white font-medium">Report a Bug</h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">Help us improve by reporting issues</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">Report issues via our WhatsApp group</p>
                             </div>
                         </div>
                     </a>
