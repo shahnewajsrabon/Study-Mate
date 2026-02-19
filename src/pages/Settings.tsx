@@ -12,6 +12,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedPage from '../components/AnimatedPage';
 import SyllabusImportModal from '../components/SyllabusImportModal';
 
+import { useToast } from '../context/ToastContext';
+
 export default function Settings() {
     const { user, logout } = useAuth();
     const { userProfile, updateProfile, resetData, exportData, importData } = useStudy();
@@ -29,17 +31,19 @@ export default function Settings() {
         'Notification' in window && Notification.permission === 'granted'
     );
 
+    const toast = useToast();
+
     const handleSave = () => {
         const name = nameRef.current?.value.trim() || '';
         const grade = gradeRef.current?.value.trim() || '';
 
         if (!name) {
-            alert('Please enter your name');
+            toast.error('Please enter your name');
             return;
         }
         updateProfile({ name, grade });
         setIsEditing(false);
-        alert('✅ Profile updated successfully!\n\nYou can update your profile anytime.');
+        toast.success('Profile updated successfully!');
     };
 
     const handleImport = () => {

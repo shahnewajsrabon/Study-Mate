@@ -7,7 +7,8 @@ import { AnimatePresence } from 'framer-motion';
 import { cloneElement } from 'react';
 import TourOverlay, { type TourStep } from './TourOverlay';
 import logo from '../assets/logo.png';
-import InstallPrompt, { type BeforeInstallPromptEvent } from './InstallPrompt';
+import InstallPrompt from './InstallPrompt';
+import type { BeforeInstallPromptEvent } from '../types';
 import { useSmartReminders } from '../hooks/useSmartReminders';
 
 const TOUR_STEPS: TourStep[] = [
@@ -267,7 +268,7 @@ export default function Layout() {
                 </Link>
             </nav>
 
-            <InstallPrompt deferredPrompt={installPromptEvent} onInstall={handleInstall} />
+            {installPromptEvent && <InstallPrompt deferredPrompt={installPromptEvent} onInstall={handleInstall} />}
         </div>
     );
 }

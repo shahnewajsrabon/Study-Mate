@@ -2,11 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, X } from 'lucide-react';
 
-// Define interface here or import it (if shared)
-export interface BeforeInstallPromptEvent extends Event {
-    prompt: () => Promise<void>;
-    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
+import type { BeforeInstallPromptEvent } from '../types';
 
 interface InstallPromptProps {
     deferredPrompt: BeforeInstallPromptEvent | null;
@@ -17,14 +13,9 @@ export default function InstallPrompt({ deferredPrompt, onInstall }: InstallProm
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        if (deferredPrompt) {
-            // Show toast after a small delay when prompt becomes available
-            const timer = setTimeout(() => setIsVisible(true), 3000);
-            return () => clearTimeout(timer);
-        } else {
-            setIsVisible(false);
-        }
-    }, [deferredPrompt]);
+        const timer = setTimeout(() => setIsVisible(true), 3000);
+        return () => clearTimeout(timer);
+    }, []);
 
     const handleDismiss = () => {
         setIsVisible(false);

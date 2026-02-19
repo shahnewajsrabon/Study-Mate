@@ -8,6 +8,7 @@ import Chat from './pages/Chat';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import { useAuth } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -23,23 +24,25 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <BrowserRouter basename="/Study-Mate/">
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }>
-          <Route index element={<Dashboard />} />
-          <Route path="subject/:id" element={<SubjectDetails />} />
-          <Route path="analytics" element={<Analytics />} />
-          <Route path="timer" element={<Timer />} />
-          <Route path="chat" element={<Chat />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <ToastProvider>
+      <BrowserRouter basename="/Study-Mate/">
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Dashboard />} />
+            <Route path="subject/:id" element={<SubjectDetails />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="timer" element={<Timer />} />
+            <Route path="chat" element={<Chat />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
   );
 }
 

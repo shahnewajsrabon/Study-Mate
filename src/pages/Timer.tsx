@@ -16,7 +16,10 @@ interface LeaderboardEntry {
 type TimerMode = 'stopwatch' | 'pomodoro' | 'countdown';
 type TimeRange = 'today' | 'week' | 'month' | 'all_time';
 
+import { useToast } from '../context/ToastContext';
+
 export default function Timer() {
+    const toast = useToast();
     const { saveStudySession, subjects } = useStudy();
     const { user } = useAuth();
     const { playSound, isMuted, toggleMute } = useSound();
@@ -172,7 +175,7 @@ export default function Timer() {
 
     const handleSaveSession = async () => {
         if (!selectedSubject) {
-            alert('Please select a subject to save session.');
+            toast.error('Please select a subject to save session.');
             return;
         }
 
@@ -184,13 +187,14 @@ export default function Timer() {
         }
 
         if (duration < 60) {
-            alert('Session must be at least 1 minute to save.');
+            toast.error('Session must be at least 1 minute to save.');
             return;
         }
 
         await saveStudySession(duration, selectedSubject, sessionGoal);
         setSessionSaved(true);
         playSound('success');
+        toast.success('Session Saved! Great Job.');
     };
 
     const formatTime = (totalSeconds: number) => {
