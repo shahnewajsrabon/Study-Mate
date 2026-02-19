@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { db, storage } from '../lib/firebase';
+import { db } from '../lib/firebase';
 import { collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp, Timestamp, updateDoc, doc, deleteDoc, where } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Send, MessageCircle, Smile, Reply, X, Heart, ThumbsUp, Laugh, Frown, Trash2, Hash, Menu, ChevronLeft, Image as ImageIcon, Loader2 } from 'lucide-react';
+
+import { Send, MessageCircle, Smile, Reply, X, Heart, ThumbsUp, Laugh, Frown, Trash2, Hash, Menu, ChevronLeft, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedPage from '../components/AnimatedPage';
 import UserProfileModal from '../components/UserProfileModal';
@@ -76,9 +76,7 @@ export default function Chat() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Image Upload State
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+
 
     // --- Real-time Listener ---
     useEffect(() => {
@@ -105,53 +103,27 @@ export default function Chat() {
     // --- Auto-scroll ---
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages.length, activeChannelId, imagePreview]);
+    }, [messages.length, activeChannelId]);
 
     // --- Handlers ---
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
-    const cancelImageUpload = () => {
-        setImageFile(null);
-        setImagePreview(null);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-    };
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         const text = newMessage.trim();
 
-        // Allow send if there is text OR an image
-        if ((!text && !imageFile) || !user || sending) return;
+        // Allow send if there is text
+        if (!text || !user || sending) return;
 
         setSending(true);
         try {
-            let imageUrl = '';
-
-            // Upload Image if present
-            if (imageFile) {
-                const storageRef = ref(storage, `chat_images/${Date.now()}_${imageFile.name}`);
-                const snapshot = await uploadBytes(storageRef, imageFile);
-                imageUrl = await getDownloadURL(snapshot.ref);
-            }
-
             const msgData = {
                 text: text,
                 uid: user.uid,
                 displayName: user.displayName || 'Anonymous',
                 createdAt: serverTimestamp(),
                 channelId: activeChannelId,
-                ...(imageUrl && { imageUrl }),
                 ...(replyingTo && {
                     replyTo: {
                         id: replyingTo.id,
@@ -166,7 +138,6 @@ export default function Chat() {
             // Reset State
             setNewMessage('');
             setReplyingTo(null);
-            cancelImageUpload();
 
         } catch (error) {
             console.error("Error sending message:", error);
@@ -500,22 +471,7 @@ export default function Chat() {
 
                     {/* Image Preview */}
                     <AnimatePresence>
-                        {imagePreview && (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                                className="relative mb-3 w-fit"
-                            >
-                                <img src={imagePreview} alt="Preview" className="h-24 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm" />
-                                <button
-                                    onClick={cancelImageUpload}
-                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors"
-                                >
-                                    <X className="w-3 h-3" />
-                                </button>
-                            </motion.div>
-                        )}
+
 
                         {/* Reply Preview */}
                         {replyingTo && (
@@ -536,32 +492,18 @@ export default function Chat() {
                     </AnimatePresence>
 
                     <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
-                        <input
-                            type="file"
-                            accept="image/*"
-                            ref={fileInputRef}
-                            onChange={handleFileSelect}
-                            className="hidden"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="p-3 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-xl transition-colors"
-                            title="Upload Image"
-                        >
-                            <ImageIcon className="w-5 h-5" />
-                        </button>
+
 
                         <input
                             type="text"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
-                            placeholder={imagePreview ? "Add a caption..." : `Message #${activeChannel.name}`}
+                            placeholder={`Message #${activeChannel.name}`}
                             className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-900 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-black transition-all"
                         />
                         <button
                             type="submit"
-                            disabled={(!newMessage.trim() && !imageFile) || sending}
+                            disabled={!newMessage.trim() || sending}
                             className="p-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:shadow-none flex items-center justify-center min-w-[3rem]"
                         >
                             {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
