@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useOutlet } from 'react-router-dom';
-import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, Calendar, Users } from 'lucide-react';
+import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, Calendar, Users, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useStudy } from '../context/StudyContext';
@@ -42,7 +42,7 @@ const TOUR_STEPS: TourStep[] = [
 export default function Layout() {
     const { logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
-    const { userProfile } = useStudy();
+    const { userProfile, isAdmin } = useStudy();
 
     // Level Info
     const { currentTitle, nextLevelXP, progress } = getLevelInfo(userProfile.xp || 0);
@@ -248,6 +248,18 @@ export default function Layout() {
                             <SettingsIcon className="w-5 h-5" />
                             Settings
                         </Link>
+                        {isAdmin && (
+                            <Link
+                                to="/admin"
+                                className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive('/admin')
+                                    ? 'bg-rose-600 text-white shadow-lg shadow-rose-500/30 font-medium translate-x-1'
+                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                            >
+                                <ShieldCheck className="w-5 h-5" />
+                                Admin Panel
+                            </Link>
+                        )}
                     </nav>
 
                     <div className="mt-auto pt-6 border-t border-slate-200/50 dark:border-slate-700/50">

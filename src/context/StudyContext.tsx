@@ -66,12 +66,14 @@ export type UserProfile = {
     syllabusCompletionPercentage?: number;
     xp: number;
     level: number;
+    role: 'student' | 'admin';
     scheduledSessions?: ScheduledSession[];
 };
 
 interface StudyContextType {
     userProfile: UserProfile;
     subjects: Subject[];
+    isAdmin: boolean;
     updateProfile: (profile: Partial<UserProfile>) => void;
     addSubject: (subject: Omit<Subject, 'id' | 'chapters'>) => void;
     editSubject: (id: string, updates: Partial<Subject>) => void;
@@ -108,6 +110,7 @@ const initialProfile: UserProfile = {
     monthlyStudyTime: 0,
     xp: 0,
     level: 1,
+    role: 'student',
     scheduledSessions: []
 };
 
@@ -544,9 +547,11 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         return () => clearInterval(interval);
     }, [subjects]);
 
+    const isAdmin = userProfile.role === 'admin';
+
     return (
         <StudyContext.Provider value={{
-            userProfile, subjects, updateProfile, addSubject, editSubject, deleteSubject,
+            userProfile, subjects, isAdmin, updateProfile, addSubject, editSubject, deleteSubject,
             addChapter, editChapter, toggleChapter, deleteChapter,
             addTopic, editTopic, toggleTopic, deleteTopic,
             resetData, exportData, importData, importSyllabusData, saveStudySession,

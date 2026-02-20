@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStudy, type Subject } from '../context/StudyContext';
-import { CalendarClock, AlertCircle, Pencil, Plus, X, BookOpen } from 'lucide-react';
+import { CalendarClock, AlertCircle, Pencil, Plus, X, BookOpen, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import EditSubjectModal from './EditSubjectModal';
 
@@ -10,7 +10,7 @@ interface UpcomingExamsProps {
 }
 
 export default function UpcomingExams({ className = '', limit }: UpcomingExamsProps) {
-    const { subjects } = useStudy();
+    const { subjects, editSubject } = useStudy();
     const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
     const [isSelectingSubject, setIsSelectingSubject] = useState(false);
 
@@ -40,6 +40,13 @@ export default function UpcomingExams({ className = '', limit }: UpcomingExamsPr
     const handleSelectSubject = (subject: Subject) => {
         setEditingSubject(subject);
         setIsSelectingSubject(false);
+    };
+
+    const handleDeleteExam = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (window.confirm("Remove this exam date?")) {
+            editSubject(id, { examDate: undefined });
+        }
     };
 
     const hasNoSubjects = !subjects || subjects.length === 0;
@@ -116,12 +123,22 @@ export default function UpcomingExams({ className = '', limit }: UpcomingExamsPr
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between gap-2">
                                             <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm truncate">{subject.name}</h4>
-                                            <button
-                                                onClick={() => setEditingSubject(subject)}
-                                                className="p-1 text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                                <Pencil className="w-3.5 h-3.5" />
-                                            </button>
+                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={() => setEditingSubject(subject)}
+                                                    className="p-1 text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
+                                                    title="Edit Date"
+                                                >
+                                                    <Pencil className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => handleDeleteExam(subject.id, e)}
+                                                    className="p-1 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
+                                                    title="Remove Exam"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
                                         </div>
                                         <p className="text-[10px] text-slate-500 uppercase tracking-tighter">
                                             {dateDisplay}
