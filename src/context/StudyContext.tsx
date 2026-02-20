@@ -160,9 +160,9 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
             if (savedData) {
                 const parsed = JSON.parse(savedData);
                 if (parsed.subjects && parsed.subjects.length > 0) {
-                    return parsed.subjects.map((sub: any) => ({
+                    return parsed.subjects.map((sub: Subject) => ({
                         ...sub,
-                        chapters: sub.chapters.map((chap: any) => ({
+                        chapters: (sub.chapters || []).map((chap: Chapter) => ({
                             ...chap,
                             topics: chap.topics || []
                         }))
