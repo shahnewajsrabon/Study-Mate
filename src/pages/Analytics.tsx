@@ -3,7 +3,7 @@ import { BarChart3, TrendingUp, BookOpen, Award, Trophy, CheckCircle2 } from 'lu
 import { motion } from 'framer-motion';
 import AnimatedPage from '../components/AnimatedPage';
 import StatCard from '../components/StatCard';
-import { calculateOverallStats, calculateActivityData, calculateStreak } from '../lib/calculateAnalytics';
+import { calculateOverallStats, calculateActivityData, calculateStreak, type ActivityPoint } from '../lib/calculateAnalytics';
 
 export default function Analytics() {
     const { subjects } = useStudy();
@@ -96,7 +96,7 @@ export default function Analytics() {
                         Last 7 Days Activity
                     </h2>
                     <div className="flex items-end justify-between gap-2 h-48">
-                        {activityData.map((data, index) => (
+                        {activityData.map((data: ActivityPoint, index) => (
                             <div key={data.date} className="flex-1 flex flex-col items-center gap-2 group">
                                 <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-t-lg relative h-full flex items-end overflow-hidden transition-colors">
                                     <motion.div

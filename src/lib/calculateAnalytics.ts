@@ -23,7 +23,12 @@ export function calculateOverallStats(subjects: Subject[]) {
     return { totalChapters, completedChapters, totalTopics, completedTopics };
 }
 
-export function calculateActivityData(subjects: Subject[]) {
+export interface ActivityPoint {
+    date: string;
+    count: number;
+}
+
+export function calculateActivityData(subjects: Subject[]): { activityData: ActivityPoint[], maxCount: number } {
     const today = new Date();
     const last7Days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date();
@@ -31,7 +36,7 @@ export function calculateActivityData(subjects: Subject[]) {
         return d.toISOString().split('T')[0];
     });
 
-    const activityData = last7Days.map(date => {
+    const activityData: ActivityPoint[] = last7Days.map(date => {
         let count = 0;
         subjects.forEach(sub => {
             sub.chapters.forEach(ch => {

@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import { useStudy } from '../context/StudyContext';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, AlertCircle, CalendarClock } from 'lucide-react';
+import { useStudy, type ScheduledSession } from '../context/StudyContext';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import UpcomingExams from '../components/UpcomingExams';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -76,8 +77,8 @@ export default function Planner() {
         return userProfile.scheduledSessions.some(s => s.date === dateStr && !s.isCompleted);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleToggleSession = async (session: any) => {
+    // --- Actions ---
+    const handleToggleSession = async (session: ScheduledSession) => {
         if (!session.isCompleted) {
             // Completing it
             if (confirm("Mark as done? Do you want to log this time to your stats?")) {
@@ -291,31 +292,9 @@ export default function Planner() {
                         </div>
                     </div>
 
-                    {/* Upcoming Exams Widget */}
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                        <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-                            <CalendarClock className="w-5 h-5 text-indigo-500" />
-                            Upcoming Exams
-                        </h3>
-                        <div className="space-y-3">
-                            {subjects.filter(s => s.examDate).sort((a, b) => new Date(a.examDate!).getTime() - new Date(b.examDate!).getTime()).slice(0, 3).map(subject => {
-                                const daysLeft = Math.ceil((new Date(subject.examDate!).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-                                return (
-                                    <div key={subject.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-700">
-                                        <div>
-                                            <div className="font-semibold text-sm text-slate-800 dark:text-slate-200">{subject.name}</div>
-                                            <div className="text-xs text-slate-500">{new Date(subject.examDate!).toLocaleDateString()}</div>
-                                        </div>
-                                        <div className={`px-2 py-1 rounded-lg text-xs font-bold ${daysLeft <= 7 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-                                            {daysLeft} days
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                            {subjects.filter(s => s.examDate).length === 0 && (
-                                <p className="text-sm text-slate-400 text-center py-4">No exams scheduled yet.</p>
-                            )}
-                        </div>
+                    {/* Upcoming Exams Center */}
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm transition-colors">
+                        <UpcomingExams />
                     </div>
 
                     {/* Smart Suggestions */}
