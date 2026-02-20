@@ -30,12 +30,12 @@ export default function UpcomingExams({ className = '', limit }: UpcomingExamsPr
 
     if (examSubjects.length === 0) {
         return (
-            <div className={`bg-white dark:bg-slate-800 rounded-2xl p-6 border border-dashed border-slate-200 dark:border-slate-700 text-center ${className}`}>
-                <div className="w-12 h-12 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <CalendarClock className="w-6 h-6 text-slate-400" />
+            <div className={`bg-white dark:bg-slate-800 rounded-2xl p-4 border border-dashed border-slate-200 dark:border-slate-700 text-center ${className}`}>
+                <div className="w-10 h-10 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <CalendarClock className="w-5 h-5 text-slate-400" />
                 </div>
-                <h3 className="text-slate-800 dark:text-white font-semibold mb-1">No Exams Scheduled</h3>
-                <p className="text-slate-500 text-xs">Set an exam date for your subjects to track them here.</p>
+                <h3 className="text-slate-800 dark:text-white font-semibold text-sm mb-1">No Exams</h3>
+                <p className="text-slate-500 text-[10px] leading-tight">Set dates for subjects to track them here.</p>
             </div>
         );
     }

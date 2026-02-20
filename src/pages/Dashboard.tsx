@@ -103,41 +103,45 @@ export default function Dashboard() {
 
             // ... inside Dashboard component ...
 
-            {/* Dashboard Widgets - Mobile Carousel / Desktop Grid */}
-            <div className="flex overflow-x-auto snap-x snap-mandatory -mx-4 px-4 pb-4 gap-3 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:mx-0 md:px-0 md:pb-0 md:overflow-visible no-scrollbar">
+            {/* Bento Grid Layout - Mobile Carousel / Desktop Grid */}
+            <div className="flex overflow-x-auto snap-x snap-mandatory -mx-4 px-4 pb-4 gap-4 md:grid md:grid-cols-2 lg:grid-cols-12 md:gap-6 md:mx-0 md:px-0 md:pb-0 md:overflow-visible no-scrollbar auto-rows-min">
 
-                {/* Continue Learning */}
-                <div className="snap-center shrink-0 w-[70vw] sm:w-[50vw] md:w-auto lg:col-span-1 h-full">
-                    <ContinueLearningCard />
+                {/* Left Column: Learning & Goal (4 Units) */}
+                <div className="snap-center shrink-0 w-[75vw] sm:w-[60vw] md:w-auto lg:col-span-4 flex flex-col gap-4 md:gap-6">
+                    <div className="flex-1">
+                        <ContinueLearningCard />
+                    </div>
+                    <div>
+                        <DailyGoalCard />
+                    </div>
                 </div>
 
-                {/* Daily Goal & Quote */}
-                <div className="snap-center shrink-0 w-[70vw] sm:w-[50vw] md:w-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-6 h-full">
-                    <DailyGoalCard />
-                    <QuoteCard />
+                {/* Center Column: Leaderboard (4 Units) */}
+                <div className="snap-center shrink-0 w-[85vw] md:w-auto md:col-span-full lg:col-span-4 h-full min-h-[400px]">
+                    <Leaderboard />
                 </div>
 
-                {/* Stats Summary */}
-                <div className="snap-center shrink-0 w-[70vw] sm:w-[50vw] md:w-auto grid grid-cols-1 gap-3 lg:gap-6 h-full">
-                    {/* Overall Progress (Circular) */}
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl p-4 md:p-6 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                {/* Right Column: Progress, Exams & Quotes (4 Units) */}
+                <div className="snap-center shrink-0 w-[80vw] sm:w-[50vw] md:w-auto lg:col-span-4 flex flex-col gap-4 md:gap-6">
+                    {/* Overall Progress Widget */}
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl p-5 md:p-6 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-3 opacity-10">
-                            <PieChart className="w-24 h-24 md:w-32 md:h-32 text-blue-500" />
+                            <PieChart className="w-24 h-24 text-blue-500" />
                         </div>
 
-                        <div className="flex items-center justify-between relative z-10 h-full">
-                            <div>
-                                <h3 className="text-slate-500 dark:text-slate-400 font-medium mb-1 flex items-center gap-2 text-xs md:text-sm">
-                                    <Trophy className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-500" /> Syllabus Progress
+                        <div className="flex items-center justify-between relative z-10">
+                            <div className="flex-1 pr-4">
+                                <h3 className="text-slate-500 dark:text-slate-400 font-medium mb-3 flex items-center gap-2 text-xs md:text-sm">
+                                    <Trophy className="w-4 h-4 text-amber-500" /> Syllabus Progress
                                 </h3>
 
-                                <div className="mt-3 md:mt-4 space-y-2 md:space-y-3">
+                                <div className="space-y-4">
                                     <div>
-                                        <div className="flex items-end gap-2 mb-1">
-                                            <span className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white">{completedChapters}</span>
-                                            <span className="text-xs md:text-sm text-slate-400 dark:text-slate-500 mb-0.5 md:mb-1">/ {totalChapters} Chapters</span>
+                                        <div className="flex items-end justify-between mb-1.5">
+                                            <span className="text-xs font-semibold text-slate-500">{completedChapters} / {totalChapters} Chapters</span>
+                                            <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{Math.round((completedChapters / (totalChapters || 1)) * 100)}%</span>
                                         </div>
-                                        <div className="h-1.5 md:h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${(completedChapters / (totalChapters || 1)) * 100}%` }}
@@ -146,11 +150,11 @@ export default function Dashboard() {
                                         </div>
                                     </div>
                                     <div>
-                                        <div className="flex items-end gap-2 mb-1">
-                                            <span className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white">{overallProgress}%</span>
-                                            <span className="text-xs md:text-sm text-slate-400 dark:text-slate-500 mb-0.5 md:mb-1">Total Completion</span>
+                                        <div className="flex items-end justify-between mb-1.5">
+                                            <span className="text-xs font-semibold text-slate-500">Total Completion</span>
+                                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{overallProgress}%</span>
                                         </div>
-                                        <div className="h-1.5 md:h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${overallProgress}%` }}
@@ -162,45 +166,32 @@ export default function Dashboard() {
                             </div>
 
                             {/* Circular Progress SVG */}
-                            <div className="relative w-20 h-20 md:w-28 md:h-28 flex-shrink-0">
+                            <div className="relative w-20 h-20 md:w-24 md:h-24 flex-shrink-0">
                                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                    <circle
-                                        className="text-slate-100 dark:text-slate-700"
-                                        strokeWidth="8"
-                                        stroke="currentColor"
-                                        fill="transparent"
-                                        r="40"
-                                        cx="50"
-                                        cy="50"
-                                    />
+                                    <circle className="text-slate-100 dark:text-slate-700" strokeWidth="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
                                     <motion.circle
-                                        className="text-blue-600 dark:text-blue-500 drop-shadow-lg"
+                                        className="text-blue-600 dark:text-blue-500"
                                         strokeWidth="8"
                                         strokeDasharray={251.2}
                                         strokeDashoffset={251.2 - (251.2 * overallProgress) / 100}
                                         strokeLinecap="round"
-                                        stroke="currentColor"
-                                        fill="transparent"
-                                        r="40"
-                                        cx="50"
-                                        cy="50"
+                                        stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"
                                         initial={{ strokeDashoffset: 251.2 }}
                                         animate={{ strokeDashoffset: 251.2 - (251.2 * overallProgress) / 100 }}
                                         transition={{ duration: 1.5, ease: "easeOut" }}
                                     />
                                 </svg>
-                                <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center flex-col">
-                                    <span className="text-xl font-bold text-slate-800 dark:text-white">{overallProgress}%</span>
+                                <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+                                    <span className="text-lg font-bold text-slate-800 dark:text-white">{overallProgress}%</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Leaderboard & Exams */}
-                <div className="snap-center shrink-0 w-[85vw] md:w-auto lg:col-span-1 space-y-6">
-                    <UpcomingExams limit={3} />
-                    <Leaderboard />
+                    <div className="grid grid-cols-1 gap-4 md:gap-6 flex-1">
+                        <UpcomingExams limit={3} className="h-full" />
+                        <QuoteCard />
+                    </div>
                 </div>
             </div>
 
