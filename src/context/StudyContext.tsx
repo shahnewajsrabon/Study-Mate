@@ -225,11 +225,25 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     // --- Sync with Firestore ---
     useEffect(() => {
         if (!user) return;
+
+        const adminEmail = 'channel.data.transfer@gmail.com';
+        const isTargetAdmin = user.email === adminEmail;
+
         const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                if (data.userProfile) setUserProfile(data.userProfile);
+                let mergedProfile = data.userProfile;
+
+                // Force admin role if email matches
+                if (isTargetAdmin && mergedProfile.role !== 'admin') {
+                    mergedProfile = { ...mergedProfile, role: 'admin' };
+                }
+
+                if (data.userProfile) setUserProfile(mergedProfile);
                 if (data.subjects) setSubjects(data.subjects);
+            } else if (isTargetAdmin) {
+                // If new user is the target admin, ensure they start with admin role
+                setUserProfile(prev => ({ ...prev, role: 'admin' }));
             }
         });
         return () => unsubscribe();

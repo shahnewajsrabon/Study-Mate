@@ -16,7 +16,7 @@ import { useToast } from '../context/ToastContext';
 
 export default function Settings() {
     const { user, logout } = useAuth();
-    const { userProfile, updateProfile, resetData, exportData, importData, isAdmin } = useStudy();
+    const { userProfile, updateProfile, resetData, exportData, importData } = useStudy();
     const { isMuted, toggleMute } = useSound();
     const { theme, toggleTheme } = useTheme();
 
@@ -395,44 +395,8 @@ export default function Settings() {
                         </div>
                     </a>
 
-                    {/* Developer Settings (Temporary) */}
-                    <motion.section
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                        className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors border-dashed"
-                    >
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/10">
-                            <h2 className="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-                                <Shield className="w-5 h-5 text-rose-500" />
-                                Developer Access
-                            </h2>
-                        </div>
-                        <div className="p-4">
-                            <div className="flex items-center justify-between p-4 bg-rose-50/50 dark:bg-rose-900/10 rounded-xl border border-rose-100 dark:border-rose-900/30">
-                                <div>
-                                    <h3 className="text-slate-800 dark:text-white font-bold text-sm">Toggle Admin Role</h3>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">Current role: <span className="font-bold uppercase text-rose-500">{userProfile.role || 'Student'}</span></p>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        const newRole = userProfile.role === 'admin' ? 'student' : 'admin';
-                                        updateProfile({ role: newRole });
-                                        toast.info(`Role updated to ${newRole}`);
-                                    }}
-                                    className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${isAdmin
-                                            ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
-                                            : 'bg-rose-500 text-white shadow-lg shadow-rose-500/30 ring-2 ring-rose-500/20'
-                                        }`}
-                                >
-                                    {isAdmin ? 'Revoke Admin' : 'Make Me Admin'}
-                                </button>
-                            </div>
-                        </div>
-                    </motion.section>
-
                     {/* App Version */}
-                    <div className="p-4 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center">
+                    <div className="p-4 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center rounded-2xl">
                         <p className="text-xs text-slate-400 font-medium">TrackEd v1.0.0 • Made with ❤️ for Students</p>
                     </div>
                 </div>
