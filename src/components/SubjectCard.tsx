@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { type Subject } from '../context/StudyContext';
-import { ArrowRight, BookOpen, CheckCircle2, Pencil } from 'lucide-react';
+import { ArrowRight, BookOpen, CheckCircle2, Pencil, CalendarClock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import EditSubjectModal from './EditSubjectModal';
 
@@ -28,6 +28,10 @@ export default function SubjectCard({ subject, index = 0 }: SubjectCardProps) {
     });
 
     const progress = totalChapters === 0 ? 0 : Math.round(totalProgressSum / totalChapters);
+
+    // Exam Countdown
+    const daysToExam = subject.examDate ? Math.ceil((new Date(subject.examDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
+    const isExamNear = daysToExam !== null && daysToExam <= 7 && daysToExam >= 0;
 
     return (
         <>
@@ -65,6 +69,13 @@ export default function SubjectCard({ subject, index = 0 }: SubjectCardProps) {
                         {progress}%
                     </div>
                 </div>
+
+                {subject.examDate && daysToExam !== null && daysToExam >= 0 && (
+                    <div className={`absolute top-16 right-4 text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1 ${isExamNear ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-indigo-50 text-indigo-600'}`}>
+                        <CalendarClock className="w-3 h-3" />
+                        <span>{daysToExam} days left</span>
+                    </div>
+                )}
 
                 <h3 className="text-sm md:text-xl font-bold text-slate-800 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
                     {subject.name}

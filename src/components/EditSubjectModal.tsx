@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, BookOpen } from 'lucide-react';
 import { useStudy, type Subject } from '../context/StudyContext';
@@ -21,19 +21,15 @@ export default function EditSubjectModal({ subject, onClose }: EditSubjectModalP
     const { editSubject } = useStudy();
     const [name, setName] = useState(subject.name);
     const [selectedColor, setSelectedColor] = useState(subject.color);
-
-    // Reset state if subject prop changes (though usually this modal mounts/unmounts)
-    useEffect(() => {
-        setName(subject.name);
-        setSelectedColor(subject.color);
-    }, [subject]);
+    const [examDate, setExamDate] = useState(subject.examDate || '');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (name.trim()) {
             editSubject(subject.id, {
                 name: name.trim(),
-                color: selectedColor
+                color: selectedColor,
+                examDate: examDate || undefined
             });
             onClose();
         }
@@ -82,19 +78,28 @@ export default function EditSubjectModal({ subject, onClose }: EditSubjectModalP
                             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                                 Color Theme
                             </label>
-                            <div className="flex flex-wrap gap-2">
-                                {COLORS.map((color) => (
+                            <div className="grid grid-cols-4 gap-2">
+                                {COLORS.map((c) => (
                                     <button
-                                        key={color}
+                                        key={c}
                                         type="button"
-                                        onClick={() => setSelectedColor(color)}
-                                        className={`w-8 h-8 rounded-full transition-transform ${color} ${selectedColor === color
-                                            ? 'ring-2 ring-offset-2 ring-slate-400 dark:ring-slate-500 scale-110'
-                                            : 'hover:scale-110 opacity-70 hover:opacity-100'
-                                            }`}
+                                        onClick={() => setSelectedColor(c)}
+                                        className={`w-full h-8 rounded-lg ${c} ${selectedColor === c ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
                                     />
                                 ))}
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                Exam Date (Optional)
+                            </label>
+                            <input
+                                type="date"
+                                value={examDate}
+                                onChange={(e) => setExamDate(e.target.value)}
+                                className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                            />
                         </div>
 
                         {/* Preview */}

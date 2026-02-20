@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Timestamp } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { db } from '../lib/firebase';
@@ -25,7 +26,7 @@ export type ChatMessage = {
     senderId: string;
     senderName: string;
     text: string;
-    timestamp: any; // Firestore Timestamp
+    timestamp: Timestamp | null;
 };
 
 export type Group = {
@@ -57,6 +58,7 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
     // Load User's Groups
     useEffect(() => {
         if (!user) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setGroups([]);
             return;
         }

@@ -236,7 +236,7 @@ export default function Dashboard() {
                         variants={container}
                         initial="hidden"
                         animate="show"
-                        className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4"
                     >
                         {subjects.map((subject, index) => (
                             <motion.div key={subject.id} variants={item}>

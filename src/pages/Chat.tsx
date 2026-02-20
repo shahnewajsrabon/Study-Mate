@@ -3,8 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useSocial, type Group, type ChatMessage } from '../context/SocialContext';
 import { db } from '../lib/firebase';
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
-import { Send, MessageCircle, Plus, Users, Hash, Menu, ChevronLeft, Loader2, Copy, LogOut } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Send, MessageCircle, Plus, Users, Hash, ChevronLeft, Loader2, Copy, LogOut } from 'lucide-react';
+import { motion } from 'framer-motion';
 import AnimatedPage from '../components/AnimatedPage';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -14,10 +14,10 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 }
 
 // Helper for date formatting
-const formatTime = (timestamp: any) => {
+const formatTime = (timestamp: { toDate: () => Date } | number | Date | null | undefined) => {
     if (!timestamp) return '...';
     // Firestore timestamp to Date
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const date = typeof timestamp === 'object' && 'toDate' in timestamp && typeof timestamp.toDate === 'function' ? timestamp.toDate() : new Date(timestamp as string | number | Date);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
@@ -28,23 +28,27 @@ export default function Chat() {
     const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sending, setSending] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
 
-    // Initial Selection
+    // Initial Selection (Desktop Only)
     useEffect(() => {
-        if (!selectedGroup && groups.length > 0) {
+        const isMobile = window.innerWidth < 768;
+        if (!selectedGroup && groups.length > 0 && !isMobile) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedGroup(groups[0]);
         }
     }, [groups, selectedGroup]);
 
     // Load Messages for Selected Group
     useEffect(() => {
-        if (!selectedGroup) {
-            setMessages([]);
-            return;
-        }
+        if (!selectedGroup) return;
+
+        // But doing it synchronously inside useEffect triggers the warning.
+        // Better: depend on selectedGroup.id and let the new snapshot replace messages.
+        // For now, let's just remove the explicit clear and trust the snapshot listener to fire quickly.
+        // Or if we want to clear, use a ref or cleanup function?
+        // Let's rely on snapshot.
 
         const q = query(
             collection(db, 'groups', selectedGroup.id, 'messages'),
@@ -60,7 +64,10 @@ export default function Chat() {
             setMessages(msgs);
         }, (err) => console.error("Msg Load Err", err));
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            setMessages([]); // Cleanup function runs when effect unmounts or before re-running. This is safe!
+        };
     }, [selectedGroup]);
 
     // Auto-scroll
@@ -109,100 +116,97 @@ export default function Chat() {
         <AnimatedPage className="h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)] flex flex-col md:flex-row overflow-hidden">
 
             {/* Mobile Header */}
-            <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+            <div className={`md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 ${selectedGroup ? 'hidden' : 'flex'}`}>
                 <div className="flex items-center gap-2">
                     <Users className="w-6 h-6 text-indigo-500" />
                     <span className="font-bold text-slate-800 dark:text-white truncate max-w-[200px]">
-                        {selectedGroup ? selectedGroup.name : 'Study Groups'}
+                        Study Groups
                     </span>
                 </div>
-                <button onClick={() => setIsSidebarOpen(true)} className="p-2 -mr-2 text-slate-600 dark:text-slate-300">
-                    <Menu className="w-6 h-6" />
-                </button>
             </div>
 
+            {/* Mobile Chat Header (Only visible when group selected) */}
+            {selectedGroup && (
+                <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                    <button onClick={() => setSelectedGroup(null)} className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                        <ChevronLeft className="w-5 h-5" />
+                        <span className="font-medium">Back</span>
+                    </button>
+                    <span className="font-bold text-slate-800 dark:text-white truncate max-w-[150px]">
+                        {selectedGroup.name}
+                    </span>
+                    <button onClick={handleLeave} className="text-red-500">
+                        <LogOut className="w-5 h-5" />
+                    </button>
+                </div>
+            )}
+
             {/* Sidebar (Group List) */}
-            <AnimatePresence>
-                {(isSidebarOpen || window.innerWidth >= 768) && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            onClick={() => setIsSidebarOpen(false)}
-                            className="md:hidden fixed inset-0 bg-black/50 z-40"
-                        />
-                        <motion.div
-                            initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
-                            className="fixed md:static inset-y-0 left-0 z-50 w-72 bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 flex flex-col"
+            <div
+                className={`flex-col bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 w-full md:w-72 md:flex ${selectedGroup ? 'hidden' : 'flex'}`}
+            >
+                <div className="p-4 border-b border-slate-200 dark:border-slate-700 hidden md:flex justify-between items-center">
+                    <h2 className="font-bold text-xl text-slate-800 dark:text-white flex items-center gap-2">
+                        <Users className="w-6 h-6 text-indigo-500" />
+                        My Groups
+                    </h2>
+                </div>
+
+                <div className="p-4 space-y-2">
+                    <button
+                        onClick={handleCreateGroup}
+                        className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                        <Plus className="w-4 h-4" /> Create Group
+                    </button>
+                    <button
+                        onClick={handleJoinGroup}
+                        className="w-full flex items-center justify-center gap-2 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg font-medium transition-colors"
+                    >
+                        <Hash className="w-4 h-4" /> Join via Code
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-1">
+                    {groups.length === 0 && (
+                        <div className="text-center text-slate-500 text-sm py-4">
+                            You haven't joined any groups yet.
+                        </div>
+                    )}
+                    {groups.map(group => (
+                        <button
+                            key={group.id}
+                            onClick={() => {
+                                setSelectedGroup(group);
+                            }}
+                            className={cn(
+                                "w-full text-left px-3 py-3 rounded-xl flex items-center gap-3 transition-all",
+                                selectedGroup?.id === group.id
+                                    ? "bg-white dark:bg-slate-800 shadow-sm ring-1 ring-indigo-500/20"
+                                    : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                            )}
                         >
-                            <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                                <h2 className="font-bold text-xl text-slate-800 dark:text-white flex items-center gap-2">
-                                    <Users className="w-6 h-6 text-indigo-500" />
-                                    My Groups
-                                </h2>
-                                <button onClick={() => setIsSidebarOpen(false)} className="md:hidden">
-                                    <ChevronLeft />
-                                </button>
+                            <div className={cn(
+                                "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm",
+                                selectedGroup?.id === group.id ? "bg-indigo-500" : "bg-slate-400"
+                            )}>
+                                {group.name[0].toUpperCase()}
                             </div>
-
-                            <div className="p-4 space-y-2">
-                                <button
-                                    onClick={handleCreateGroup}
-                                    className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
-                                >
-                                    <Plus className="w-4 h-4" /> Create Group
-                                </button>
-                                <button
-                                    onClick={handleJoinGroup}
-                                    className="w-full flex items-center justify-center gap-2 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg font-medium transition-colors"
-                                >
-                                    <Hash className="w-4 h-4" /> Join via Code
-                                </button>
+                            <div>
+                                <div className={cn("font-medium text-sm", selectedGroup?.id === group.id ? "text-indigo-900 dark:text-indigo-100" : "text-slate-700 dark:text-slate-300")}>
+                                    {group.name}
+                                </div>
+                                <div className="text-xs text-slate-500 truncate max-w-[140px]">
+                                    {group.members.length} members
+                                </div>
                             </div>
-
-                            <div className="flex-1 overflow-y-auto p-4 space-y-1">
-                                {groups.length === 0 && (
-                                    <div className="text-center text-slate-500 text-sm py-4">
-                                        You haven't joined any groups yet.
-                                    </div>
-                                )}
-                                {groups.map(group => (
-                                    <button
-                                        key={group.id}
-                                        onClick={() => {
-                                            setSelectedGroup(group);
-                                            setIsSidebarOpen(false);
-                                        }}
-                                        className={cn(
-                                            "w-full text-left px-3 py-3 rounded-xl flex items-center gap-3 transition-all",
-                                            selectedGroup?.id === group.id
-                                                ? "bg-white dark:bg-slate-800 shadow-sm ring-1 ring-indigo-500/20"
-                                                : "hover:bg-slate-100 dark:hover:bg-slate-800"
-                                        )}
-                                    >
-                                        <div className={cn(
-                                            "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm",
-                                            selectedGroup?.id === group.id ? "bg-indigo-500" : "bg-slate-400"
-                                        )}>
-                                            {group.name[0].toUpperCase()}
-                                        </div>
-                                        <div>
-                                            <div className={cn("font-medium text-sm", selectedGroup?.id === group.id ? "text-indigo-900 dark:text-indigo-100" : "text-slate-700 dark:text-slate-300")}>
-                                                {group.name}
-                                            </div>
-                                            <div className="text-xs text-slate-500 truncate max-w-[140px]">
-                                                {group.members.length} members
-                                            </div>
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                        </button>
+                    ))}
+                </div>
+            </div>
 
             {/* Main Chat Area */}
-            <div className="flex-1 flex flex-col bg-white dark:bg-slate-800 relative">
+            <div className={`flex-1 flex-col bg-white dark:bg-slate-800 relative md:flex ${selectedGroup ? 'flex' : 'hidden'}`}>
                 {selectedGroup ? (
                     <>
                         {/* Header */}

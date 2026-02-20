@@ -4,6 +4,7 @@ import { useToast } from './ToastContext';
 import { db } from '../lib/firebase';
 import { SYLLABUS_TEMPLATES, type TemplateSubject } from '../data/syllabusTemplates';
 import { doc, onSnapshot, setDoc, collection, addDoc } from 'firebase/firestore';
+import { getLevelInfo } from '../utils/levelUtils';
 
 // --- Types ---
 export type BadgeType = 'start_strong' | 'streak_master' | 'subject_conqueror' | 'night_owl';
@@ -14,30 +15,6 @@ export type BadgeEntry = {
 };
 
 // --- Leveling System ---
-export const LEVELS = [
-    { level: 1, minXP: 0, title: 'Novice' },
-    { level: 2, minXP: 500, title: 'Apprentice' },
-    { level: 3, minXP: 1200, title: 'Scholar' },
-    { level: 4, minXP: 2500, title: 'Sage' },
-    { level: 5, minXP: 5000, title: 'Master' },
-    { level: 6, minXP: 10000, title: 'Grandmaster' },
-    { level: 7, minXP: 20000, title: 'Legend' },
-];
-
-export const getLevelInfo = (xp: number) => {
-    // Find the highest level where xp >= minXP
-    const current = [...LEVELS].reverse().find(l => xp >= l.minXP) || LEVELS[0];
-    const next = LEVELS.find(l => l.level === current.level + 1);
-
-    return {
-        currentLevel: current.level,
-        currentTitle: current.title,
-        nextLevelXP: next ? next.minXP : null,
-        progress: next
-            ? ((xp - current.minXP) / (next.minXP - current.minXP)) * 100
-            : 100
-    };
-};
 
 export type Topic = {
     id: string;
@@ -54,12 +31,26 @@ export type Chapter = {
     topics: Topic[];
 };
 
+export type ScheduledSession = {
+    id: string;
+    subjectId: string;
+    date: string; // ISO Date string (YYYY-MM-DD)
+    time?: string; // HH:mm
+    durationMinutes: number;
+    chapterId?: string;
+    topicId?: string;
+    notes?: string;
+    isCompleted: boolean;
+    reminderSent?: boolean;
+};
+
 export type Subject = {
     id: string;
     name: string;
     color: string; // Hex code or Tailwind class
     icon?: string; // Icon name from Lucide
     chapters: Chapter[];
+    examDate?: string; // ISO Date string (YYYY-MM-DD)
 };
 
 export type UserProfile = {
@@ -77,6 +68,7 @@ export type UserProfile = {
     syllabusCompletionPercentage?: number;
     xp: number;
     level: number;
+    scheduledSessions?: ScheduledSession[];
 };
 
 interface StudyContextType {
@@ -100,6 +92,10 @@ interface StudyContextType {
     importData: (jsonData: string) => boolean;
     importSyllabusData: (subjects: TemplateSubject[]) => void;
     saveStudySession: (durationInSeconds: number, subjectId?: string, sessionGoal?: string) => Promise<void>;
+    // Scheduler Actions
+    addScheduledSession: (session: Omit<ScheduledSession, 'id' | 'isCompleted'>) => void;
+    toggleScheduledSession: (sessionId: string) => void;
+    deleteScheduledSession: (sessionId: string) => void;
 }
 
 // --- Initial Data ---
@@ -115,7 +111,8 @@ const initialProfile: UserProfile = {
     weeklyStudyTime: 0,
     monthlyStudyTime: 0,
     xp: 0,
-    level: 1
+    level: 1,
+    scheduledSessions: []
 };
 
 const STORAGE_KEY = 'study-tracker-data';
@@ -844,6 +841,87 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    // --- Scheduler Actions ---
+    const addScheduledSession = (session: Omit<ScheduledSession, 'id' | 'isCompleted'>) => {
+        const newSession: ScheduledSession = {
+            ...session,
+            id: crypto.randomUUID(),
+            isCompleted: false
+        };
+        const updatedProfile = {
+            ...userProfile,
+            scheduledSessions: [...(userProfile.scheduledSessions || []), newSession]
+        };
+        updateProfile(updatedProfile);
+        toast.success("Study session scheduled!");
+    };
+
+    const toggleScheduledSession = (sessionId: string) => {
+        const updatedSessions = (userProfile.scheduledSessions || []).map(s => {
+            if (s.id === sessionId) {
+                const completed = !s.isCompleted;
+                // If marking as complete, verify if we should log it?
+                // For now, just toggle state. The UI will handle the prompt logic 
+                // BEFORE calling this, or we can chain it. 
+                // Let's just toggle here.
+                return { ...s, isCompleted: completed };
+            }
+            return s;
+        });
+        updateProfile({ ...userProfile, scheduledSessions: updatedSessions });
+    };
+
+    const deleteScheduledSession = (sessionId: string) => {
+        const updatedSessions = (userProfile.scheduledSessions || []).filter(s => s.id !== sessionId);
+        updateProfile({ ...userProfile, scheduledSessions: updatedSessions });
+        toast.success("Scheduled session deleted.");
+    };
+
+    // --- Reminders Logic ---
+    useEffect(() => {
+        // Request permission on mount
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        const checkReminders = () => {
+            if (!userProfile.scheduledSessions) return;
+
+            const now = new Date();
+            const updatedSessions = userProfile.scheduledSessions.map(session => {
+                if (session.isCompleted || session.reminderSent || !session.time) return session;
+
+                const sessionDate = new Date(`${session.date}T${session.time}`);
+                const diffMs = sessionDate.getTime() - now.getTime();
+                const diffMins = diffMs / (1000 * 60);
+
+                // Notify if within 10 minutes (and not in past by more than 5 mins)
+                if (diffMins <= 10 && diffMins > -5) {
+                    // Send Notification
+                    if (Notification.permission === 'granted') {
+                        const subject = subjects.find(s => s.id === session.subjectId);
+                        new Notification(`Study Session: ${subject?.name}`, {
+                            body: `Starting in ${Math.round(Math.max(0, diffMins))} minutes! ${session.notes ? `\nNote: ${session.notes}` : ''}`,
+                            icon: '/pwa-192x192.png' // Assuming PWA icon exists
+                        });
+                    } else {
+                        toast.info("Upcoming Study Session: " + subjects.find(s => s.id === session.subjectId)?.name);
+                    }
+                    return { ...session, reminderSent: true };
+                }
+                return session;
+            });
+
+            // Only update if changes occurred
+            if (JSON.stringify(updatedSessions) !== JSON.stringify(userProfile.scheduledSessions)) {
+                updateProfile({ ...userProfile, scheduledSessions: updatedSessions });
+            }
+        };
+
+        const interval = setInterval(checkReminders, 60000); // Check every minute
+        return () => clearInterval(interval);
+    }, [userProfile.scheduledSessions, subjects, updateProfile]);
+
     return (
         <StudyContext.Provider
             value={{
@@ -866,6 +944,9 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                 importData,
                 importSyllabusData,
                 saveStudySession,
+                addScheduledSession,
+                toggleScheduledSession,
+                deleteScheduledSession
             }}
         >
             {children}

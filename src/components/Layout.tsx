@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useOutlet } from 'react-router-dom';
-import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, MessageCircle, Download, Calendar, Users } from 'lucide-react';
+import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, Calendar, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { useStudy, getLevelInfo } from '../context/StudyContext';
+import { useStudy } from '../context/StudyContext';
+import { getLevelInfo } from '../utils/levelUtils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cloneElement } from 'react';
 import TourOverlay, { type TourStep } from './TourOverlay';
@@ -282,13 +283,14 @@ export default function Layout() {
                     <LayoutDashboard className="w-6 h-6" />
                     <span>Home</span>
                 </Link>
+
                 <Link
-                    to="/analytics"
-                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/analytics') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
+                    to="/planner"
+                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/planner') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
                         }`}
                 >
-                    <TrendingUp className="w-6 h-6" />
-                    <span>Stats</span>
+                    <Calendar className="w-6 h-6" />
+                    <span>Planner</span>
                 </Link>
 
                 <Link
@@ -299,33 +301,23 @@ export default function Layout() {
                     <Timer className="w-6 h-6" />
                     <span>Timer</span>
                 </Link>
+
                 <Link
                     to="/chat"
                     className={`flex flex-col items-center gap-1 text-xs ${isActive('/chat') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
                         }`}
                 >
-                    <MessageCircle className="w-6 h-6" />
-                    <span>Comm..</span>
+                    <Users className="w-6 h-6" />
+                    <span>Groups</span>
                 </Link>
 
-                {/* Install Button (Conditionally Rendered) */}
-                {installPromptEvent && (
-                    <button
-                        onClick={handleInstall}
-                        className="flex flex-col items-center gap-1 text-xs text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400"
-                    >
-                        <Download className="w-6 h-6" />
-                        <span>Install</span>
-                    </button>
-                )}
-
                 <Link
-                    to="/settings"
-                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/settings') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
+                    to="/analytics"
+                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/analytics') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
                         }`}
                 >
-                    <SettingsIcon className="w-6 h-6" />
-                    <span>Settings</span>
+                    <TrendingUp className="w-6 h-6" />
+                    <span>Stats</span>
                 </Link>
             </nav>
 

@@ -1,14 +1,91 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useStudy } from '../context/StudyContext';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, BookOpen, Clock, AlertCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, AlertCircle, CalendarClock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export default function Planner() {
-    const { subjects, userProfile } = useStudy();
+    const { subjects, userProfile, addScheduledSession, toggleScheduledSession, deleteScheduledSession, saveStudySession } = useStudy();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [newSessionData, setNewSessionData] = useState<{
+        subjectId: string;
+        chapterId: string;
+        topicId: string;
+        time: string;
+        durationMinutes: number;
+        notes: string;
+    }>({
+        subjectId: '',
+        chapterId: '',
+        topicId: '',
+        time: '18:00',
+        durationMinutes: 60,
+        notes: ''
+    });
+
+    // Reset form when modal opens
+    const openAddModal = () => {
+        if (subjects.length > 0) {
+            setNewSessionData(prev => ({ ...prev, subjectId: subjects[0].id }));
+        }
+        setIsAddModalOpen(true);
+    };
+
+    const handleAddSession = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedDate || !newSessionData.subjectId) return;
+
+        // Format date as YYYY-MM-DD
+        const year = selectedDate.getFullYear();
+        const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(selectedDate.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+
+        addScheduledSession({
+            subjectId: newSessionData.subjectId,
+            date: dateStr,
+            time: newSessionData.time,
+            durationMinutes: newSessionData.durationMinutes,
+            chapterId: newSessionData.chapterId || undefined,
+            topicId: newSessionData.topicId || undefined,
+            notes: newSessionData.notes
+        });
+        setIsAddModalOpen(false);
+    };
+
+    // Filter sessions for selected date
+    const selectedDateSessions = useMemo(() => {
+        if (!selectedDate || !userProfile.scheduledSessions) return [];
+        const year = selectedDate.getFullYear();
+        const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(selectedDate.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+        return userProfile.scheduledSessions.filter(s => s.date === dateStr);
+    }, [selectedDate, userProfile.scheduledSessions]);
+
+    // Check if a day has sessions (for calendar dots)
+    const hasSessionOnDate = (day: number) => {
+        if (!userProfile.scheduledSessions) return false;
+        const checkYear = currentDate.getFullYear();
+        const checkMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const checkDay = String(day).padStart(2, '0');
+        const dateStr = `${checkYear}-${checkMonth}-${checkDay}`;
+        return userProfile.scheduledSessions.some(s => s.date === dateStr && !s.isCompleted);
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleToggleSession = async (session: any) => {
+        if (!session.isCompleted) {
+            // Completing it
+            if (confirm("Mark as done? Do you want to log this time to your stats?")) {
+                await saveStudySession(session.durationMinutes * 60, session.subjectId);
+            }
+        }
+        toggleScheduledSession(session.id);
+    };
 
     // --- Calendar Logic ---
     const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
@@ -34,7 +111,7 @@ export default function Planner() {
         // 1. Prioritize subjects with lowest completion (but > 0 to ignore untouched stuff unless enabled)
         // Actually, prioritize subjects that have incomplete chapters.
 
-        let allIncompleteTopics: { subjectName: string; chapterName: string; topicName: string; priority: number }[] = [];
+        const allIncompleteTopics: { subjectName: string; chapterName: string; topicName: string; priority: number }[] = [];
 
         subjects.forEach(sub => {
             sub.chapters.forEach(ch => {
@@ -109,7 +186,7 @@ export default function Planner() {
                             const day = i + 1;
                             const todayClass = isToday(day) ? "bg-blue-500 text-white shadow-lg shadow-blue-500/30 font-bold" : "";
                             const selectedClass = isSelected(day) && !isToday(day) ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-semibold" : "";
-                            const baseClass = "aspect-square rounded-xl flex items-center justify-center text-sm cursor-pointer transition-all hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300";
+                            const baseClass = "aspect-square rounded-xl flex items-center justify-center text-sm cursor-pointer transition-all hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 relative";
 
                             return (
                                 <motion.div
@@ -120,6 +197,9 @@ export default function Planner() {
                                     className={`${baseClass} ${todayClass} ${selectedClass}`}
                                 >
                                     {day}
+                                    {hasSessionOnDate(day) && (
+                                        <div className="absolute bottom-1 w-1 h-1 bg-indigo-500 rounded-full"></div>
+                                    )}
                                 </motion.div>
                             );
                         })}
@@ -129,17 +209,112 @@ export default function Planner() {
                 {/* Sidebar / Suggestions */}
                 <div className="space-y-6">
 
-                    {/* Selected Date Info (Placeholder for now) */}
+                    {/* Selected Date Info */}
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                <Clock className="w-5 h-5 text-indigo-500" />
+                                {selectedDate?.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                            </h3>
+                            <button
+                                onClick={openAddModal}
+                                className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                            >
+                                + Add
+                            </button>
+                        </div>
+
+                        <div className="space-y-3 min-h-[100px]">
+                            {selectedDateSessions.length > 0 ? (
+                                selectedDateSessions.map(session => {
+                                    const subject = subjects.find(s => s.id === session.subjectId);
+                                    let topicDetails = '';
+                                    if (subject && session.chapterId) {
+                                        const chapter = subject.chapters.find(c => c.id === session.chapterId);
+                                        if (chapter) {
+                                            topicDetails = chapter.name;
+                                            if (session.topicId) {
+                                                const topic = chapter.topics.find(t => t.id === session.topicId);
+                                                if (topic) topicDetails += ` > ${topic.name}`;
+                                            }
+                                        }
+                                    }
+
+                                    return (
+                                        <div key={session.id} className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-700">
+                                            <input
+                                                type="checkbox"
+                                                checked={session.isCompleted}
+                                                onChange={() => handleToggleSession(session)}
+                                                className="mt-1 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
+                                            />
+                                            <div className="flex-1">
+                                                <div className="flex justify-between items-start">
+                                                    <span className={`font-semibold text-sm ${session.isCompleted ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                                                        {subject?.name || 'Unknown Subject'}
+                                                    </span>
+                                                    <button onClick={() => deleteScheduledSession(session.id)} className="text-slate-400 hover:text-red-500">
+                                                        &times;
+                                                    </button>
+                                                </div>
+                                                {topicDetails && (
+                                                    <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
+                                                        {topicDetails}
+                                                    </div>
+                                                )}
+                                                <div className="text-xs text-slate-500 mt-1 flex gap-2">
+                                                    <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded">
+                                                        {session.time}
+                                                    </span>
+                                                    <span>{session.durationMinutes}m</span>
+                                                </div>
+                                                {session.notes && (
+                                                    <p className="text-xs text-slate-500 mt-1 italic">
+                                                        "{session.notes}"
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="text-center py-8 text-slate-400 text-sm">
+                                    <p>No study sessions scheduled.</p>
+                                    <button
+                                        onClick={openAddModal}
+                                        className="mt-4 px-4 py-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400 rounded-lg text-sm font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
+                                    >
+                                        + Schedule Session
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Upcoming Exams Widget */}
                     <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
                         <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-                            <Clock className="w-5 h-5 text-indigo-500" />
-                            {selectedDate?.toLocaleDateString()}
+                            <CalendarClock className="w-5 h-5 text-indigo-500" />
+                            Upcoming Exams
                         </h3>
-                        <div className="text-center py-8 text-slate-400 text-sm">
-                            <p>No study sessions scheduled.</p>
-                            <button className="mt-4 px-4 py-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400 rounded-lg text-sm font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors">
-                                + Schedule Session
-                            </button>
+                        <div className="space-y-3">
+                            {subjects.filter(s => s.examDate).sort((a, b) => new Date(a.examDate!).getTime() - new Date(b.examDate!).getTime()).slice(0, 3).map(subject => {
+                                const daysLeft = Math.ceil((new Date(subject.examDate!).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                                return (
+                                    <div key={subject.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-700">
+                                        <div>
+                                            <div className="font-semibold text-sm text-slate-800 dark:text-slate-200">{subject.name}</div>
+                                            <div className="text-xs text-slate-500">{new Date(subject.examDate!).toLocaleDateString()}</div>
+                                        </div>
+                                        <div className={`px-2 py-1 rounded-lg text-xs font-bold ${daysLeft <= 7 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                                            {daysLeft} days
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            {subjects.filter(s => s.examDate).length === 0 && (
+                                <p className="text-sm text-slate-400 text-center py-4">No exams scheduled yet.</p>
+                            )}
                         </div>
                     </div>
 
@@ -171,6 +346,116 @@ export default function Planner() {
 
                 </div>
             </div>
+
+            {/* Add Session Modal */}
+            {isAddModalOpen && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6"
+                    >
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Schedule Study Session</h3>
+                        <form onSubmit={handleAddSession} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Subject</label>
+                                <select
+                                    value={newSessionData.subjectId}
+                                    onChange={e => setNewSessionData({ ...newSessionData, subjectId: e.target.value, chapterId: '', topicId: '' })}
+                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                >
+                                    {subjects.map(s => (
+                                        <option key={s.id} value={s.id}>{s.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Chapter & Topic Selection */}
+                            {newSessionData.subjectId && (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Chapter (Opt)</label>
+                                        <select
+                                            value={newSessionData.chapterId}
+                                            onChange={e => setNewSessionData({ ...newSessionData, chapterId: e.target.value, topicId: '' })}
+                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                                        >
+                                            <option value="">Any Chapter</option>
+                                            {subjects.find(s => s.id === newSessionData.subjectId)?.chapters.map(c => (
+                                                <option key={c.id} value={c.id}>{c.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Topic (Opt)</label>
+                                        <select
+                                            value={newSessionData.topicId}
+                                            onChange={e => setNewSessionData({ ...newSessionData, topicId: e.target.value })}
+                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                                            disabled={!newSessionData.chapterId}
+                                        >
+                                            <option value="">Any Topic</option>
+                                            {newSessionData.chapterId && subjects.find(s => s.id === newSessionData.subjectId)?.chapters
+                                                .find(c => c.id === newSessionData.chapterId)?.topics.map(t => (
+                                                    <option key={t.id} value={t.id}>{t.name}</option>
+                                                ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Time</label>
+                                    <input
+                                        type="time"
+                                        value={newSessionData.time}
+                                        onChange={e => setNewSessionData({ ...newSessionData, time: e.target.value })}
+                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Duration (mins)</label>
+                                    <input
+                                        type="number"
+                                        min="5"
+                                        step="5"
+                                        value={newSessionData.durationMinutes}
+                                        onChange={e => setNewSessionData({ ...newSessionData, durationMinutes: parseInt(e.target.value) })}
+                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes (Optional)</label>
+                                <textarea
+                                    value={newSessionData.notes}
+                                    onChange={e => setNewSessionData({ ...newSessionData, notes: e.target.value })}
+                                    placeholder="What topics will you cover?"
+                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none h-20 resize-none"
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAddModalOpen(false)}
+                                    className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg font-medium"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg font-medium shadow-sm shadow-indigo-200 dark:shadow-none"
+                                >
+                                    Schedule
+                                </button>
+                            </div>
+                        </form>
+                    </motion.div>
+                </div>
+            )}
         </div>
     );
 }
