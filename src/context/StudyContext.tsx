@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { db } from '../lib/firebase';
@@ -14,28 +14,26 @@ export type BadgeEntry = {
     earnedAt: string;
 };
 
-// --- Leveling System ---
-
 export type Topic = {
     id: string;
     name: string;
     isCompleted: boolean;
-    completedAt?: string | null; // ISO Date string
+    completedAt?: string | null;
 };
 
 export type Chapter = {
     id: string;
     name: string;
     isCompleted: boolean;
-    completedAt?: string | null; // ISO Date string
+    completedAt?: string | null;
     topics: Topic[];
 };
 
 export type ScheduledSession = {
     id: string;
     subjectId: string;
-    date: string; // ISO Date string (YYYY-MM-DD)
-    time?: string; // HH:mm
+    date: string;
+    time?: string;
     durationMinutes: number;
     chapterId?: string;
     topicId?: string;
@@ -47,22 +45,22 @@ export type ScheduledSession = {
 export type Subject = {
     id: string;
     name: string;
-    color: string; // Hex code or Tailwind class
-    icon?: string; // Icon name from Lucide
+    color: string;
+    icon?: string;
     chapters: Chapter[];
-    examDate?: string; // ISO Date string (YYYY-MM-DD)
+    examDate?: string;
 };
 
 export type UserProfile = {
     name: string;
-    grade: string; // e.g., "HSC 2026"
+    grade: string;
     language: 'en' | 'bn';
-    totalStudyTime: number; // in seconds
+    totalStudyTime: number;
     earnedBadges: BadgeEntry[];
-    lastStudyDate?: string; // ISO Date string (YYYY-MM-DD)
+    lastStudyDate?: string;
     currentStreak: number;
-    dailyGoal: number; // in seconds (default 7200 = 2 hours)
-    todayStudyTime: number; // in seconds
+    dailyGoal: number;
+    todayStudyTime: number;
     weeklyStudyTime: number;
     monthlyStudyTime: number;
     syllabusCompletionPercentage?: number;
@@ -82,7 +80,6 @@ interface StudyContextType {
     editChapter: (subjectId: string, chapterId: string, newName: string) => void;
     toggleChapter: (subjectId: string, chapterId: string) => void;
     deleteChapter: (subjectId: string, chapterId: string) => void;
-    // Topic Actions
     addTopic: (subjectId: string, chapterId: string, topicName: string) => void;
     editTopic: (subjectId: string, chapterId: string, topicId: string, newName: string) => void;
     toggleTopic: (subjectId: string, chapterId: string, topicId: string) => void;
@@ -92,7 +89,6 @@ interface StudyContextType {
     importData: (jsonData: string) => boolean;
     importSyllabusData: (subjects: TemplateSubject[]) => void;
     saveStudySession: (durationInSeconds: number, subjectId?: string, sessionGoal?: string) => Promise<void>;
-    // Scheduler Actions
     addScheduledSession: (session: Omit<ScheduledSession, 'id' | 'isCompleted'>) => void;
     toggleScheduledSession: (sessionId: string) => void;
     deleteScheduledSession: (sessionId: string) => void;
@@ -106,7 +102,7 @@ const initialProfile: UserProfile = {
     totalStudyTime: 0,
     earnedBadges: [],
     currentStreak: 0,
-    dailyGoal: 7200, // 2 hours default
+    dailyGoal: 7200,
     todayStudyTime: 0,
     weeklyStudyTime: 0,
     monthlyStudyTime: 0,
@@ -119,10 +115,8 @@ const STORAGE_KEY = 'study-tracker-data';
 
 // --- Helpers ---
 const generateDefaultSubjects = (): Subject[] => {
-    // Default to HSC Science (index 0)
     const template = SYLLABUS_TEMPLATES[0];
     if (!template) return [];
-
     return template.subjects.map(ts => ({
         id: crypto.randomUUID(),
         name: ts.name,
@@ -143,15 +137,12 @@ const generateDefaultSubjects = (): Subject[] => {
     }));
 };
 
-// --- Context ---
 const StudyContext = createContext<StudyContextType | undefined>(undefined);
 
 export function StudyProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
     const toast = useToast();
 
-    // Lazy init for Guest Mode (LocalStorage) to allow immediate rendering
-    // For Authenticated User, this will be overwritten by Firestore data
     const [userProfile, setUserProfile] = useState<UserProfile>(() => {
         try {
             const savedData = localStorage.getItem(STORAGE_KEY);
@@ -159,9 +150,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                 const parsed = JSON.parse(savedData);
                 if (parsed.userProfile) return parsed.userProfile;
             }
-        } catch (e) {
-            console.error('Failed to load user profile:', e);
-        }
+        } catch (e) { console.error('Failed to load profile:', e); }
         return initialProfile;
     });
 
@@ -171,11 +160,8 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
             if (savedData) {
                 const parsed = JSON.parse(savedData);
                 if (parsed.subjects && parsed.subjects.length > 0) {
-                    // Migration logic for old data format if present
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     return parsed.subjects.map((sub: any) => ({
                         ...sub,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         chapters: sub.chapters.map((chap: any) => ({
                             ...chap,
                             topics: chap.topics || []
@@ -183,169 +169,88 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                     }));
                 }
             }
-        } catch (e) {
-            console.error('Failed to load subjects, falling back to default:', e);
-        }
-        // Fallback to default syllabus if no data found
+        } catch (e) { console.error('Failed to load subjects:', e); }
         return generateDefaultSubjects();
     });
 
-    // Effect: Load/Sync data
-    useEffect(() => {
+    // --- Persistence Helper ---
+    const saveData = useCallback(async (newProfile: UserProfile, newSubjects: Subject[]) => {
         if (user) {
-            // --- Authenticated Mode: Sync with Firestore ---
-            const userDocRef = doc(db, 'users', user.uid);
-
-            const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    // Data exists in cloud, sync state
-                    const data = docSnap.data();
-                    if (data.userProfile) setUserProfile(data.userProfile);
-                    if (data.subjects) setSubjects(data.subjects);
-                } else {
-                    // No data in cloud (New user or first login) -> Migrate LocalStorage
-
-                    // We can use the current state values which are lazy-loaded from localStorage
-                    const dataToUpload = {
-                        userProfile: initialProfile,
-                        subjects: subjects.length > 0 ? subjects : generateDefaultSubjects()
-                    };
-
-                    try {
-                        const savedData = localStorage.getItem(STORAGE_KEY);
-                        if (savedData) {
-                            const parsed = JSON.parse(savedData);
-                            if (parsed.userProfile) dataToUpload.userProfile = parsed.userProfile;
-                            if (parsed.subjects) {
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                dataToUpload.subjects = parsed.subjects.map((sub: any) => ({
-                                    ...sub,
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    chapters: sub.chapters.map((chap: any) => ({
-                                        ...chap,
-                                        topics: chap.topics || []
-                                    }))
-                                }));
-                            }
-                        }
-                    } catch (e) {
-                        console.error("Error reading local storage for migration:", e);
-                    }
-
-                    setDoc(userDocRef, dataToUpload)
-                        .catch(err => console.error("Migration failed", err));
-                }
-            }, (error) => {
-                console.error("Firestore sync error:", error);
-            });
-
-            return () => unsubscribe();
-        } else {
-            // --- Guest Mode ---
-            // LocalStorage loading is already done via lazy initialization
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user]); // Only re-run if user changes logic (re-subscribing on subjects change would be bad)
-
-
-    // Helper: Save to Source of Truth
-    const saveData = React.useCallback(async (newProfile: UserProfile, newSubjects: Subject[]) => {
-
-        // Calculate Syllabus Completion Percentage
-        const totalChapters = newSubjects.reduce((acc, sub) => acc + sub.chapters.length, 0);
-        let totalProgressSum = 0;
-        newSubjects.forEach(sub => {
-            sub.chapters.forEach(ch => {
-                if (ch.topics && ch.topics.length > 0) {
-                    totalProgressSum += (ch.topics.filter(t => t.isCompleted).length / ch.topics.length) * 100;
-                } else {
-                    totalProgressSum += ch.isCompleted ? 100 : 0;
-                }
-            });
-        });
-        const completionPercentage = totalChapters === 0 ? 0 : Math.round(totalProgressSum / totalChapters);
-
-        const updatedProfile = { ...newProfile, syllabusCompletionPercentage: completionPercentage };
-
-        // Always update local state immediately (Optimistic UI)
-        setUserProfile(updatedProfile);
-        setSubjects(newSubjects);
-
-        if (user) {
-            // Save to Cloud
             try {
                 await setDoc(doc(db, 'users', user.uid), {
-                    userProfile: updatedProfile,
+                    userProfile: newProfile,
                     subjects: newSubjects
                 });
-            } catch (e) {
-                console.error("Failed to save to cloud:", e);
-                // Optionally show toast error
-            }
+            } catch (e) { console.error("Cloud save failed:", e); }
         } else {
-            // Save to LocalStorage
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                userProfile: updatedProfile,
+                userProfile: newProfile,
                 subjects: newSubjects
             }));
         }
     }, [user]);
 
-    // --- XP & Leveling Logic ---
-    const addXP = (amount: number, reason?: string) => {
-        const currentXP = userProfile.xp || 0;
-        const newXP = currentXP + amount;
-
-        const { currentLevel: oldLevel } = getLevelInfo(currentXP);
-        const { currentLevel: newLevel, currentTitle } = getLevelInfo(newXP);
-
-        // Update Profile
-        // We use updateProfile which calls saveData
-        const updatedProfile = {
-            ...userProfile,
-            xp: newXP,
-            level: newLevel
-        };
-
-        updateProfile(updatedProfile);
-
-        // Notifications
-        if (newLevel > oldLevel) {
-            toast.success(`🎉 Level Up! You are now a ${currentTitle}!`);
-            // Play level up sound if available (future)
-        } else if (reason) {
-            // Optional: toast small XP gains? heavy toast usage might be annoying.
-            // keeping it silent for small gains, descriptive for big ones.
+    // --- Global Sync Effect ---
+    const isFirstRender = useRef(true);
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
         }
-    };
 
+        // Calculate Completion %
+        const totalChapters = subjects.reduce((acc, sub) => acc + sub.chapters.length, 0);
+        let completedChapters = 0;
+        subjects.forEach(sub => {
+            sub.chapters.forEach(ch => {
+                if (ch.topics?.length > 0) {
+                    if (ch.topics.every(t => t.isCompleted)) completedChapters++;
+                } else if (ch.isCompleted) {
+                    completedChapters++;
+                }
+            });
+        });
+        const completionPercentage = totalChapters === 0 ? 0 : Math.round((completedChapters / totalChapters) * 100);
+
+        if (userProfile.syllabusCompletionPercentage !== completionPercentage) {
+            setUserProfile(prev => ({ ...prev, syllabusCompletionPercentage: completionPercentage }));
+        }
+
+        saveData({ ...userProfile, syllabusCompletionPercentage: completionPercentage }, subjects);
+    }, [subjects, userProfile, saveData]);
+
+    // --- Sync with Firestore ---
+    useEffect(() => {
+        if (!user) return;
+        const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.userProfile) setUserProfile(data.userProfile);
+                if (data.subjects) setSubjects(data.subjects);
+            }
+        });
+        return () => unsubscribe();
+    }, [user]);
 
     // --- Sync Default Subjects Effect ---
     useEffect(() => {
-        // Ensure all subjects from the default template (HSC Science) are present
-        // and have their topics populated if they are currently empty.
-        const template = SYLLABUS_TEMPLATES[0]; // Currently targeting HSC Science
+        const template = SYLLABUS_TEMPLATES[0];
         if (!template) return;
 
         let hasChanges = false;
-        // Create a copy to modify
         const currentSubjects = [...subjects];
 
-        // 1. Check for missing or incomplete subjects
-        template.subjects.forEach(templateSubject => {
-            const existingSubjectIndex = currentSubjects.findIndex(s => s.name === templateSubject.name);
-
-            if (existingSubjectIndex === -1) {
-                // Subject missing from user's list -> Add it
-                // console.log(`Adding missing default subject: ${templateSubject.name}`);
-                const newSubject: Subject = {
+        template.subjects.forEach(ts => {
+            const exists = currentSubjects.some(s => s.name === ts.name);
+            if (!exists) {
+                currentSubjects.push({
                     id: crypto.randomUUID(),
-                    name: templateSubject.name,
-                    color: templateSubject.color,
-                    icon: templateSubject.icon,
-                    chapters: templateSubject.chapters.map(tc => ({
+                    name: ts.name,
+                    color: ts.color,
+                    icon: ts.icon,
+                    chapters: ts.chapters.map(tc => ({
                         id: crypto.randomUUID(),
-                        name: tc.name, // e.g. "অধ্যায় ১ - ভৌতজগত ও পরিমাপ"
+                        name: tc.name,
                         isCompleted: false,
                         completedAt: null,
                         topics: tc.topics.map(tt => ({
@@ -355,316 +260,142 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                             completedAt: null
                         }))
                     }))
-                };
-                currentSubjects.push(newSubject);
-                hasChanges = true;
-            } else {
-                // Subject exists -> Check for empty topics (legacy data fix) & Color fix
-                const existingSubject = currentSubjects[existingSubjectIndex];
-                let subjectChanged = false;
-
-                // Fix: Migrate legacy text- colors to bg- colors
-                let newColor = existingSubject.color;
-                if (newColor.startsWith('text-')) {
-                    newColor = newColor.replace('text-', 'bg-');
-                    subjectChanged = true;
-                }
-
-                const updatedChapters = existingSubject.chapters.map(ch => {
-                    const templateCh = templateSubject.chapters.find(tc => tc.name === ch.name);
-
-                    // Logic: If chapter exists in template AND current chapter has 0 topics BUT template has topics
-                    // Then we populate the topics from the template.
-                    if (templateCh && ch.topics.length === 0 && templateCh.topics.length > 0) {
-                        subjectChanged = true;
-                        return {
-                            ...ch,
-                            topics: templateCh.topics.map(tt => ({
-                                id: crypto.randomUUID(),
-                                name: tt.name,
-                                isCompleted: false,
-                                completedAt: null
-                            }))
-                        };
-                    }
-                    return ch;
                 });
-
-                if (subjectChanged) {
-                    // console.log(`Updating subject (topics/color): ${existingSubject.name}`);
-                    currentSubjects[existingSubjectIndex] = {
-                        ...existingSubject,
-                        color: newColor,
-                        chapters: updatedChapters
-                    };
-                    hasChanges = true;
-                }
+                hasChanges = true;
             }
         });
 
-        if (hasChanges) {
-            console.log("Syncing default subjects...");
-            saveData(userProfile, currentSubjects);
-        }
+        if (hasChanges) setSubjects(currentSubjects);
+    }, [subjects]);
 
-    }, [subjects, userProfile, saveData]); // Safe dependency: hasChanges ensures we only save (and trigger re-run) when needed.
+    // --- Actions ---
+    const updateProfile = useCallback((updates: Partial<UserProfile>) => {
+        setUserProfile(prev => ({ ...prev, ...updates }));
+    }, []);
 
+    const addXP = useCallback((amount: number, reason?: string) => {
+        setUserProfile(prev => {
+            const newXP = prev.xp + amount;
+            const { currentLevel: oldLevel } = getLevelInfo(prev.xp);
+            const { currentLevel: newLevel, currentTitle } = getLevelInfo(newXP);
 
-    // --- Actions (Updated to use saveData) ---
-    const updateProfile = (profile: Partial<UserProfile>) => {
-        saveData({ ...userProfile, ...profile }, subjects);
-    };
+            if (newLevel > oldLevel) {
+                toast.success(`🎉 Level Up! You are now a ${currentTitle}!`);
+            } else if (reason) {
+                // optional toast
+            }
+            return { ...prev, xp: newXP, level: newLevel };
+        });
+    }, [toast]);
 
     const addSubject = (newSubject: Omit<Subject, 'id' | 'chapters'>) => {
-        const id = crypto.randomUUID();
-        const subject: Subject = { ...newSubject, id, chapters: [] };
-        saveData(userProfile, [...subjects, subject]);
+        setSubjects(prev => [...prev, { ...newSubject, id: crypto.randomUUID(), chapters: [] }]);
     };
 
     const editSubject = (id: string, updates: Partial<Subject>) => {
-        const newSubjects = subjects.map((sub) => {
-            if (sub.id === id) {
-                return { ...sub, ...updates };
-            }
-            return sub;
-        });
-        saveData(userProfile, newSubjects);
+        setSubjects(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
     };
 
     const deleteSubject = (id: string) => {
-        saveData(userProfile, subjects.filter((s) => s.id !== id));
+        setSubjects(prev => prev.filter(s => s.id !== id));
     };
 
     const addChapter = (subjectId: string, chapterName: string) => {
-        const newSubjects = subjects.map((sub) => {
-            if (sub.id === subjectId) {
-                return {
-                    ...sub,
-                    chapters: [
-                        ...sub.chapters,
-                        {
-                            id: crypto.randomUUID(),
-                            name: chapterName,
-                            isCompleted: false,
-                            topics: [],
-                        },
-                    ],
-                };
-            }
-            return sub;
-        });
-        saveData(userProfile, newSubjects);
+        setSubjects(prev => prev.map(sub => sub.id === subjectId ? {
+            ...sub,
+            chapters: [...sub.chapters, { id: crypto.randomUUID(), name: chapterName, isCompleted: false, topics: [] }]
+        } : sub));
     };
 
     const editChapter = (subjectId: string, chapterId: string, newName: string) => {
-        const newSubjects = subjects.map((sub) => {
-            if (sub.id === subjectId) {
-                return {
-                    ...sub,
-                    chapters: sub.chapters.map((ch) => {
-                        if (ch.id === chapterId) {
-                            return { ...ch, name: newName };
-                        }
-                        return ch;
-                    }),
-                };
-            }
-            return sub;
-        });
-        saveData(userProfile, newSubjects);
+        setSubjects(prev => prev.map(sub => sub.id === subjectId ? {
+            ...sub,
+            chapters: sub.chapters.map(ch => ch.id === chapterId ? { ...ch, name: newName } : ch)
+        } : sub));
     };
 
     const toggleChapter = (subjectId: string, chapterId: string) => {
-        const newSubjects = subjects.map((sub) => {
-            if (sub.id === subjectId) {
-                return {
-                    ...sub,
-                    chapters: sub.chapters.map((ch) => {
-                        if (ch.id === chapterId) {
-                            return {
-                                ...ch,
-                                isCompleted: !ch.isCompleted,
-                                completedAt: !ch.isCompleted ? new Date().toISOString() : null,
-                            };
-                        }
-                        return ch;
-                    }),
-                };
-            }
-            return sub;
-        });
-        saveData(userProfile, newSubjects);
+        setSubjects(prev => prev.map(sub => sub.id === subjectId ? {
+            ...sub,
+            chapters: sub.chapters.map(ch => ch.id === chapterId ? {
+                ...ch,
+                isCompleted: !ch.isCompleted,
+                completedAt: !ch.isCompleted ? new Date().toISOString() : null
+            } : ch)
+        } : sub));
     };
 
     const deleteChapter = (subjectId: string, chapterId: string) => {
-        const newSubjects = subjects.map((sub) => {
-            if (sub.id === subjectId) {
-                return {
-                    ...sub,
-                    chapters: sub.chapters.filter((ch) => ch.id !== chapterId),
-                };
-            }
-            return sub;
-        });
-        saveData(userProfile, newSubjects);
+        setSubjects(prev => prev.map(sub => sub.id === subjectId ? {
+            ...sub,
+            chapters: sub.chapters.filter(ch => ch.id !== chapterId)
+        } : sub));
     };
 
-    // --- Topic Actions ---
     const addTopic = (subjectId: string, chapterId: string, topicName: string) => {
-        const newSubjects = subjects.map((sub) => {
-            if (sub.id === subjectId) {
-                return {
-                    ...sub,
-                    chapters: sub.chapters.map((ch) => {
-                        if (ch.id === chapterId) {
-                            return {
-                                ...ch,
-                                topics: [
-                                    ...ch.topics,
-                                    {
-                                        id: crypto.randomUUID(),
-                                        name: topicName,
-                                        isCompleted: false,
-                                        completedAt: null,
-                                    }
-                                ]
-                            };
-                        }
-                        return ch;
-                    }),
-                };
-            }
-            return sub;
-        });
-        saveData(userProfile, newSubjects);
+        setSubjects(prev => prev.map(sub => sub.id === subjectId ? {
+            ...sub,
+            chapters: sub.chapters.map(ch => ch.id === chapterId ? {
+                ...ch,
+                topics: [...ch.topics, { id: crypto.randomUUID(), name: topicName, isCompleted: false, completedAt: null }]
+            } : ch)
+        } : sub));
     };
 
     const editTopic = (subjectId: string, chapterId: string, topicId: string, newName: string) => {
-        const newSubjects = subjects.map((sub) => {
-            if (sub.id === subjectId) {
-                return {
-                    ...sub,
-                    chapters: sub.chapters.map((ch) => {
-                        if (ch.id === chapterId) {
-                            return {
-                                ...ch,
-                                topics: ch.topics.map((t) => {
-                                    if (t.id === topicId) {
-                                        return { ...t, name: newName };
-                                    }
-                                    return t;
-                                }),
-                            };
-                        }
-                        return ch;
-                    }),
-                };
-            }
-            return sub;
-        });
-        saveData(userProfile, newSubjects);
+        setSubjects(prev => prev.map(sub => sub.id === subjectId ? {
+            ...sub,
+            chapters: sub.chapters.map(ch => ch.id === chapterId ? {
+                ...ch,
+                topics: ch.topics.map(t => t.id === topicId ? { ...t, name: newName } : t)
+            } : ch)
+        } : sub));
     };
 
     const toggleTopic = (subjectId: string, chapterId: string, topicId: string) => {
-        const newSubjects = subjects.map((sub) => {
-            if (sub.id === subjectId) {
-                return {
-                    ...sub,
-                    chapters: sub.chapters.map((ch) => {
-                        if (ch.id === chapterId) {
-                            const updatedTopics = ch.topics.map((t) =>
-                                t.id === topicId ? {
-                                    ...t,
-                                    isCompleted: !t.isCompleted,
-                                    completedAt: !t.isCompleted ? new Date().toISOString() : null
-                                } : t
-                            );
-
-                            // If all topics are marked done, mark the chapter as done too
-                            const allDone = updatedTopics.length > 0 && updatedTopics.every(t => t.isCompleted);
-
-                            return {
-                                ...ch,
-                                topics: updatedTopics,
-                                isCompleted: allDone,
-                                completedAt: allDone ? new Date().toISOString() : null
-                            };
+        let earnedXP = 0;
+        setSubjects(prev => prev.map(sub => sub.id === subjectId ? {
+            ...sub,
+            chapters: sub.chapters.map(ch => {
+                if (ch.id === chapterId) {
+                    const updatedTopics = ch.topics.map(t => {
+                        if (t.id === topicId) {
+                            if (!t.isCompleted) earnedXP = 50;
+                            return { ...t, isCompleted: !t.isCompleted, completedAt: !t.isCompleted ? new Date().toISOString() : null };
                         }
-                        return ch;
-                    }),
-                };
-            }
-            return sub;
-        });
+                        return t;
+                    });
+                    const allDone = updatedTopics.length > 0 && updatedTopics.every(t => t.isCompleted);
+                    return { ...ch, topics: updatedTopics, isCompleted: allDone, completedAt: allDone ? new Date().toISOString() : null };
+                }
+                return ch;
+            })
+        } : sub));
 
-        // Find if topic was just completed to award XP
-        // This is a bit expensive to re-search, but safe.
-        const subject = subjects.find(s => s.id === subjectId);
-        const chapter = subject?.chapters.find(c => c.id === chapterId);
-        const topic = chapter?.topics.find(t => t.id === topicId);
-
-        let xpBonus = 0;
-        if (topic && !topic.isCompleted) {
-            // It is being marked as complete (since logic above flips it)
-            xpBonus = 50;
-        }
-
-        const currentXP = userProfile.xp || 0;
-        const newXP = currentXP + xpBonus;
-        const { currentLevel: newLevel, currentTitle } = getLevelInfo(newXP);
-        const { currentLevel: oldLevel } = getLevelInfo(currentXP);
-
-        const finalProfile = {
-            ...userProfile,
-            xp: newXP,
-            level: newLevel
-        };
-
-        if (newLevel > oldLevel) {
-            toast.success(`🎉 Level Up! You are now a ${currentTitle}!`);
-        } else if (xpBonus > 0) {
+        if (earnedXP > 0) {
+            addXP(earnedXP, "Topic Completed");
             toast.success("+50 XP: Topic Completed!");
         }
-
-        saveData(finalProfile, newSubjects);
     };
 
     const deleteTopic = (subjectId: string, chapterId: string, topicId: string) => {
-        const newSubjects = subjects.map((sub) => {
-            if (sub.id === subjectId) {
-                return {
-                    ...sub,
-                    chapters: sub.chapters.map((ch) => {
-                        if (ch.id === chapterId) {
-                            return {
-                                ...ch,
-                                topics: ch.topics.filter((t) => t.id !== topicId)
-                            };
-                        }
-                        return ch;
-                    }),
-                };
-            }
-            return sub;
-        });
-        saveData(userProfile, newSubjects);
+        setSubjects(prev => prev.map(sub => sub.id === subjectId ? {
+            ...sub,
+            chapters: sub.chapters.map(ch => ch.id === chapterId ? {
+                ...ch,
+                topics: ch.topics.filter(t => t.id !== topicId)
+            } : ch)
+        } : sub));
     };
 
     const exportData = () => {
-        const data = {
-            userProfile,
-            subjects,
-            timestamp: new Date().toISOString(),
-            version: '1.0'
-        };
+        const data = { userProfile, subjects, timestamp: new Date().toISOString() };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `study-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
+        a.download = `study-tracker-backup.json`;
         a.click();
-        document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
 
@@ -672,54 +403,40 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         try {
             const data = JSON.parse(jsonData);
             if (data.userProfile && Array.isArray(data.subjects)) {
-                saveData(data.userProfile, data.subjects);
+                setUserProfile(data.userProfile);
+                setSubjects(data.subjects);
                 return true;
-            } else {
-                alert('Invalid backup file format.');
-                return false;
             }
-        } catch (error) {
-            console.error('Import error:', error);
-            alert('Failed to parse backup file.');
-            return false;
-        }
+        } catch (e) { console.error('Import failed:', e); }
+        return false;
     };
 
     const importSyllabusData = (templateSubjects: TemplateSubject[]) => {
-        // templateSubjects is Array of { name, icon, color, chapters: [{ name, topics: [{ name }] }] }
-
-        const newSubjectsToAdd: Subject[] = templateSubjects.map(ts => {
-            const subjectId = crypto.randomUUID();
-            return {
-                id: subjectId,
-                name: ts.name,
-                color: ts.color,
-                icon: ts.icon,
-                chapters: ts.chapters.map((tc) => { // Removed :any, inferred from TemplateSubject
-                    const chapterId = crypto.randomUUID();
-                    return {
-                        id: chapterId,
-                        name: tc.name,
-                        isCompleted: false,
-                        completedAt: null,
-                        topics: tc.topics.map((tt) => ({ // Removed :any
-                            id: crypto.randomUUID(),
-                            name: tt.name,
-                            isCompleted: false,
-                            completedAt: null
-                        }))
-                    };
-                })
-            };
-        });
-
-        // Append to existing subjects
-        saveData(userProfile, [...subjects, ...newSubjectsToAdd]);
+        const newSubjects: Subject[] = templateSubjects.map(ts => ({
+            id: crypto.randomUUID(),
+            name: ts.name,
+            color: ts.color,
+            icon: ts.icon,
+            chapters: ts.chapters.map(tc => ({
+                id: crypto.randomUUID(),
+                name: tc.name,
+                isCompleted: false,
+                completedAt: null,
+                topics: tc.topics.map(tt => ({
+                    id: crypto.randomUUID(),
+                    name: tt.name,
+                    isCompleted: false,
+                    completedAt: null
+                }))
+            }))
+        }));
+        setSubjects(prev => [...prev, ...newSubjects]);
     };
 
     const resetData = () => {
-        if (confirm('Are you sure you want to reset all data?')) {
-            saveData(initialProfile, []);
+        if (window.confirm('Reset all progress?')) {
+            setUserProfile(initialProfile);
+            setSubjects([]);
         }
     };
 
@@ -727,228 +444,114 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         const now = new Date();
         const todayStr = now.toISOString().split('T')[0];
 
-        // Optimistic update for total time
-        const newTotalTime = (userProfile.totalStudyTime || 0) + durationInSeconds;
+        setUserProfile(prev => {
+            const newTotal = prev.totalStudyTime + durationInSeconds;
+            let newStreak = prev.currentStreak || 0;
+            let newTodayTime = prev.todayStudyTime || 0;
 
-        // Streak Logic & Daily Time
-        let newStreak = userProfile.currentStreak || 0;
-        let lastDate = userProfile.lastStudyDate;
-        let newTodayStudyTime = userProfile.todayStudyTime || 0;
-
-        if (lastDate !== todayStr) {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-            if (lastDate === yesterdayStr) {
-                newStreak += 1;
+            if (prev.lastStudyDate !== todayStr) {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                if (prev.lastStudyDate === yesterday.toISOString().split('T')[0]) {
+                    newStreak += 1;
+                } else {
+                    newStreak = 1;
+                }
+                newTodayTime = durationInSeconds;
             } else {
-                newStreak = 1; // Reset or start new
+                newTodayTime += durationInSeconds;
             }
-            lastDate = todayStr;
-            newTodayStudyTime = durationInSeconds; // Reset for new day
-        } else {
-            newTodayStudyTime += durationInSeconds; // Add to today's total
-        }
 
-        // --- Weekly & Monthly Logic ---
-        let newWeeklyTime = userProfile.weeklyStudyTime || 0;
-        let newMonthlyTime = userProfile.monthlyStudyTime || 0;
-
-        // Use lastStudyDate from profile to check relative to last session
-        const originalLastDateObj = userProfile.lastStudyDate ? new Date(userProfile.lastStudyDate) : new Date(0);
-
-        // Helper to get Monday of the week
-        const getMondayStr = (d: Date) => {
-            const date = new Date(d);
-            const day = date.getDay(),
-                diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-            return new Date(date.setDate(diff)).toDateString();
-        }
-
-        // Check if Week Changed
-        if (getMondayStr(originalLastDateObj) !== getMondayStr(now)) {
-            newWeeklyTime = 0;
-        }
-
-        // Check if Month Changed
-        if (originalLastDateObj.getMonth() !== now.getMonth() || originalLastDateObj.getFullYear() !== now.getFullYear()) {
-            newMonthlyTime = 0;
-        }
-
-        newWeeklyTime += durationInSeconds;
-        newMonthlyTime += durationInSeconds;
-
-        // Badge Logic
-        const currentBadges = [...(userProfile.earnedBadges || [])];
-        const newBadges: BadgeEntry[] = [];
-
-        // 3. Night Owl: Study between 10PM (22) and 4AM (4)
-        const hour = now.getHours();
-        const isNight = hour >= 22 || hour < 4;
-        const hasNightOwl = currentBadges.some(b => b.type === 'night_owl');
-
-        if (isNight && !hasNightOwl) {
-            newBadges.push({ type: 'night_owl', earnedAt: now.toISOString() });
-        }
-
-        // 4. Streak Master: 3 days streak
-        const hasStreakMaster = currentBadges.some(b => b.type === 'streak_master');
-        if (newStreak >= 3 && !hasStreakMaster) {
-            newBadges.push({ type: 'streak_master', earnedAt: now.toISOString() });
-        }
-
-        const newProfile: UserProfile = {
-            ...userProfile,
-            totalStudyTime: newTotalTime,
-            todayStudyTime: newTodayStudyTime,
-            currentStreak: newStreak,
-            lastStudyDate: lastDate,
-            earnedBadges: [...currentBadges, ...newBadges],
-            dailyGoal: userProfile.dailyGoal || 7200, // Ensure valid default
-            weeklyStudyTime: newWeeklyTime,
-            monthlyStudyTime: newMonthlyTime
-        };
-
-        updateProfile(newProfile);
+            return {
+                ...prev,
+                totalStudyTime: newTotal,
+                todayStudyTime: newTodayTime,
+                currentStreak: newStreak,
+                lastStudyDate: todayStr,
+                weeklyStudyTime: (prev.weeklyStudyTime || 0) + durationInSeconds,
+                monthlyStudyTime: (prev.monthlyStudyTime || 0) + durationInSeconds
+            };
+        });
 
         if (user) {
             try {
-                // 1. Add session record
                 await addDoc(collection(db, 'study_sessions'), {
                     userId: user.uid,
                     userName: user.displayName || userProfile.name,
-                    startTime: new Date(Date.now() - durationInSeconds * 1000).toISOString(),
-                    endTime: new Date().toISOString(),
                     durationInSeconds,
                     subjectId: subjectId || null,
                     sessionGoal: sessionGoal || null,
-                    createdAt: new Date().toISOString()
+                    createdAt: now.toISOString()
                 });
-
-                // 2. Update user profile totals (already handled by updateProfile -> setDoc, but strictly ensure it)
-                // The updateProfile call above triggers saveData which writes to Firestore users/{uid}
-            } catch (error) {
-                console.error("Error saving study session:", error);
-            }
+            } catch (e) { console.error("Session log failed:", e); }
         }
 
-        // Award XP for study time (e.g., 10 XP per 5 mins = 300s)
         const xpEarned = Math.floor(durationInSeconds / 300) * 10;
         if (xpEarned > 0) {
             addXP(xpEarned, "Study Session");
-            toast.success(`+${xpEarned} XP: Study Session!`);
+            toast.success(`+${xpEarned} XP earned!`);
         }
     };
 
-    // --- Scheduler Actions ---
     const addScheduledSession = (session: Omit<ScheduledSession, 'id' | 'isCompleted'>) => {
-        const newSession: ScheduledSession = {
-            ...session,
-            id: crypto.randomUUID(),
-            isCompleted: false
-        };
-        const updatedProfile = {
-            ...userProfile,
-            scheduledSessions: [...(userProfile.scheduledSessions || []), newSession]
-        };
-        updateProfile(updatedProfile);
+        const newSession = { ...session, id: crypto.randomUUID(), isCompleted: false };
+        updateProfile({ scheduledSessions: [...(userProfile.scheduledSessions || []), newSession] });
         toast.success("Study session scheduled!");
     };
 
     const toggleScheduledSession = (sessionId: string) => {
-        const updatedSessions = (userProfile.scheduledSessions || []).map(s => {
-            if (s.id === sessionId) {
-                const completed = !s.isCompleted;
-                // If marking as complete, verify if we should log it?
-                // For now, just toggle state. The UI will handle the prompt logic 
-                // BEFORE calling this, or we can chain it. 
-                // Let's just toggle here.
-                return { ...s, isCompleted: completed };
-            }
-            return s;
-        });
-        updateProfile({ ...userProfile, scheduledSessions: updatedSessions });
+        const updated = (userProfile.scheduledSessions || []).map(s =>
+            s.id === sessionId ? { ...s, isCompleted: !s.isCompleted } : s
+        );
+        updateProfile({ scheduledSessions: updated });
     };
 
     const deleteScheduledSession = (sessionId: string) => {
-        const updatedSessions = (userProfile.scheduledSessions || []).filter(s => s.id !== sessionId);
-        updateProfile({ ...userProfile, scheduledSessions: updatedSessions });
-        toast.success("Scheduled session deleted.");
+        const updated = (userProfile.scheduledSessions || []).filter(s => s.id !== sessionId);
+        updateProfile({ scheduledSessions: updated });
     };
 
-    // --- Reminders Logic ---
+    // Reminders
     useEffect(() => {
-        // Request permission on mount
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
 
-        const checkReminders = () => {
-            if (!userProfile.scheduledSessions) return;
-
+        const interval = setInterval(() => {
             const now = new Date();
-            const updatedSessions = userProfile.scheduledSessions.map(session => {
-                if (session.isCompleted || session.reminderSent || !session.time) return session;
+            setUserProfile(prev => {
+                const updatedSessions = (prev.scheduledSessions || []).map(session => {
+                    if (session.isCompleted || session.reminderSent || !session.time) return session;
+                    const sessionDate = new Date(`${session.date}T${session.time}`);
+                    const diffMins = (sessionDate.getTime() - now.getTime()) / 60000;
 
-                const sessionDate = new Date(`${session.date}T${session.time}`);
-                const diffMs = sessionDate.getTime() - now.getTime();
-                const diffMins = diffMs / (1000 * 60);
-
-                // Notify if within 10 minutes (and not in past by more than 5 mins)
-                if (diffMins <= 10 && diffMins > -5) {
-                    // Send Notification
-                    if (Notification.permission === 'granted') {
-                        const subject = subjects.find(s => s.id === session.subjectId);
-                        new Notification(`Study Session: ${subject?.name}`, {
-                            body: `Starting in ${Math.round(Math.max(0, diffMins))} minutes! ${session.notes ? `\nNote: ${session.notes}` : ''}`,
-                            icon: '/pwa-192x192.png' // Assuming PWA icon exists
-                        });
-                    } else {
-                        toast.info("Upcoming Study Session: " + subjects.find(s => s.id === session.subjectId)?.name);
+                    if (diffMins <= 10 && diffMins > -5) {
+                        if (Notification.permission === 'granted') {
+                            const sub = subjects.find(s => s.id === session.subjectId);
+                            new Notification(`Study Session: ${sub?.name || 'Upcoming'}`, {
+                                body: `Starting in ${Math.round(Math.max(0, diffMins))} minutes!`,
+                                icon: '/pwa-192x192.png'
+                            });
+                        }
+                        return { ...session, reminderSent: true };
                     }
-                    return { ...session, reminderSent: true };
-                }
-                return session;
+                    return session;
+                });
+                return { ...prev, scheduledSessions: updatedSessions };
             });
+        }, 60000);
 
-            // Only update if changes occurred
-            if (JSON.stringify(updatedSessions) !== JSON.stringify(userProfile.scheduledSessions)) {
-                updateProfile({ ...userProfile, scheduledSessions: updatedSessions });
-            }
-        };
-
-        const interval = setInterval(checkReminders, 60000); // Check every minute
         return () => clearInterval(interval);
-    }, [userProfile.scheduledSessions, subjects, updateProfile]);
+    }, [subjects]);
 
     return (
-        <StudyContext.Provider
-            value={{
-                userProfile,
-                subjects,
-                updateProfile,
-                addSubject,
-                editSubject,
-                deleteSubject,
-                addChapter,
-                editChapter,
-                toggleChapter,
-                deleteChapter,
-                addTopic,
-                editTopic,
-                toggleTopic,
-                deleteTopic,
-                resetData,
-                exportData,
-                importData,
-                importSyllabusData,
-                saveStudySession,
-                addScheduledSession,
-                toggleScheduledSession,
-                deleteScheduledSession
-            }}
-        >
+        <StudyContext.Provider value={{
+            userProfile, subjects, updateProfile, addSubject, editSubject, deleteSubject,
+            addChapter, editChapter, toggleChapter, deleteChapter,
+            addTopic, editTopic, toggleTopic, deleteTopic,
+            resetData, exportData, importData, importSyllabusData, saveStudySession,
+            addScheduledSession, toggleScheduledSession, deleteScheduledSession
+        }}>
             {children}
         </StudyContext.Provider>
     );
@@ -957,8 +560,6 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
 // eslint-disable-next-line react-refresh/only-export-components
 export function useStudy() {
     const context = useContext(StudyContext);
-    if (context === undefined) {
-        throw new Error('useStudy must be used within a StudyProvider');
-    }
+    if (!context) throw new Error('useStudy must be used within StudyProvider');
     return context;
 }
