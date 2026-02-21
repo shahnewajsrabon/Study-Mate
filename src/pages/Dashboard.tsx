@@ -6,12 +6,10 @@ import AddSubjectModal from '../components/AddSubjectModal';
 import Badge from '../components/Badge';
 import WelcomeModal from '../components/WelcomeModal';
 import DailyGoalCard from '../components/DailyGoalCard';
-import ContinueLearningCard from '../components/ContinueLearningCard';
 import QuoteCard from '../components/QuoteCard';
 import Leaderboard from '../components/Leaderboard';
 import { Plus, Trophy, BookMarked, PieChart } from 'lucide-react';
 import UpcomingExams from '../components/UpcomingExams';
-// import AnimatedPage from '../components/AnimatedPage'; // Removed direct usage to control staggering explicitly
 
 const container: Variants = {
     hidden: { opacity: 0, y: 10 },
@@ -96,21 +94,11 @@ export default function Dashboard() {
                     New Subject
                 </motion.button>
             </div>
-
-            import AdBanner from '../components/AdBanner';
-
-            // ... (imports)
-
-            // ... inside Dashboard component ...
-
             {/* Bento Grid Layout - Vertical on Mobile / Grid on Desktop */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-12 md:gap-6 auto-rows-min">
 
-                {/* Left Column: Learning & Goal */}
+                {/* Left Column: Goal */}
                 <div className="lg:col-span-4 flex flex-col gap-4 md:gap-6 order-1">
-                    <div className="flex-1">
-                        <ContinueLearningCard />
-                    </div>
                     <div>
                         <DailyGoalCard />
                     </div>
@@ -124,69 +112,121 @@ export default function Dashboard() {
                 {/* Right Column: Progress, Exams & Quotes */}
                 <div className="lg:col-span-4 flex flex-col gap-4 md:gap-6 order-2 lg:order-3">
                     {/* Overall Progress Widget */}
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl p-5 md:p-6 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-3 opacity-10">
+                    {/* Overall Progress Widget - Premium Design */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl p-6 border border-slate-100 dark:border-slate-700/50 shadow-xl shadow-blue-500/5 relative overflow-hidden group transition-all hover:shadow-blue-500/10"
+                    >
+                        {/* Shimmer Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none" />
+
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 group-hover:opacity-20 transition-all duration-500">
                             <PieChart className="w-24 h-24 text-blue-500" />
                         </div>
 
-                        <div className="flex items-center justify-between relative z-10">
-                            <div className="flex-1 pr-4">
-                                <h3 className="text-slate-500 dark:text-slate-400 font-medium mb-3 flex items-center gap-2 text-xs md:text-sm">
-                                    <Trophy className="w-4 h-4 text-amber-500" /> Syllabus Progress
-                                </h3>
+                        <div className="flex flex-col md:flex-row items-center justify-between relative z-10 gap-6">
+                            <div className="flex-1 w-full space-y-5">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-xl shadow-inner">
+                                        <Trophy className="w-5 h-5 text-amber-500" />
+                                    </div>
+                                    <h3 className="text-slate-800 dark:text-white font-bold text-lg tracking-tight">
+                                        Syllabus Status
+                                    </h3>
+                                </div>
 
-                                <div className="space-y-4">
-                                    <div>
-                                        <div className="flex items-end justify-between mb-1.5">
-                                            <span className="text-[10px] md:text-xs font-semibold text-slate-500">{completedChapters} / {totalChapters} Chapters</span>
-                                            <span className="text-[10px] md:text-xs font-bold text-blue-600 dark:text-blue-400">{Math.round((completedChapters / (totalChapters || 1)) * 100)}%</span>
+                                <div className="space-y-5">
+                                    {/* Chapters Progress */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-end justify-between">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 dark:text-slate-500">Chapters</span>
+                                                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                                                    {completedChapters} <span className="text-slate-400 font-medium">/ {totalChapters}</span>
+                                                </span>
+                                            </div>
+                                            <span className="text-sm font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-2 py-0.5 rounded-lg border border-blue-100 dark:border-blue-800/50">
+                                                {Math.round((completedChapters / (totalChapters || 1)) * 100)}%
+                                            </span>
                                         </div>
-                                        <div className="h-1 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                        <div className="h-2 w-full bg-slate-100 dark:bg-slate-700/50 rounded-full overflow-hidden p-0.5 ring-1 ring-slate-200 dark:ring-slate-700">
                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${(completedChapters / (totalChapters || 1)) * 100}%` }}
-                                                className="h-full bg-blue-500 rounded-full"
+                                                transition={{ duration: 1.5, ease: "circOut" }}
+                                                className="h-full bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full shadow-lg shadow-blue-500/20"
                                             />
                                         </div>
                                     </div>
-                                    <div>
-                                        <div className="flex items-end justify-between mb-1.5">
-                                            <span className="text-[10px] md:text-xs font-semibold text-slate-500">Total Completion</span>
-                                            <span className="text-[10px] md:text-xs font-bold text-emerald-600 dark:text-emerald-400">{overallProgress}%</span>
+
+                                    {/* Completion Progress */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-end justify-between">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 dark:text-slate-500">Total Progress</span>
+                                                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Completion Rate</span>
+                                            </div>
+                                            <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/40 px-2 py-0.5 rounded-lg border border-emerald-100 dark:border-emerald-800/50">
+                                                {overallProgress}%
+                                            </span>
                                         </div>
-                                        <div className="h-1 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                        <div className="h-2 w-full bg-slate-100 dark:bg-slate-700/50 rounded-full overflow-hidden p-0.5 ring-1 ring-slate-200 dark:ring-slate-700">
                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${overallProgress}%` }}
-                                                className="h-full bg-emerald-500 rounded-full"
+                                                transition={{ duration: 1.5, ease: "circOut", delay: 0.2 }}
+                                                className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full shadow-lg shadow-emerald-500/20"
                                             />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Circular Progress SVG */}
-                            <div className="relative w-16 h-16 md:w-24 md:h-24 flex-shrink-0">
-                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                    <circle className="text-slate-100 dark:text-slate-700" strokeWidth="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
-                                    <motion.circle
-                                        className="text-blue-600 dark:text-blue-500"
+                            {/* Circular Progress SVG - Premium */}
+                            <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0 group/circle">
+                                <div className="absolute inset-0 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-2xl group-hover/circle:bg-blue-500/20 transition-all duration-700" />
+                                <svg className="w-full h-full transform -rotate-90 relative z-10" viewBox="0 0 100 100">
+                                    <defs>
+                                        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" stopColor="#60A5FA" />
+                                            <stop offset="100%" stopColor="#3B82F6" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle
+                                        className="text-slate-100 dark:text-slate-700/50"
                                         strokeWidth="8"
-                                        strokeDasharray={251.2}
-                                        strokeDashoffset={251.2 - (251.2 * overallProgress) / 100}
+                                        stroke="currentColor"
+                                        fill="transparent"
+                                        r="38" cx="50" cy="50"
+                                    />
+                                    <motion.circle
+                                        stroke="url(#progressGradient)"
+                                        strokeWidth="8"
+                                        strokeDasharray={238.76} // 2 * pi * 38
+                                        strokeDashoffset={238.76}
                                         strokeLinecap="round"
-                                        stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"
-                                        initial={{ strokeDashoffset: 251.2 }}
-                                        animate={{ strokeDashoffset: 251.2 - (251.2 * overallProgress) / 100 }}
-                                        transition={{ duration: 1.5, ease: "easeOut" }}
+                                        fill="transparent"
+                                        r="38" cx="50" cy="50"
+                                        initial={{ strokeDashoffset: 238.76 }}
+                                        animate={{ strokeDashoffset: 238.76 - (238.76 * overallProgress) / 100 }}
+                                        transition={{ duration: 2, ease: "circOut" }}
                                     />
                                 </svg>
-                                <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-                                    <span className="text-sm md:text-lg font-bold text-slate-800 dark:text-white">{overallProgress}%</span>
+                                <div className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center z-20">
+                                    <motion.span
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ type: "spring", damping: 10, stiffness: 100, delay: 0.5 }}
+                                        className="text-3xl md:text-4xl font-black text-slate-800 dark:text-white"
+                                    >
+                                        {overallProgress}<span className="text-sm md:text-lg text-blue-500">%</span>
+                                    </motion.span>
+                                    <span className="text-[8px] md:text-[10px] uppercase font-black tracking-tighter text-slate-400 dark:text-slate-500">Done</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-6 flex-1">
                         <UpcomingExams limit={3} className="h-full" />
@@ -196,26 +236,28 @@ export default function Dashboard() {
             </div>
 
             {/* Badges Section */}
-            {userProfile.earnedBadges && userProfile.earnedBadges.length > 0 && (
-                <motion.div
-                    variants={item}
-                    className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm transition-colors"
-                >
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-                        <Trophy className="w-5 h-5 text-yellow-500" />
-                        Recent Achievements
-                    </h2>
-                    <div className="flex flex-wrap gap-4">
-                        {userProfile.earnedBadges.map((badge, index) => (
-                            <Badge
-                                key={`${badge.type}-${index}`}
-                                type={badge.type}
-                                dateEarned={badge.earnedAt}
-                            />
-                        ))}
-                    </div>
-                </motion.div>
-            )}
+            {
+                userProfile.earnedBadges && userProfile.earnedBadges.length > 0 && (
+                    <motion.div
+                        variants={item}
+                        className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm transition-colors"
+                    >
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                            <Trophy className="w-5 h-5 text-yellow-500" />
+                            Recent Achievements
+                        </h2>
+                        <div className="flex flex-wrap gap-4">
+                            {userProfile.earnedBadges.map((badge, index) => (
+                                <Badge
+                                    key={`${badge.type}-${index}`}
+                                    type={badge.type}
+                                    dateEarned={badge.earnedAt}
+                                />
+                            ))}
+                        </div>
+                    </motion.div>
+                )
+            }
 
             {/* Subjects Grid */}
             <div>

@@ -114,19 +114,17 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
     };
 
     const joinGroup = async (inviteCode: string) => {
-        console.log(inviteCode);
         if (!user) return;
 
         // 1. Find group by invite code
         // 2. Add user to members and memberIds
-        toast.info("Join functionality coming soon!"); // Placeholder for implementation
+        toast.info(`Join functionality for code ${inviteCode} coming soon!`); // Placeholder for implementation
     };
 
     const leaveGroup = async (groupId: string) => {
-        console.log(groupId);
         if (!user) return;
         // Remove user from members and memberIds
-        toast.info("Leave functionality coming soon!");
+        toast.info(`Leave functionality for group ${groupId} coming soon!`);
     };
 
     const sendMessage = async (groupId: string, text: string) => {
