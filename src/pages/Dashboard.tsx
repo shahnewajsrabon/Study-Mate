@@ -6,6 +6,7 @@ import AddSubjectModal from '../components/AddSubjectModal';
 import Badge from '../components/Badge';
 import WelcomeModal from '../components/WelcomeModal';
 import DailyGoalCard from '../components/DailyGoalCard';
+import DailyPathWidget from '../components/DailyPathWidget';
 import QuoteCard from '../components/QuoteCard';
 import Leaderboard from '../components/Leaderboard';
 import { Plus, Trophy, BookMarked, PieChart } from 'lucide-react';
@@ -97,11 +98,10 @@ export default function Dashboard() {
             {/* Bento Grid Layout - Vertical on Mobile / Grid on Desktop */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-12 md:gap-6 auto-rows-min">
 
-                {/* Left Column: Goal */}
+                {/* Left Column: Goal & Path */}
                 <div className="lg:col-span-4 flex flex-col gap-4 md:gap-6 order-1">
-                    <div>
-                        <DailyGoalCard />
-                    </div>
+                    <DailyGoalCard />
+                    <DailyPathWidget />
                 </div>
 
                 {/* Center Column: Leaderboard */}

@@ -94,6 +94,7 @@ interface StudyContextType {
     addScheduledSession: (session: Omit<ScheduledSession, 'id' | 'isCompleted'>) => void;
     toggleScheduledSession: (sessionId: string) => void;
     deleteScheduledSession: (sessionId: string) => void;
+    generateSmartSchedule: () => void;
 }
 
 // --- Initial Data ---
@@ -537,6 +538,77 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         updateProfile({ scheduledSessions: updated });
     };
 
+    const generateSmartSchedule = useCallback(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const newSessions: ScheduledSession[] = [];
+        const existingSessions = [...(userProfile.scheduledSessions || [])];
+
+        subjects.forEach(sub => {
+            if (!sub.examDate) return;
+
+            const examDate = new Date(sub.examDate);
+            examDate.setHours(0, 0, 0, 0);
+
+            if (examDate <= today) return;
+
+            // Collect all incomplete topics for this subject
+            const incompleteTopics: { chapterId: string; topicId: string }[] = [];
+            sub.chapters.forEach(ch => {
+                ch.topics.forEach(t => {
+                    if (!t.isCompleted) {
+                        incompleteTopics.push({ chapterId: ch.id, topicId: t.id });
+                    }
+                });
+            });
+
+            if (incompleteTopics.length === 0) return;
+
+            // Days available (starting from tomorrow, up to the day before exam)
+            const diffTime = examDate.getTime() - today.getTime();
+            const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            if (totalDays <= 0) return;
+
+            // Distribute topics: Topics per day
+            const topicsPerDay = Math.ceil(incompleteTopics.length / totalDays);
+
+            let currentTopicIndex = 0;
+            for (let d = 1; d <= totalDays && currentTopicIndex < incompleteTopics.length; d++) {
+                const targetDate = new Date(today);
+                targetDate.setDate(today.getDate() + d);
+                const dateStr = targetDate.toISOString().split('T')[0];
+
+                // Check if we already have sessions for this subject on this date to avoid duplicates
+                const hasSession = existingSessions.some(s => s.date === dateStr && s.subjectId === sub.id);
+                if (hasSession) continue;
+
+                for (let t = 0; t < topicsPerDay && currentTopicIndex < incompleteTopics.length; t++) {
+                    const topicInfo = incompleteTopics[currentTopicIndex];
+                    newSessions.push({
+                        id: crypto.randomUUID(),
+                        subjectId: sub.id,
+                        chapterId: topicInfo.chapterId,
+                        topicId: topicInfo.topicId,
+                        date: dateStr,
+                        time: "18:00", // Default time
+                        durationMinutes: 45,
+                        isCompleted: false
+                    });
+                    currentTopicIndex++;
+                }
+            }
+        });
+
+        if (newSessions.length > 0) {
+            updateProfile({ scheduledSessions: [...existingSessions, ...newSessions] });
+            toast.success(`AI Path Generated: ${newSessions.length} sessions added!`);
+        } else {
+            toast.info("No new topics could be scheduled. Ensure your subjects have future exam dates.");
+        }
+    }, [subjects, userProfile.scheduledSessions, updateProfile, toast]);
+
     // Reminders
     useEffect(() => {
         if ('Notification' in window && Notification.permission === 'default') {
@@ -578,7 +650,8 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
             addChapter, editChapter, toggleChapter, deleteChapter,
             addTopic, editTopic, toggleTopic, deleteTopic,
             resetData, exportData, importData, importSyllabusData, saveStudySession,
-            addScheduledSession, toggleScheduledSession, deleteScheduledSession
+            addScheduledSession, toggleScheduledSession, deleteScheduledSession,
+            generateSmartSchedule
         }}>
             {children}
         </StudyContext.Provider>

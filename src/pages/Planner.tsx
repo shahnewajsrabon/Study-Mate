@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useStudy, type ScheduledSession } from '../context/StudyContext';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import UpcomingExams from '../components/UpcomingExams';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export default function Planner() {
-    const { subjects, userProfile, addScheduledSession, toggleScheduledSession, deleteScheduledSession, saveStudySession } = useStudy();
+    const { subjects, userProfile, addScheduledSession, toggleScheduledSession, deleteScheduledSession, saveStudySession, generateSmartSchedule } = useStudy();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -298,31 +298,48 @@ export default function Planner() {
                     </div>
 
                     {/* Smart Suggestions */}
-                    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
-                        <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
-                            <AlertCircle className="w-5 h-5" />
-                            Smart Suggestions
-                        </h3>
-                        <p className="text-indigo-100 text-sm mb-4">Focus on these topics today:</p>
+                    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg overflow-hidden relative">
+                        {/* Decorative background circle */}
+                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
 
-                        <div className="space-y-3">
-                            {suggestions.length > 0 ? (
-                                suggestions.map((s, i) => (
-                                    <div key={i} className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 hover:bg-white/20 transition-colors cursor-pointer">
-                                        <div className="text-xs font-medium text-indigo-200 uppercase tracking-wider mb-1">{s.subjectName}</div>
-                                        <div className="font-semibold text-sm line-clamp-1">{s.topicName}</div>
-                                        <div className="text-xs text-indigo-100 opacity-80 mt-0.5 line-clamp-1">{s.chapterName}</div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="text-center py-4 text-indigo-100">
-                                    <p>🎉 All caught up!</p>
-                                    <p className="text-xs opacity-70 mt-1">Great job clearing your backlog.</p>
-                                </div>
-                            )}
+                        <div className="relative z-10">
+                            <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
+                                <Zap className="w-5 h-5 text-yellow-300 fill-yellow-300" />
+                                AI Study Path
+                            </h3>
+                            <p className="text-indigo-100 text-xs mb-4">Automatically distribute your remaining topics until your exam dates.</p>
+
+                            <button
+                                onClick={() => {
+                                    if (confirm("This will automatically schedule your incomplete topics across the calendar until your next exam dates. Existing manually scheduled sessions for those subjects on the same days will be skipped. Proceed?")) {
+                                        generateSmartSchedule();
+                                    }
+                                }}
+                                className="w-full py-2.5 bg-white text-indigo-600 rounded-xl text-sm font-bold shadow-lg shadow-indigo-900/20 hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+                            >
+                                <Zap className="w-4 h-4 fill-indigo-600" />
+                                Generate AI Path
+                            </button>
                         </div>
                     </div>
 
+                    <div className="space-y-3 mt-4">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1 mb-2">Smart Suggestions</p>
+                        {suggestions.length > 0 ? (
+                            suggestions.map((s, i) => (
+                                <div key={i} className="bg-white dark:bg-slate-800 rounded-xl p-3 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-colors cursor-pointer shadow-sm">
+                                    <div className="text-[10px] font-medium text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">{s.subjectName}</div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm line-clamp-1">{s.topicName}</div>
+                                    <div className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{s.chapterName}</div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-4 text-indigo-100">
+                                <p>🎉 All caught up!</p>
+                                <p className="text-xs opacity-70 mt-1">Great job clearing your backlog.</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -434,7 +451,8 @@ export default function Planner() {
                         </form>
                     </motion.div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
