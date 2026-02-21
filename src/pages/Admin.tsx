@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     Users,
@@ -20,6 +21,7 @@ import {
 import { db } from '../lib/firebase';
 import { collection, query, onSnapshot, orderBy, limit, doc, updateDoc } from 'firebase/firestore';
 import { AnimatePresence } from 'framer-motion';
+import { useStudy } from '../context/StudyContext';
 
 interface UserAdminData {
     id: string;
@@ -41,8 +43,17 @@ export default function Admin() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedUser, setSelectedUser] = useState<UserAdminData | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
+    const { isAdmin } = useStudy();
+    const navigate = useNavigate();
 
     useEffect(() => {
+        if (!isAdmin) {
+            navigate('/', { replace: true });
+        }
+    }, [isAdmin, navigate]);
+
+    useEffect(() => {
+        if (!isAdmin) return;
         const q = query(collection(db, 'users'), orderBy('userProfile.xp', 'desc'), limit(100));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {

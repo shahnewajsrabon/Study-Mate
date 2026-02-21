@@ -3,7 +3,7 @@ import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { db } from '../lib/firebase';
 import { SYLLABUS_TEMPLATES, type TemplateSubject } from '../data/syllabusTemplates';
-import { doc, onSnapshot, setDoc, collection, addDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, collection, addDoc, updateDoc } from 'firebase/firestore';
 import { getLevelInfo } from '../utils/levelUtils';
 
 // --- Types ---
@@ -234,9 +234,18 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                 const data = docSnap.data();
                 let mergedProfile = data.userProfile;
 
-                // Force admin role if email matches
-                if (isTargetAdmin && mergedProfile.role !== 'admin') {
-                    mergedProfile = { ...mergedProfile, role: 'admin' };
+                // Force admin role if email matches, OTHERWISE REVOKE IT
+                if (isTargetAdmin) {
+                    if (mergedProfile.role !== 'admin') {
+                        mergedProfile = { ...mergedProfile, role: 'admin' };
+                    }
+                } else if (mergedProfile.role === 'admin') {
+                    // Unauthorized admin detected - revoke immediately
+                    mergedProfile = { ...mergedProfile, role: 'student' };
+                    // Persist the revocation to Firestore
+                    updateDoc(doc(db, 'users', user.uid), {
+                        'userProfile.role': 'student'
+                    }).catch((e: any) => console.error("Failed to revoke role:", e));
                 }
 
                 if (data.userProfile) setUserProfile(mergedProfile);
