@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithPopup, signOut, onAuthStateChanged, deleteUser } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 
@@ -8,6 +8,7 @@ interface AuthContextType {
     loading: boolean;
     signInWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
+    deleteUserAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,8 +42,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const deleteUserAuth = async () => {
+        if (!auth.currentUser) return;
+        try {
+            await deleteUser(auth.currentUser);
+        } catch (error) {
+            console.error("Error deleting auth user:", error);
+            throw error;
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout }}>
+        <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout, deleteUserAuth }}>
             {!loading && children}
         </AuthContext.Provider>
     );

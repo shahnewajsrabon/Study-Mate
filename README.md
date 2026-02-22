@@ -71,3 +71,32 @@ export default defineConfig([
   },
 ])
 ```
+
+## Environment Setup
+
+To run this project locally, you'll need to set up your Firebase environment variables. Create a `.env` file in the root directory:
+
+```env
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+```
+
+## Security & Privacy Recommendations
+
+1. **Firestore Rules**: Ensure your Firestore security rules are configured to restrict access. 
+   - Public groups should allow reading by authenticated users.
+   - Private messages and user profiles should only be accessible by the respective owners or group members.
+2. **Environment Variables**: Never commit your `.env` file to version control.
+3. **Data Protection**: This app stores study habits and social interactions. Users should be advised not to share sensitive personal information in public study groups.
+
+## Deployment
+
+The app is configured for deployment via GitHub Pages:
+
+```bash
+npm run deploy
+```

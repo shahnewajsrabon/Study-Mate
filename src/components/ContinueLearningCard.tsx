@@ -1,6 +1,7 @@
-import { useStudy } from '../context/StudyContext';
-import { Play, ArrowRight, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useStudy } from '../hooks/useStudy';
+import { Play, ArrowRight, BookOpen } from 'lucide-react';
+import type { Chapter, Topic } from '../types/study';
 
 export default function ContinueLearningCard() {
     const { subjects } = useStudy();
@@ -18,8 +19,8 @@ export default function ContinueLearningCard() {
 
     for (const sub of subjects) {
         // Find subject with uncompleted chapters
-        const hasUnfinishedStuff = sub.chapters.some(ch =>
-            !ch.isCompleted && (!ch.topics.length || ch.topics.some(t => !t.isCompleted))
+        const hasUnfinishedStuff = sub.chapters.some((ch: Chapter) =>
+            !ch.isCompleted && (!ch.topics.length || ch.topics.some((t: Topic) => !t.isCompleted))
         );
 
         if (hasUnfinishedStuff) {
@@ -29,7 +30,7 @@ export default function ContinueLearningCard() {
                 if (!ch.isCompleted) {
                     // Check if it has topics
                     if (ch.topics.length > 0) {
-                        const unfinishedTopic = ch.topics.find(t => !t.isCompleted);
+                        const unfinishedTopic = ch.topics.find((t: Topic) => !t.isCompleted);
                         if (unfinishedTopic) {
                             nextChapter = ch;
                             nextTopic = unfinishedTopic;

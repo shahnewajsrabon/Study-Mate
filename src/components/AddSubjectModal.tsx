@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useStudy } from '../context/StudyContext';
+import { useStudy } from '../hooks/useStudy';
 import { X, Book, Save } from 'lucide-react';
 
 const COLORS = [
@@ -36,7 +36,7 @@ export default function AddSubjectModal({ onClose }: AddSubjectModalProps) {
                         <Book className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         Add New Subject
                     </h3>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                    <button onClick={onClose} aria-label="Close" className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -62,6 +62,7 @@ export default function AddSubjectModal({ onClose }: AddSubjectModalProps) {
                                     key={color}
                                     type="button"
                                     onClick={() => setSelectedColor(color)}
+                                    aria-label={`Select color ${color}`}
                                     className={`w-8 h-8 rounded-full ${color} transition-all ${selectedColor === color ? 'ring-2 ring-offset-2 ring-slate-400 dark:ring-slate-500 scale-110' : 'hover:scale-105 opacity-80 hover:opacity-100'
                                         }`}
                                 />

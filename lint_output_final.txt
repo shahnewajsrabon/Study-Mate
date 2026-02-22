@@ -1,0 +1,30 @@
+
+> study-tracker@0.0.0 lint
+> eslint .
+
+
+E:\AI\New folder (2)\study-tracker\src\context\SocialContext.tsx
+  132:8   warning  React Hook useEffect has an unnecessary dependency: 'GLOBAL_GROUP_ID'. Either exclude it or remove the dependency array. Outer scope values like 'GLOBAL_GROUP_ID' aren't valid dependencies because mutating them doesn't re-render the component                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/exhaustive-deps
+  137:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\AI\New folder (2)\study-tracker\src\context\SocialContext.tsx:137:13
+  135 |     useEffect(() => {
+  136 |         if (!user) {
+> 137 |             setGroups([]);
+      |             ^^^^^^^^^ Avoid calling setState() directly within an effect
+  138 |             setChallenges([]);
+  139 |             return;
+  140 |         }  react-hooks/set-state-in-effect
+  405:17  error    Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-refresh/only-export-components
+
+E:\AI\New folder (2)\study-tracker\src\pages\Chat.tsx
+  467:81  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Ô£û 4 problems (3 errors, 1 warning)
+

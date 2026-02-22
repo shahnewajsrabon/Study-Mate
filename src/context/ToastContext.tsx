@@ -106,6 +106,8 @@ function ToastItem({
             <button
                 onClick={() => onRemove(toast.id)}
                 className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 dark:text-slate-500 transition-colors"
+                title="Dismiss Notification"
+                aria-label="Dismiss Notification"
             >
                 <X className="w-4 h-4" />
             </button>

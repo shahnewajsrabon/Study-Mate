@@ -3,7 +3,7 @@ import { Link, useLocation, useOutlet } from 'react-router-dom';
 import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, Calendar, Users, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { useStudy } from '../context/StudyContext';
+import { useProfile } from '../hooks/useProfile';
 import { getLevelInfo } from '../utils/levelUtils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cloneElement } from 'react';
@@ -42,7 +42,7 @@ const TOUR_STEPS: TourStep[] = [
 export default function Layout() {
     const { logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
-    const { userProfile, isAdmin } = useStudy();
+    const { userProfile, isAdmin } = useProfile();
 
     // Level Info
     const { currentTitle, nextLevelXP, progress } = getLevelInfo(userProfile.xp || 0);

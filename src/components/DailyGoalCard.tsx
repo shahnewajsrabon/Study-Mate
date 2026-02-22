@@ -1,10 +1,10 @@
-import { useStudy } from '../context/StudyContext';
+import { useProfile } from '../hooks/useProfile';
 import { motion } from 'framer-motion';
 import { Target, Edit2, Check, Trophy } from 'lucide-react';
 import { useState } from 'react';
 
 export default function DailyGoalCard() {
-    const { userProfile, updateProfile } = useStudy();
+    const { userProfile, updateProfile } = useProfile();
     const [isEditing, setIsEditing] = useState(false);
     const [editHours, setEditHours] = useState(userProfile.dailyGoal ? userProfile.dailyGoal / 3600 : 2);
 
@@ -53,6 +53,7 @@ export default function DailyGoalCard() {
                                 step="0.5"
                                 value={editHours}
                                 onChange={(e) => setEditHours(parseFloat(e.target.value))}
+                                aria-label="Daily goal hours"
                                 className="w-16 p-1 border rounded text-lg font-bold bg-slate-50 dark:bg-slate-700 dark:text-white"
                                 autoFocus
                             />

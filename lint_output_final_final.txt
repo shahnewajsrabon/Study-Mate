@@ -1,0 +1,11 @@
+
+> study-tracker@0.0.0 lint
+> eslint .
+
+
+E:\AI\New folder (2)\study-tracker\src\context\SocialProvider.tsx
+  1:38  error  'useContext' is defined but never used         @typescript-eslint/no-unused-vars
+  2:30  error  'SocialContextType' is defined but never used  @typescript-eslint/no-unused-vars
+
+Ô£û 2 problems (2 errors, 0 warnings)
+

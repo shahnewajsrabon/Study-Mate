@@ -21,7 +21,7 @@ import {
 import { db } from '../lib/firebase';
 import { collection, query, onSnapshot, orderBy, limit, doc, updateDoc } from 'firebase/firestore';
 import { AnimatePresence } from 'framer-motion';
-import { useStudy } from '../context/StudyContext';
+import { useProfile } from '../hooks/useProfile';
 
 interface UserAdminData {
     id: string;
@@ -43,7 +43,7 @@ export default function Admin() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedUser, setSelectedUser] = useState<UserAdminData | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
-    const { isAdmin } = useStudy();
+    const { isAdmin } = useProfile();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -73,7 +73,7 @@ export default function Admin() {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [isAdmin]);
 
     const totalStudyTime = users.reduce((acc, u) => acc + (u.userProfile.totalStudyTime || 0), 0);
     const avgLevel = users.length > 0 ? (users.reduce((acc, u) => acc + (u.userProfile.level || 1), 0) / users.length).toFixed(1) : '0';
@@ -123,7 +123,7 @@ export default function Admin() {
         u.id.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const updateUserMetric = async (userId: string, path: string, value: any) => {
+    const updateUserMetric = async (userId: string, path: string, value: string | number | boolean) => {
         setIsUpdating(true);
         try {
             const userRef = doc(db, 'users', userId);
@@ -310,6 +310,8 @@ export default function Admin() {
                                                     <button
                                                         onClick={() => setSelectedUser(user)}
                                                         className="p-2.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:shadow-lg transition-all"
+                                                        title="User Options"
+                                                        aria-label="User Options"
                                                     >
                                                         <MoreVertical className="w-5 h-5" />
                                                     </button>
@@ -430,6 +432,8 @@ export default function Admin() {
                                 <button
                                     onClick={() => setSelectedUser(null)}
                                     className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl text-slate-400 transition-colors"
+                                    title="Close Modal"
+                                    aria-label="Close Modal"
                                 >
                                     <X className="w-6 h-6" />
                                 </button>
@@ -475,6 +479,9 @@ export default function Admin() {
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="number"
+                                                    id="user-xp-input"
+                                                    title="Update User XP"
+                                                    placeholder="Enter XP"
                                                     value={selectedUser.userProfile.xp || 0}
                                                     onChange={(e) => updateUserMetric(selectedUser.id, 'xp', parseInt(e.target.value))}
                                                     className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-4 text-sm font-black text-indigo-600"
@@ -489,6 +496,9 @@ export default function Admin() {
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="number"
+                                                    id="user-streak-input"
+                                                    title="Update User Streak"
+                                                    placeholder="Enter Streak"
                                                     value={selectedUser.userProfile.currentStreak || 0}
                                                     onChange={(e) => updateUserMetric(selectedUser.id, 'currentStreak', parseInt(e.target.value))}
                                                     className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-4 text-sm font-black text-orange-600"

@@ -8,12 +8,15 @@ import Chat from './pages/Chat';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Planner from './pages/Planner';
-import { useAuth } from './context/AuthContext';
-import { useStudy } from './context/StudyContext';
 import { ToastProvider } from './context/ToastContext';
-import { StudyProvider } from './context/StudyContext';
-import { SocialProvider } from './context/SocialContext';
-import Admin from './pages/Admin';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { useProfile } from './hooks/useProfile';
+import { ProfileProvider } from './context/ProfileProvider';
+import { StudyProvider } from './context/StudyProvider';
+import { PlannerProvider } from './context/PlannerProvider';
+import { SocialProvider } from './context/SocialProvider';
+import { Suspense, lazy } from 'react';
+const Admin = lazy(() => import('./pages/Admin.tsx'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -28,7 +31,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { isAdmin } = useStudy();
+  const { isAdmin } = useProfile();
 
   if (!isAdmin) {
     return <Navigate to="/" replace />;
@@ -40,33 +43,41 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <ToastProvider>
-      <StudyProvider>
-        <SocialProvider>
-          <BrowserRouter basename="/Study-Mate/">
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }>
-                <Route index element={<Dashboard />} />
-                <Route path="subject/:id" element={<SubjectDetails />} />
-                <Route path="planner" element={<Planner />} />
-                <Route path="analytics" element={<Analytics />} />
-                <Route path="timer" element={<Timer />} />
-                <Route path="chat" element={<Chat />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="admin" element={
-                  <AdminRoute>
-                    <Admin />
-                  </AdminRoute>
-                } />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </SocialProvider>
-      </StudyProvider>
+      <AuthProvider>
+        <ProfileProvider>
+          <StudyProvider>
+            <PlannerProvider>
+              <SocialProvider>
+                <BrowserRouter basename="/Study-Mate/">
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/" element={
+                      <ProtectedRoute>
+                        <Layout />
+                      </ProtectedRoute>
+                    }>
+                      <Route index element={<Dashboard />} />
+                      <Route path="subject/:id" element={<SubjectDetails />} />
+                      <Route path="planner" element={<Planner />} />
+                      <Route path="analytics" element={<Analytics />} />
+                      <Route path="timer" element={<Timer />} />
+                      <Route path="chat" element={<Chat />} />
+                      <Route path="settings" element={<Settings />} />
+                      <Route path="admin" element={
+                        <AdminRoute>
+                          <Suspense fallback={<div className="p-8 text-center">Loading Admin...</div>}>
+                            <Admin />
+                          </Suspense>
+                        </AdminRoute>
+                      } />
+                    </Route>
+                  </Routes>
+                </BrowserRouter>
+              </SocialProvider>
+            </PlannerProvider>
+          </StudyProvider>
+        </ProfileProvider>
+      </AuthProvider>
     </ToastProvider>
   );
 }

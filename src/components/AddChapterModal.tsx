@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useStudy } from '../context/StudyContext';
+import { useStudy } from '../hooks/useStudy';
 import { X, BookMarked, Plus } from 'lucide-react';
 
 interface AddChapterModalProps {
@@ -31,7 +31,7 @@ export default function AddChapterModal({ subjectId, onClose }: AddChapterModalP
                         <BookMarked className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         Add Chapters
                     </h3>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                    <button onClick={onClose} aria-label="Close" className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
                         <X className="w-5 h-5" />
                     </button>
                 </div>

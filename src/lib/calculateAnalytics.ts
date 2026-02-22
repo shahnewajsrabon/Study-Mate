@@ -1,4 +1,4 @@
-import type { Subject } from '../context/StudyContext';
+import type { Subject, Chapter, Topic } from '../types/study';
 
 export function calculateOverallStats(subjects: Subject[]) {
     let totalChapters = 0;
@@ -39,9 +39,9 @@ export function calculateActivityData(subjects: Subject[]): { activityData: Acti
     const activityData: ActivityPoint[] = last7Days.map(date => {
         let count = 0;
         subjects.forEach(sub => {
-            sub.chapters.forEach(ch => {
+            sub.chapters.forEach((ch: Chapter) => {
                 if (ch.topics) {
-                    ch.topics.forEach(t => {
+                    ch.topics.forEach((t: Topic) => {
                         if (t.isCompleted && t.completedAt && t.completedAt.startsWith(date)) {
                             count++;
                         }
@@ -58,7 +58,7 @@ export function calculateActivityData(subjects: Subject[]): { activityData: Acti
 
 export function calculateStreak(subjects: Subject[]) {
     const activeDates = new Set<string>();
-    subjects.forEach(sub => sub.chapters.forEach(ch => ch.topics?.forEach(t => {
+    subjects.forEach(sub => sub.chapters.forEach((ch: Chapter) => ch.topics?.forEach((t: Topic) => {
         if (t.isCompleted && t.completedAt) activeDates.add(t.completedAt.split('T')[0]);
     })));
 

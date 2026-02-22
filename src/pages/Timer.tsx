@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useStudy } from '../context/StudyContext';
+import { useStudy } from '../hooks/useStudy';
+import type { Subject } from '../types/study';
 import { useAuth } from '../context/AuthContext';
 import { useSound } from '../context/SoundContext';
 import { Play, Pause, Save, Trophy, RotateCcw, Volume2, VolumeX, CheckCircle2 } from 'lucide-react';
@@ -282,9 +283,11 @@ export default function Timer() {
                                 value={selectedSubject}
                                 onChange={(e) => setSelectedSubject(e.target.value)}
                                 disabled={isActive}
+                                title="Select Subject"
+                                aria-label="Select Subject"
                             >
                                 <option value="">Subject</option>
-                                {subjects.map(sub => (
+                                {subjects.map((sub: Subject) => (
                                     <option key={sub.id} value={sub.id}>{sub.name}</option>
                                 ))}
                             </select>
@@ -408,6 +411,8 @@ export default function Timer() {
                                     value={customMinutes}
                                     onChange={(e) => setCustomMinutes(Number(e.target.value))}
                                     className="w-32 accent-blue-600 cursor-pointer"
+                                    title="Study Duration (Minutes)"
+                                    aria-label="Study Duration (Minutes)"
                                 />
                                 <span className="text-slate-700 dark:text-slate-300 font-bold w-12 text-center">{customMinutes}m</span>
                             </div>

@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { useStudy } from '../context/StudyContext';
+import { useProfile } from '../hooks/useProfile';
 
 export function useSmartReminders() {
-    const { userProfile } = useStudy();
+    const { userProfile } = useProfile();
 
     useEffect(() => {
         // 1. Request Permission on Mount

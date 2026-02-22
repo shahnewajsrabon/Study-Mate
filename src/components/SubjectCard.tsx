@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { type Subject } from '../context/StudyContext';
+import type { Subject } from '../types/study';
 import { ArrowRight, BookOpen, CheckCircle2, Pencil, CalendarClock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import EditSubjectModal from './EditSubjectModal';

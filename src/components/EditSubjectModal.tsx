@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, BookOpen } from 'lucide-react';
-import { useStudy, type Subject } from '../context/StudyContext';
+import { useStudy } from '../hooks/useStudy';
+import type { Subject } from '../types/study';
 
 const COLORS = [
     'bg-blue-500', 'bg-indigo-500', 'bg-violet-500',
@@ -48,6 +49,7 @@ export default function EditSubjectModal({ subject, onClose }: EditSubjectModalP
                         <h2 className="text-lg font-bold text-slate-800 dark:text-white">Edit Subject</h2>
                         <button
                             onClick={onClose}
+                            aria-label="Close"
                             className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"
                         >
                             <X className="w-5 h-5" />
@@ -84,6 +86,7 @@ export default function EditSubjectModal({ subject, onClose }: EditSubjectModalP
                                         key={c}
                                         type="button"
                                         onClick={() => setSelectedColor(c)}
+                                        aria-label={`Select color ${c}`}
                                         className={`w-full h-8 rounded-lg ${c} ${selectedColor === c ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
                                     />
                                 ))}
@@ -91,11 +94,12 @@ export default function EditSubjectModal({ subject, onClose }: EditSubjectModalP
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            <label htmlFor="exam-date" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                                 Exam Date (Optional)
                             </label>
                             <input
                                 type="date"
+                                id="exam-date"
                                 value={examDate}
                                 onChange={(e) => setExamDate(e.target.value)}
                                 className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"

@@ -1,5 +1,8 @@
 import { useState, useMemo } from 'react';
-import { useStudy, type ScheduledSession } from '../context/StudyContext';
+import { useStudy } from '../hooks/useStudy';
+import { useProfile } from '../hooks/useProfile';
+import { usePlanner } from '../hooks/usePlanner';
+import type { ScheduledSession } from '../types/study';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import UpcomingExams from '../components/UpcomingExams';
@@ -7,7 +10,9 @@ import UpcomingExams from '../components/UpcomingExams';
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export default function Planner() {
-    const { subjects, userProfile, addScheduledSession, toggleScheduledSession, deleteScheduledSession, saveStudySession, generateSmartSchedule } = useStudy();
+    const { subjects, saveStudySession } = useStudy();
+    const { userProfile } = useProfile();
+    const { addScheduledSession, toggleScheduledSession, deleteScheduledSession, generateAIPath } = usePlanner();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -159,10 +164,10 @@ export default function Planner() {
                             {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
                         </h2>
                         <div className="flex gap-2">
-                            <button onClick={prevMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                            <button onClick={prevMonth} title="Previous Month" aria-label="Previous Month" className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
                                 <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                             </button>
-                            <button onClick={nextMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                            <button onClick={nextMonth} title="Next Month" aria-label="Next Month" className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
                                 <ChevronRight className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                             </button>
                         </div>
@@ -247,6 +252,7 @@ export default function Planner() {
                                                 type="checkbox"
                                                 checked={session.isCompleted}
                                                 onChange={() => handleToggleSession(session)}
+                                                aria-label={`Mark ${subject?.name || 'session'} as completed`}
                                                 className="mt-1 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
                                             />
                                             <div className="flex-1">
@@ -312,7 +318,7 @@ export default function Planner() {
                             <button
                                 onClick={() => {
                                     if (confirm("This will automatically schedule your incomplete topics across the calendar until your next exam dates. Existing manually scheduled sessions for those subjects on the same days will be skipped. Proceed?")) {
-                                        generateSmartSchedule();
+                                        generateAIPath();
                                     }
                                 }}
                                 className="w-full py-2.5 bg-white text-indigo-600 rounded-xl text-sm font-bold shadow-lg shadow-indigo-900/20 hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
@@ -354,8 +360,9 @@ export default function Planner() {
                         <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Schedule Study Session</h3>
                         <form onSubmit={handleAddSession} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Subject</label>
+                                <label htmlFor="subject-select" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Subject</label>
                                 <select
+                                    id="subject-select"
                                     value={newSessionData.subjectId}
                                     onChange={e => setNewSessionData({ ...newSessionData, subjectId: e.target.value, chapterId: '', topicId: '' })}
                                     className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
@@ -370,8 +377,9 @@ export default function Planner() {
                             {newSessionData.subjectId && (
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Chapter (Opt)</label>
+                                        <label htmlFor="chapter-select" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Chapter (Opt)</label>
                                         <select
+                                            id="chapter-select"
                                             value={newSessionData.chapterId}
                                             onChange={e => setNewSessionData({ ...newSessionData, chapterId: e.target.value, topicId: '' })}
                                             className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
@@ -383,8 +391,9 @@ export default function Planner() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Topic (Opt)</label>
+                                        <label htmlFor="topic-select" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Topic (Opt)</label>
                                         <select
+                                            id="topic-select"
                                             value={newSessionData.topicId}
                                             onChange={e => setNewSessionData({ ...newSessionData, topicId: e.target.value })}
                                             className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
@@ -402,8 +411,9 @@ export default function Planner() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Time</label>
+                                    <label htmlFor="session-time" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Time</label>
                                     <input
+                                        id="session-time"
                                         type="time"
                                         value={newSessionData.time}
                                         onChange={e => setNewSessionData({ ...newSessionData, time: e.target.value })}
@@ -411,8 +421,9 @@ export default function Planner() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Duration (mins)</label>
+                                    <label htmlFor="session-duration" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Duration (mins)</label>
                                     <input
+                                        id="session-duration"
                                         type="number"
                                         min="5"
                                         step="5"

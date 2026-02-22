@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Trash2, Pencil } from 'lucide-react';
-import { useStudy, type Topic } from '../context/StudyContext';
+import { useStudy } from '../hooks/useStudy';
+import type { Topic } from '../types/study';
 import { useSound } from '../context/SoundContext';
 import EditTopicModal from './EditTopicModal';
 

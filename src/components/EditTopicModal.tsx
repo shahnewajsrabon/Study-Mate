@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, PenTool } from 'lucide-react';
-import { useStudy } from '../context/StudyContext';
+import { useStudy } from '../hooks/useStudy';
 
 interface EditTopicModalProps {
     subjectId: string;
@@ -40,6 +40,7 @@ export default function EditTopicModal({ subjectId, chapterId, topicId, currentN
                         <h2 className="text-lg font-bold text-slate-800 dark:text-white">Edit Topic</h2>
                         <button
                             onClick={onClose}
+                            aria-label="Close"
                             className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"
                         >
                             <X className="w-5 h-5" />

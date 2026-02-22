@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, BookOpen, Pencil } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useStudy } from '../context/StudyContext';
+import { useStudy } from '../hooks/useStudy';
 import AddChapterModal from '../components/AddChapterModal';
 import EditSubjectModal from '../components/EditSubjectModal';
 import AnimatedPage from '../components/AnimatedPage';

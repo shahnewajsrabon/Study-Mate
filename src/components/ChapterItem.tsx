@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Plus, Trash2, CheckCircle2, Circle, Pencil } from 'lucide-react';
-import { useStudy, type Chapter } from '../context/StudyContext';
+import { useStudy } from '../hooks/useStudy';
+import type { Chapter } from '../types/study';
 import TopicItem from './TopicItem';
 import EditChapterModal from './EditChapterModal';
 
@@ -40,6 +41,7 @@ export default function ChapterItem({
                 onClick={onToggle}
             >
                 <button
+                    aria-label="Toggle Chapter"
                     className="p-1 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                     <motion.div

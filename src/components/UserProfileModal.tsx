@@ -3,7 +3,7 @@ import { db } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { X, Trophy, Flame, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { UserProfile, BadgeType } from '../context/StudyContext';
+import type { UserProfile, BadgeType } from '../types/study';
 
 interface UserProfileModalProps {
     uid: string;

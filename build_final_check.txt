@@ -1,0 +1,29 @@
+
+> study-tracker@0.0.0 build
+> tsc -b && vite build
+
+[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32mÔ£ô[39m 2183 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mregisterSW.js              [39m[1m[2m  0.16 kB[22m[1m[22m
+[2mdist/[22m[32mmanifest.webmanifest       [39m[1m[2m  0.44 kB[22m[1m[22m
+[2mdist/[22m[32mindex.html                 [39m[1m[2m  1.51 kB[22m[1m[22m[2m Ôöé gzip:   0.76 kB[22m
+[2mdist/[22m[32massets/logo-C0C7fgvJ.png   [39m[1m[2m 30.04 kB[22m[1m[22m
+[2mdist/[22m[35massets/index-DNHe-GTT.css  [39m[1m[2m112.19 kB[22m[1m[22m[2m Ôöé gzip:  16.30 kB[22m
+[2mdist/[22m[36massets/Admin-CP5qRS2r.js   [39m[1m[2m 22.54 kB[22m[1m[22m[2m Ôöé gzip:   5.00 kB[22m
+[2mdist/[22m[36massets/index-BHMWGRWi.js   [39m[1m[33m977.39 kB[39m[22m[2m Ôöé gzip: 290.44 kB[22m
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[32mÔ£ô built in 30.57s[39m
+
+PWA v1.2.0
+mode      generateSW
+precache  8 entries (1089.16 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-8c29f6e4.js

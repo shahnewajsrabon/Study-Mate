@@ -1,0 +1,6 @@
+
+> study-tracker@0.0.0 build
+> tsc -b && vite build
+
+src/context/SocialProvider.tsx(1,38): error TS6133: 'useContext' is declared but its value is never read.
+src/context/SocialProvider.tsx(2,30): error TS6133: 'SocialContextType' is declared but its value is never read.

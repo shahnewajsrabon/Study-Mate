@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useStudy } from '../context/StudyContext';
+import { useStudy } from '../hooks/useStudy';
 import { SYLLABUS_TEMPLATES, type SyllabusTemplate } from '../data/syllabusTemplates';
 import { X, Check, BookOpen, Download } from 'lucide-react';
 
@@ -44,7 +44,7 @@ export default function SyllabusImportModal({ onClose }: SyllabusImportModalProp
                         </h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Select a curriculum to quick-start your study plan.</p>
                     </div>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                    <button onClick={onClose} aria-label="Close" className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
                         <X className="w-5 h-5" />
                     </button>
                 </div>

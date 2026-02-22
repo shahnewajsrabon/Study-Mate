@@ -45,6 +45,8 @@ export default function InstallPrompt({ deferredPrompt, onInstall }: InstallProm
                         <button
                             onClick={handleDismiss}
                             className="p-2 hover:bg-white/10 dark:hover:bg-slate-200/50 rounded-lg transition-colors"
+                            title="Dismiss"
+                            aria-label="Dismiss"
                         >
                             <X className="w-4 h-4" />
                         </button>

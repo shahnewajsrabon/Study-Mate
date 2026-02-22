@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
-import { useStudy } from '../context/StudyContext';
+import { useStudy } from '../hooks/useStudy';
+import { useProfile } from '../hooks/useProfile';
 import SubjectCard from '../components/SubjectCard';
 import AddSubjectModal from '../components/AddSubjectModal';
+import DailyPathWidget from '../components/DailyPathWidget';
 import Badge from '../components/Badge';
 import WelcomeModal from '../components/WelcomeModal';
 import DailyGoalCard from '../components/DailyGoalCard';
-import DailyPathWidget from '../components/DailyPathWidget';
 import QuoteCard from '../components/QuoteCard';
 import Leaderboard from '../components/Leaderboard';
-import { Plus, Trophy, BookMarked, PieChart } from 'lucide-react';
+import { Plus, Trophy, BookMarked, PieChart, Heart } from 'lucide-react';
 import UpcomingExams from '../components/UpcomingExams';
+import { useSocial } from '../hooks/useSocial';
+import ReviewCard from '../components/ReviewCard';
 
 const container: Variants = {
     hidden: { opacity: 0, y: 10 },
@@ -40,7 +43,9 @@ const item: Variants = {
 };
 
 export default function Dashboard() {
-    const { userProfile, subjects } = useStudy();
+    const { subjects } = useStudy();
+    const { userProfile } = useProfile();
+    const { reviews } = useSocial();
     const [isAddOpen, setIsAddOpen] = useState(false);
 
     // Show welcome modal for new users (default name is 'Student')
@@ -315,6 +320,40 @@ export default function Dashboard() {
                     </motion.div>
                 )}
             </div>
+
+            {/* Wall of Love - Live Reviews */}
+            {reviews.length > 0 && (
+                <motion.div
+                    variants={item}
+                    className="pt-8 border-t border-slate-100 dark:border-slate-800"
+                >
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 bg-red-50 dark:bg-red-900/30 rounded-2xl text-red-500">
+                                <Heart className="w-5 h-5 fill-current" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">Wall of Love</h2>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Live feedback from our amazing community</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="relative">
+                        {/* Fade edges for horizontal scroll */}
+                        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-slate-50/50 dark:from-slate-900/50 to-transparent z-10 pointer-events-none md:hidden" />
+                        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-slate-50/50 dark:from-slate-900/50 to-transparent z-10 pointer-events-none md:hidden" />
+
+                        <div className="flex overflow-x-auto pb-6 -mx-4 px-4 gap-4 no-scrollbar scroll-smooth snap-x">
+                            {reviews.map((review) => (
+                                <div key={review.id} className="snap-center">
+                                    <ReviewCard review={review} />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </motion.div>
+            )}
 
             {isAddOpen && <AddSubjectModal onClose={() => setIsAddOpen(false)} />}
 

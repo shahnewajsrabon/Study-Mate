@@ -1,4 +1,4 @@
-import { useStudy } from '../context/StudyContext';
+import { useStudy } from '../hooks/useStudy';
 import { BarChart3, TrendingUp, BookOpen, Award, Trophy, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AnimatedPage from '../components/AnimatedPage';

@@ -1,115 +1,96 @@
-import { useStudy } from '../context/StudyContext';
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, BookOpen, Clock, CheckCircle2, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Zap, Target, BookOpen, AlertCircle, Quote } from 'lucide-react';
+import { useStudy } from '../hooks/useStudy';
+import { useProfile } from '../hooks/useProfile';
 
 export default function DailyPathWidget() {
-    const { userProfile, subjects, toggleScheduledSession, saveStudySession } = useStudy();
-    const navigate = useNavigate();
+    const { subjects } = useStudy();
+    const { userProfile } = useProfile();
 
-    const todayStr = new Date().toISOString().split('T')[0];
-
-    // Find the next incomplete session (today or future)
-    const nextSession = (userProfile.scheduledSessions || [])
-        .filter(s => !s.isCompleted && s.date >= todayStr)
-        .sort((a, b) => {
-            if (a.date !== b.date) return a.date.localeCompare(b.date);
-            return (a.time || '').localeCompare(b.time || '');
-        })[0];
-
-    if (!nextSession) {
-        return (
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center justify-center text-center gap-3 h-full">
-                <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-sm">
-                    <Zap className="w-6 h-6 text-slate-300" />
-                </div>
-                <div>
-                    <h3 className="font-bold text-slate-700 dark:text-slate-200 text-sm">No Active Path</h3>
-                    <p className="text-[10px] text-slate-500 mt-1 max-w-[150px]">Generate an AI Path in the Planner to get daily targets.</p>
-                </div>
-                <button
-                    onClick={() => navigate('/planner')}
-                    className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
-                >
-                    Go to Planner <ChevronRight className="w-3 h-3" />
-                </button>
-            </div>
-        );
-    }
-
-    const subject = subjects.find(s => s.id === nextSession.subjectId);
-    const chapter = subject?.chapters.find(c => c.id === nextSession.chapterId);
-    const topic = chapter?.topics.find(t => t.id === nextSession.topicId);
-
-    const isToday = nextSession.date === todayStr;
-
-    const handleComplete = async () => {
-        if (confirm(`Mark "${topic?.name || subject?.name}" as completed?`)) {
-            await saveStudySession(nextSession.durationMinutes * 60, nextSession.subjectId);
-            toggleScheduledSession(nextSession.id);
+    const insight = useMemo(() => {
+        if (!subjects || subjects.length === 0) {
+            return {
+                title: "Starting Fresh",
+                message: "Add your subjects to start generating personalized study insights.",
+                icon: BookOpen,
+                color: "text-blue-500",
+                bg: "bg-blue-50 dark:bg-blue-900/20"
+            };
         }
-    };
+
+        // Calculate some basic metrics
+        const totalChapters = subjects.reduce((acc, s) => acc + s.chapters.length, 0);
+        const completedChapters = subjects.reduce((acc, s) => acc + s.chapters.filter(c => c.isCompleted).length, 0);
+        const completionRate = totalChapters > 0 ? (completedChapters / totalChapters) * 100 : 0;
+
+        // Check for urgent exams
+        const now = new Date();
+        const urgentSubject = subjects
+            .filter(s => s.examDate)
+            .map(s => ({ ...s, daysToExam: Math.ceil((new Date(s.examDate!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) }))
+            .filter(s => s.daysToExam > 0 && s.daysToExam <= 7)
+            .sort((a, b) => a.daysToExam - b.daysToExam)[0];
+
+        if (urgentSubject) {
+            return {
+                title: "Urgent Focus: " + urgentSubject.name,
+                message: `${urgentSubject.name} exam is in ${urgentSubject.daysToExam} days! Focus on incomplete chapters today to maximize your score.`,
+                icon: AlertCircle,
+                color: "text-red-500",
+                bg: "bg-red-50 dark:bg-red-900/20"
+            };
+        }
+
+        if (completionRate > 80) {
+            return {
+                title: "Finishing Strong",
+                message: "You've covered over 80% of your syllabus! Focus on revision and practice questions to solidify your knowledge.",
+                icon: Target,
+                color: "text-emerald-500",
+                bg: "bg-emerald-50 dark:bg-emerald-900/20"
+            };
+        }
+
+        if (userProfile.currentStreak > 3) {
+            return {
+                title: "Momentum King",
+                message: `You're on a ${userProfile.currentStreak}-day streak! Keep the consistency up; small daily gains lead to massive success.`,
+                icon: Zap,
+                color: "text-amber-500",
+                bg: "bg-amber-50 dark:bg-amber-900/20"
+            };
+        }
+
+        return {
+            title: "Strategic Session",
+            message: "Analyze your weakest subjects today. Spending just 20 minutes on a difficult topic can improve retention by 40%.",
+            icon: Quote,
+            color: "text-indigo-500",
+            bg: "bg-indigo-50 dark:bg-indigo-900/20"
+        };
+    }, [subjects, userProfile.currentStreak]);
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-100 dark:border-slate-700 shadow-xl shadow-indigo-500/5 flex flex-col relative overflow-hidden h-full group"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={`rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm ${insight.bg} transition-colors relative overflow-hidden group`}
         >
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-colors" />
-
-            <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-indigo-500 rounded-lg shadow-lg shadow-indigo-500/20">
-                        <Zap className="w-4 h-4 text-white fill-white" />
-                    </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-                        {isToday ? 'Target for Today' : 'Next Up'}
-                    </span>
-                </div>
-                {isToday && (
-                    <div className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold rounded-lg animate-pulse">
-                        Priority
-                    </div>
-                )}
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                <insight.icon className={`w-20 h-20 ${insight.color}`} />
             </div>
 
-            <div className="space-y-4 relative z-10 flex-1 flex flex-col justify-center">
-                <div>
-                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-tighter mb-1 line-clamp-1">
-                        {subject?.name || 'Unknown'}
-                    </h4>
-                    <h3 className="text-xl font-black text-slate-800 dark:text-white leading-tight line-clamp-2">
-                        {topic?.name || chapter?.name || 'General Study'}
-                    </h3>
+            <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-3">
+                    <div className={`p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm ${insight.color}`}>
+                        <insight.icon className="w-5 h-5" />
+                    </div>
+                    <h3 className={`font-bold text-sm uppercase tracking-wider ${insight.color}`}>Daily AI Insight</h3>
                 </div>
 
-                <div className="flex items-center gap-4 text-slate-500 dark:text-slate-400">
-                    <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-indigo-500" />
-                        <span className="text-xs font-bold">{nextSession.time}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                        <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
-                        <span className="text-xs font-bold">{nextSession.durationMinutes}m</span>
-                    </div>
-                </div>
-            </div>
-
-            <div className="mt-5 pt-4 border-t border-slate-50 dark:border-slate-700 flex gap-2 relative z-10">
-                <button
-                    onClick={handleComplete}
-                    className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
-                >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Done
-                </button>
-                <button
-                    onClick={() => navigate('/timer')}
-                    className="px-4 py-2.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition-all font-mono"
-                >
-                    Start
-                </button>
+                <h4 className="text-lg font-bold text-slate-800 dark:text-white mb-2">{insight.title}</h4>
+                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{insight.message}</p>
             </div>
         </motion.div>
     );

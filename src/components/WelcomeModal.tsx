@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useStudy } from '../context/StudyContext';
+import { useProfile } from '../hooks/useProfile';
 import { UserCircle, GraduationCap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function WelcomeModal() {
-    const { updateProfile } = useStudy();
+    const { updateProfile } = useProfile();
     const [name, setName] = useState('');
     const [grade, setGrade] = useState('');
 
