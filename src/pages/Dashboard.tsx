@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
-import { useStudy } from '../hooks/useStudy';
-import { useProfile } from '../hooks/useProfile';
-import SubjectCard from '../components/SubjectCard';
-import AddSubjectModal from '../components/AddSubjectModal';
-import DailyPathWidget from '../components/DailyPathWidget';
-import Badge from '../components/Badge';
-import WelcomeModal from '../components/WelcomeModal';
-import DailyGoalCard from '../components/DailyGoalCard';
-import QuoteCard from '../components/QuoteCard';
-import Leaderboard from '../components/Leaderboard';
+import { useStudy } from '../features/study/hooks/useStudy.ts';
+import { useProfile } from '../features/profile/hooks/useProfile.ts';
+import { type BadgeEntry } from '../features/study/types/study.ts';
+import SubjectCard from '../features/study/components/SubjectCard.tsx';
+import AddSubjectModal from '../features/study/components/AddSubjectModal.tsx';
+import DailyPathWidget from '../features/study/components/DailyPathWidget.tsx';
+import Badge from '../shared/components/ui/Badge.tsx';
+import WelcomeModal from '../features/profile/components/WelcomeModal.tsx';
+import DailyGoalCard from '../features/study/components/DailyGoalCard.tsx';
+import QuoteCard from '../shared/components/ui/QuoteCard.tsx';
+import Leaderboard from '../features/social/components/Leaderboard.tsx';
 import { Plus, Trophy, BookMarked, PieChart, Heart } from 'lucide-react';
-import UpcomingExams from '../components/UpcomingExams';
-import { useSocial } from '../hooks/useSocial';
-import ReviewCard from '../components/ReviewCard';
+import UpcomingExams from '../features/study/components/UpcomingExams.tsx';
+import { useSocial } from '../features/social/hooks/useSocial.ts';
+import ReviewCard from '../features/social/components/ReviewCard.tsx';
 
 const container: Variants = {
     hidden: { opacity: 0, y: 10 },
@@ -252,7 +253,7 @@ export default function Dashboard() {
                             Recent Achievements
                         </h2>
                         <div className="flex flex-wrap gap-4">
-                            {userProfile.earnedBadges.map((badge, index) => (
+                            {userProfile.earnedBadges.map((badge: BadgeEntry, index) => (
                                 <Badge
                                     key={`${badge.type}-${index}`}
                                     type={badge.type}

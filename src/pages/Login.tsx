@@ -1,10 +1,10 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../shared/context/AuthContext.tsx';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, ArrowRight, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useSocial } from '../hooks/useSocial';
-import ReviewCard from '../components/ReviewCard';
+import { useSocial } from '../features/social/hooks/useSocial.ts';
+import ReviewCard from '../features/social/components/ReviewCard.tsx';
 
 export default function Login() {
     const { signInWithGoogle, user } = useAuth();
@@ -23,8 +23,8 @@ export default function Login() {
                 {/* Animated Background Elements */}
                 <div className="absolute inset-0 z-0">
                     <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl animate-pulse" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400/20 dark:bg-indigo-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-                    <div className="absolute top-[20%] right-[10%] w-[20%] h-[20%] bg-purple-400/20 dark:bg-purple-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400/20 dark:bg-indigo-600/10 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
+                    <div className="absolute top-[20%] right-[10%] w-[20%] h-[20%] bg-purple-400/20 dark:bg-purple-600/10 rounded-full blur-3xl animate-pulse [animation-delay:2s]" />
                 </div>
 
                 <motion.div

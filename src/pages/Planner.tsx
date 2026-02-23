@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
-import { useStudy } from '../hooks/useStudy';
-import { useProfile } from '../hooks/useProfile';
-import { usePlanner } from '../hooks/usePlanner';
-import type { ScheduledSession } from '../types/study';
+import { useStudy } from '../features/study/hooks/useStudy.ts';
+import { useProfile } from '../features/profile/hooks/useProfile.ts';
+import { usePlanner } from '../features/study/hooks/usePlanner.ts';
+import type { ScheduledSession } from '../features/study/types/study.ts';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
-import UpcomingExams from '../components/UpcomingExams';
+import UpcomingExams from '../features/study/components/UpcomingExams.tsx';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 

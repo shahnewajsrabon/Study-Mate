@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useStudy } from '../hooks/useStudy';
-import { useProfile } from '../hooks/useProfile';
-import { useSocial } from '../hooks/useSocial';
-import { useSound } from '../context/SoundContext';
-import { useTheme } from '../context/ThemeContext';
-import ReviewBox from '../components/ReviewBox';
+import { useAuth } from '../shared/context/AuthContext.tsx';
+import { useStudy } from '../features/study/hooks/useStudy.ts';
+import { useProfile } from '../features/profile/hooks/useProfile.ts';
+import { useSocial } from '../features/social/hooks/useSocial.ts';
+import { useSound } from '../shared/context/SoundContext.tsx';
+import { useTheme } from '../shared/context/ThemeContext.tsx';
+import ReviewBox from '../features/social/components/ReviewBox.tsx';
 import {
     UserCircle, Save, Download, Upload, Trash2, LogOut,
     Volume2, VolumeX, BookOpen, Bug, Edit, Moon, Sun,
@@ -13,10 +13,10 @@ import {
     Star
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import AnimatedPage from '../components/AnimatedPage';
-import SyllabusImportModal from '../components/SyllabusImportModal';
+import AnimatedPage from '../shared/components/ui/AnimatedPage.tsx';
+import SyllabusImportModal from '../features/study/components/SyllabusImportModal.tsx';
 
-import { useToast } from '../context/ToastContext';
+import { useToast } from '../shared/context/ToastContext.tsx';
 
 export default function Settings() {
     const { user, logout } = useAuth();

@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useSocial } from '../hooks/useSocial';
-import type { Group, ChatMessage, GroupMember, Challenge, Review } from '../types/social';
-import ReviewCard from '../components/ReviewCard';
-import { db } from '../lib/firebase';
+import { useAuth } from '../shared/context/AuthContext.tsx';
+import { useSocial } from '../features/social/hooks/useSocial.ts';
+import type { Group, ChatMessage, GroupMember, Challenge, Review } from '../features/social/types/social.ts';
+import ReviewCard from '../features/social/components/ReviewCard.tsx';
+import { db } from '../shared/lib/firebase.ts';
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { Send, MessageCircle, Plus, Users, Hash, ChevronLeft, Loader2, Copy, LogOut, Trophy, Target, Flame, Calendar, PlusCircle, CheckCircle2, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
-import AnimatedPage from '../components/AnimatedPage';
+import AnimatedPage from '../shared/components/ui/AnimatedPage.tsx';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 

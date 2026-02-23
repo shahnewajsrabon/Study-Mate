@@ -18,10 +18,10 @@ import {
     UserMinus,
     Zap
 } from 'lucide-react';
-import { db } from '../lib/firebase';
+import { db } from '../shared/lib/firebase.ts';
 import { collection, query, onSnapshot, orderBy, limit, doc, updateDoc } from 'firebase/firestore';
 import { AnimatePresence } from 'framer-motion';
-import { useProfile } from '../hooks/useProfile';
+import { useProfile } from '../features/profile/hooks/useProfile.ts';
 
 interface UserAdminData {
     id: string;

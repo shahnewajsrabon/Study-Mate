@@ -1,9 +1,9 @@
-import { useStudy } from '../hooks/useStudy';
+import { useStudy } from '../features/study/hooks/useStudy.ts';
 import { BarChart3, TrendingUp, BookOpen, Award, Trophy, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import AnimatedPage from '../components/AnimatedPage';
-import StatCard from '../components/StatCard';
-import { calculateOverallStats, calculateActivityData, calculateStreak, type ActivityPoint } from '../lib/calculateAnalytics';
+import AnimatedPage from '../shared/components/ui/AnimatedPage.tsx';
+import StatCard from '../shared/components/ui/StatCard.tsx';
+import { calculateOverallStats, calculateActivityData, calculateStreak, type ActivityPoint } from '../features/study/lib/calculateAnalytics.ts';
 
 export default function Analytics() {
     const { subjects } = useStudy();

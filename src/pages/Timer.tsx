@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { useStudy } from '../hooks/useStudy';
-import type { Subject } from '../types/study';
-import { useAuth } from '../context/AuthContext';
-import { useSound } from '../context/SoundContext';
+import { useStudy } from '../features/study/hooks/useStudy.ts';
+import type { Subject } from '../features/study/types/study.ts';
+import { useAuth } from '../shared/context/AuthContext.tsx';
+import { useSound } from '../shared/context/SoundContext.tsx';
 import { Play, Pause, Save, Trophy, RotateCcw, Volume2, VolumeX, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db } from '../shared/lib/firebase.ts';
 
 interface LeaderboardEntry {
     userId: string;
@@ -17,7 +17,7 @@ interface LeaderboardEntry {
 type TimerMode = 'stopwatch' | 'pomodoro' | 'countdown';
 type TimeRange = 'today' | 'week' | 'month' | 'all_time';
 
-import { useToast } from '../context/ToastContext';
+import { useToast } from '../shared/context/ToastContext.tsx';
 
 export default function Timer() {
     const toast = useToast();
