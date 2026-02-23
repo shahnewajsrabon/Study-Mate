@@ -211,9 +211,11 @@ export default function Flashcards() {
 
                                             {/* Progress Bar Mini */}
                                             <div className="mt-6 h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-emerald-500 transition-all duration-500"
-                                                    style={{ width: `${set.cards.length > 0 ? (set.cards.filter(c => c.isMastered).length / set.cards.length) * 100 : 0}%` }}
+                                                <motion.div
+                                                    className="h-full bg-emerald-500"
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${set.cards.length > 0 ? (set.cards.filter(c => c.isMastered).length / set.cards.length) * 100 : 0}%` }}
+                                                    transition={{ duration: 0.5 }}
                                                 />
                                             </div>
                                         </motion.div>
