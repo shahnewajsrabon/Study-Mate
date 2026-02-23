@@ -378,13 +378,24 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         }
     }, [user, flashcardSets]);
 
+    const updateFlashcardSet = useCallback(async (id: string, updates: Partial<FlashcardSet>) => {
+        if (!user) return;
+        try {
+            await updateDoc(doc(db, 'flashcardSets', id), updates);
+            toast.success("Flashcard set updated");
+        } catch (error) {
+            console.error("Error updating flashcard set:", error);
+            toast.error("Failed to update set");
+        }
+    }, [user, toast]);
+
     const value: StudyContextType = {
         subjects, addSubject, editSubject, deleteSubject,
         addChapter, editChapter, toggleChapter, deleteChapter,
         addTopic, editTopic, toggleTopic, deleteTopic,
         resetData, exportData, importData, importSyllabusData, saveStudySession,
         permanentlyDeleteAllUserData,
-        flashcardSets, addFlashcardSet, deleteFlashcardSet, toggleFlashcardMastered
+        flashcardSets, addFlashcardSet, deleteFlashcardSet, toggleFlashcardMastered, updateFlashcardSet
     };
 
     return (

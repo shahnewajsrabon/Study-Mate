@@ -7,7 +7,7 @@ import FlashcardCard from '../features/study/components/FlashcardCard.tsx';
 import { clsx } from 'clsx';
 
 export default function Flashcards() {
-    const { subjects, flashcardSets, addFlashcardSet, deleteFlashcardSet, toggleFlashcardMastered } = useStudy();
+    const { subjects, flashcardSets, addFlashcardSet, deleteFlashcardSet, toggleFlashcardMastered, updateFlashcardSet } = useStudy();
     const [selectedSubjectId, setSelectedSubjectId] = useState<string | 'all'>('all');
     const [activeSetId, setActiveSetId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -152,11 +152,13 @@ export default function Flashcards() {
                                             const q = prompt("Question:");
                                             const a = prompt("Answer:");
                                             if (q && a) {
-                                                // Updated: correctly notify user or implement a proper modal
-                                                alert("This feature will allow adding cards to the set in a future update.");
+                                                const newCard = { id: crypto.randomUUID(), question: q, answer: a, isMastered: false };
+                                                const updatedCards = [...activeSet.cards, newCard];
+                                                updateFlashcardSet(activeSet.id, { cards: updatedCards });
                                             }
                                         }}
                                         className="h-80 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl flex flex-col items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-600 transition-all p-8 gap-4"
+                                        title="Add New Card to this Set"
                                     >
                                         <Plus className="w-10 h-10" />
                                         <span className="font-bold">Add Note / Card</span>
@@ -210,7 +212,7 @@ export default function Flashcards() {
                                             {/* Progress Bar Mini */}
                                             <div className="mt-6 h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                                                 <div
-                                                    className="h-full bg-emerald-500"
+                                                    className="h-full bg-emerald-500 transition-all duration-500"
                                                     style={{ width: `${set.cards.length > 0 ? (set.cards.filter(c => c.isMastered).length / set.cards.length) * 100 : 0}%` }}
                                                 />
                                             </div>

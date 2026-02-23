@@ -25,6 +25,7 @@ export interface StudyContextType {
     addFlashcardSet: (set: Omit<import('../types/study.ts').FlashcardSet, 'id' | 'createdAt'>) => Promise<void>;
     deleteFlashcardSet: (id: string) => Promise<void>;
     toggleFlashcardMastered: (setId: string, cardId: string) => Promise<void>;
+    updateFlashcardSet: (id: string, updates: Partial<import('../types/study.ts').FlashcardSet>) => Promise<void>;
 }
 
 export const StudyContext = createContext<StudyContextType | undefined>(undefined);
