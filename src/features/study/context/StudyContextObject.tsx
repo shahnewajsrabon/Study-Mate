@@ -21,6 +21,10 @@ export interface StudyContextType {
     importSyllabusData: (subjects: TemplateSubject[]) => void;
     saveStudySession: (durationInSeconds: number, subjectId?: string, sessionGoal?: string) => Promise<void>;
     permanentlyDeleteAllUserData: () => Promise<void>;
+    flashcardSets: import('../types/study.ts').FlashcardSet[];
+    addFlashcardSet: (set: Omit<import('../types/study.ts').FlashcardSet, 'id' | 'createdAt'>) => Promise<void>;
+    deleteFlashcardSet: (id: string) => Promise<void>;
+    toggleFlashcardMastered: (setId: string, cardId: string) => Promise<void>;
 }
 
 export const StudyContext = createContext<StudyContextType | undefined>(undefined);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useOutlet } from 'react-router-dom';
-import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, Calendar, Users, ShieldCheck } from 'lucide-react';
+import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, Calendar, Users, ShieldCheck, Layers } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useTheme } from '../../context/ThemeContext.tsx';
 import { useProfile } from '../../../features/profile/hooks/useProfile.ts';
@@ -12,6 +12,7 @@ import logo from '../../../assets/logo.png';
 import InstallPrompt from '../ui/InstallPrompt.tsx';
 import type { BeforeInstallPromptEvent } from '../../types/index.ts';
 import { useSmartReminders } from '../../hooks/useSmartReminders.ts';
+import AIBuddy from '../../../features/study/components/AIBuddy.tsx';
 
 const TOUR_STEPS: TourStep[] = [
     {
@@ -238,6 +239,22 @@ export default function Layout() {
                             )}
                         </Link>
                         <Link
+                            to="/flashcards"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${isActive('/flashcards')
+                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                }`}
+                        >
+                            <Layers className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive('/flashcards') ? 'text-white' : 'text-slate-500 group-hover:text-blue-600 dark:text-slate-500 dark:group-hover:text-blue-400'}`} />
+                            <span className="font-medium">Flashcards</span>
+                            {isActive('/flashcards') && (
+                                <motion.div
+                                    layoutId="activeTab"
+                                    className="absolute left-0 w-1 h-8 bg-white rounded-r-full opacity-30"
+                                />
+                            )}
+                        </Link>
+                        <Link
                             to="/settings"
                             id="nav-settings"
                             className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive('/settings')
@@ -334,6 +351,7 @@ export default function Layout() {
             </nav>
 
             {installPromptEvent && <InstallPrompt deferredPrompt={installPromptEvent} onInstall={handleInstall} />}
+            <AIBuddy />
         </div>
     );
 }

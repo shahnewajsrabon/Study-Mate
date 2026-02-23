@@ -5,7 +5,7 @@ import { useProfile } from '../../../features/profile/hooks/useProfile.ts';
 import { type TemplateSubject } from '../data/syllabusTemplates.ts';
 import { db } from '../../../shared/lib/firebase.ts';
 import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
-import type { Subject, Chapter, Topic } from '../types/study.ts';
+import type { Subject, Chapter, Topic, FlashcardSet } from '../types/study.ts';
 import { StudyContext, type StudyContextType } from './StudyContextObject.tsx';
 
 const STORAGE_KEY_SUBJECTS = 'study-tracker-subjects';
@@ -14,6 +14,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
     const toast = useToast();
     const { userProfile, updateProfile, addXP } = useProfile();
+    const [flashcardSets, setFlashcardSets] = useState<FlashcardSet[]>([]);
     const [subjects, setSubjects] = useState<Subject[]>(() => {
         const saved = localStorage.getItem(STORAGE_KEY_SUBJECTS);
         if (saved) {
@@ -43,6 +44,27 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
             } as Subject));
             setSubjects(subjectsList);
             localStorage.setItem(STORAGE_KEY_SUBJECTS, JSON.stringify(subjectsList));
+        });
+
+        return () => unsubscribe();
+    }, [user]);
+
+    // Flashcards Sync
+    useEffect(() => {
+        if (!user) {
+            queueMicrotask(() => {
+                setFlashcardSets(prev => prev.length > 0 ? [] : prev);
+            });
+            return;
+        }
+
+        const q = query(collection(db, 'flashcardSets'), where('userId', '==', user.uid));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const setsList: FlashcardSet[] = snapshot.docs.map(d => ({
+                id: d.id,
+                ...d.data()
+            } as FlashcardSet));
+            setFlashcardSets(setsList);
         });
 
         return () => unsubscribe();
@@ -298,8 +320,15 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
             const snapshot = await getDocs(q);
             const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
             await Promise.all(deletePromises);
+
+            const flashcardQ = query(collection(db, 'flashcardSets'), where('userId', '==', user.uid));
+            const flashcardSnapshot = await getDocs(flashcardQ);
+            const flashcardDeletePromises = flashcardSnapshot.docs.map(d => deleteDoc(d.ref));
+            await Promise.all(flashcardDeletePromises);
+
             await deleteDoc(doc(db, 'users', user.uid));
             setSubjects([]);
+            setFlashcardSets([]);
             localStorage.removeItem(STORAGE_KEY_SUBJECTS);
         } catch (error) {
             console.error("Error deleting user data:", error);
@@ -307,12 +336,55 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         }
     }, [user]);
 
+    const addFlashcardSet = useCallback(async (set: Omit<FlashcardSet, 'id' | 'createdAt'>) => {
+        if (!user) return;
+        try {
+            await addDoc(collection(db, 'flashcardSets'), {
+                ...set,
+                userId: user.uid,
+                createdAt: new Date().toISOString()
+            });
+            toast.success("Flashcard set created!");
+        } catch (error) {
+            console.error("Error adding flashcard set:", error);
+            toast.error("Failed to create flashcard set");
+        }
+    }, [user, toast]);
+
+    const deleteFlashcardSet = useCallback(async (id: string) => {
+        if (!user) return;
+        try {
+            await deleteDoc(doc(db, 'flashcardSets', id));
+            toast.success("Flashcard set deleted");
+        } catch (error) {
+            console.error("Error deleting flashcard set:", error);
+            toast.error("Failed to delete set");
+        }
+    }, [user, toast]);
+
+    const toggleFlashcardMastered = useCallback(async (setId: string, cardId: string) => {
+        if (!user) return;
+        const set = flashcardSets.find(s => s.id === setId);
+        if (!set) return;
+
+        const updatedCards = set.cards.map(c =>
+            c.id === cardId ? { ...c, isMastered: !c.isMastered, lastReviewed: new Date().toISOString() } : c
+        );
+
+        try {
+            await updateDoc(doc(db, 'flashcardSets', setId), { cards: updatedCards });
+        } catch (error) {
+            console.error("Error toggling flashcard mastery:", error);
+        }
+    }, [user, flashcardSets]);
+
     const value: StudyContextType = {
         subjects, addSubject, editSubject, deleteSubject,
         addChapter, editChapter, toggleChapter, deleteChapter,
         addTopic, editTopic, toggleTopic, deleteTopic,
         resetData, exportData, importData, importSyllabusData, saveStudySession,
-        permanentlyDeleteAllUserData
+        permanentlyDeleteAllUserData,
+        flashcardSets, addFlashcardSet, deleteFlashcardSet, toggleFlashcardMastered
     };
 
     return (

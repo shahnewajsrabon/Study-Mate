@@ -68,3 +68,20 @@ export type UserProfile = {
     scheduledSessions?: ScheduledSession[];
     majorExams?: MajorExam[];
 };
+
+export type Flashcard = {
+    id: string;
+    question: string;
+    answer: string;
+    isMastered: boolean;
+    lastReviewed?: string;
+};
+
+export type FlashcardSet = {
+    id: string;
+    subjectId: string;
+    chapterId?: string;
+    title: string;
+    cards: Flashcard[];
+    createdAt: string;
+};

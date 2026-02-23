@@ -8,6 +8,7 @@ import Chat from './pages/Chat.tsx';
 import Layout from './shared/components/layout/Layout.tsx';
 import Login from './pages/Login.tsx';
 import Planner from './pages/Planner.tsx';
+import Flashcards from './pages/Flashcards.tsx';
 import { ToastProvider } from './shared/context/ToastContext.tsx';
 import { AuthProvider, useAuth } from './shared/context/AuthContext.tsx';
 import { useProfile } from './features/profile/hooks/useProfile.ts';
@@ -61,6 +62,7 @@ function App() {
                       <Route path="planner" element={<Planner />} />
                       <Route path="analytics" element={<Analytics />} />
                       <Route path="timer" element={<Timer />} />
+                      <Route path="flashcards" element={<Flashcards />} />
                       <Route path="chat" element={<Chat />} />
                       <Route path="settings" element={<Settings />} />
                       <Route path="admin" element={
