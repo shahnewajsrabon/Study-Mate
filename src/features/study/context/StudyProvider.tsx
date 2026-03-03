@@ -217,6 +217,77 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         await editSubject(subjectId, { chapters: updatedChapters });
     }, [subjects, editSubject]);
 
+    const updateTopicNotes = useCallback(async (subjectId: string, chapterId: string, topicId: string, notes: string) => {
+        const subject = subjects.find(s => s.id === subjectId);
+        if (!subject) return;
+
+        const updatedChapters = subject.chapters.map(c => {
+            if (c.id === chapterId) {
+                return {
+                    ...c,
+                    topics: c.topics.map(t => t.id === topicId ? { ...t, notes } : t)
+                };
+            }
+            return c;
+        });
+        await editSubject(subjectId, { chapters: updatedChapters });
+    }, [subjects, editSubject]);
+
+    const addTopicLink = useCallback(async (subjectId: string, chapterId: string, topicId: string, linkData: Omit<import('../types/study.ts').ExternalLink, 'id'>) => {
+        const subject = subjects.find(s => s.id === subjectId);
+        if (!subject) return;
+
+        const newLink = { ...linkData, id: crypto.randomUUID() };
+
+        const updatedChapters = subject.chapters.map(c => {
+            if (c.id === chapterId) {
+                return {
+                    ...c,
+                    topics: c.topics.map(t => t.id === topicId ? { ...t, links: [...(t.links || []), newLink] } : t)
+                };
+            }
+            return c;
+        });
+        await editSubject(subjectId, { chapters: updatedChapters });
+    }, [subjects, editSubject]);
+
+    const deleteTopicLink = useCallback(async (subjectId: string, chapterId: string, topicId: string, linkId: string) => {
+        const subject = subjects.find(s => s.id === subjectId);
+        if (!subject) return;
+
+        const updatedChapters = subject.chapters.map(c => {
+            if (c.id === chapterId) {
+                return {
+                    ...c,
+                    topics: c.topics.map(t => {
+                        if (t.id === topicId) {
+                            return { ...t, links: (t.links || []).filter(l => l.id !== linkId) };
+                        }
+                        return t;
+                    })
+                };
+            }
+            return c;
+        });
+        await editSubject(subjectId, { chapters: updatedChapters });
+    }, [subjects, editSubject]);
+
+    const updateTopicConfidence = useCallback(async (subjectId: string, chapterId: string, topicId: string, confidence: number) => {
+        const subject = subjects.find(s => s.id === subjectId);
+        if (!subject) return;
+
+        const updatedChapters = subject.chapters.map(c => {
+            if (c.id === chapterId) {
+                return {
+                    ...c,
+                    topics: c.topics.map(t => t.id === topicId ? { ...t, confidence: confidence as 1 | 2 | 3 | 4 | 5 } : t)
+                };
+            }
+            return c;
+        });
+        await editSubject(subjectId, { chapters: updatedChapters });
+    }, [subjects, editSubject]);
+
     const resetData = useCallback(async () => {
         if (!user) return;
         try {
@@ -287,23 +358,31 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         }
     }, [user, toast]);
 
-    const saveStudySession = useCallback(async (durationInSeconds: number, subjectId?: string) => {
+    const saveStudySession = useCallback(async (durationInSeconds: number, subjectId?: string, sessionGoal?: string, mood?: import('../types/study.ts').MoodType) => {
         if (!user) return;
         try {
             const durationMinutes = Math.floor(durationInSeconds / 60);
             const xpGained = durationMinutes * 10;
+
+            const sessionEntry = {
+                date: new Date().toISOString(),
+                duration: durationInSeconds,
+                subjectId,
+                goal: sessionGoal,
+                mood
+            };
+
+            const updatedHistory = [...(userProfile.sessionHistory || []), sessionEntry];
 
             await updateProfile({
                 totalStudyTime: (userProfile.totalStudyTime || 0) + durationInSeconds,
                 todayStudyTime: (userProfile.todayStudyTime || 0) + durationInSeconds,
                 weeklyStudyTime: (userProfile.weeklyStudyTime || 0) + durationInSeconds,
                 monthlyStudyTime: (userProfile.monthlyStudyTime || 0) + durationInSeconds,
-                xp: (userProfile.xp || 0) + xpGained
+                xp: (userProfile.xp || 0) + xpGained,
+                sessionHistory: updatedHistory,
+                lastStudyDate: new Date().toISOString()
             });
-
-            if (subjectId) {
-                // Potential logic to record subject-specific session
-            }
 
             addXP(xpGained);
             toast.success(`Session saved! Gained ${xpGained} XP!`);
@@ -393,6 +472,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         subjects, addSubject, editSubject, deleteSubject,
         addChapter, editChapter, toggleChapter, deleteChapter,
         addTopic, editTopic, toggleTopic, deleteTopic,
+        updateTopicNotes, addTopicLink, deleteTopicLink, updateTopicConfidence,
         resetData, exportData, importData, importSyllabusData, saveStudySession,
         permanentlyDeleteAllUserData,
         flashcardSets, addFlashcardSet, deleteFlashcardSet, toggleFlashcardMastered, updateFlashcardSet

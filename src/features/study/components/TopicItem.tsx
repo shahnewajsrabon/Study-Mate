@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { CheckCircle2, Trash2, Pencil } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, Trash2, Pencil, Info } from 'lucide-react';
 import { useStudy } from '../hooks/useStudy.ts';
 import type { Topic } from '../types/study.ts';
 import { useSound } from '../../../shared/context/SoundContext.tsx';
 import EditTopicModal from './EditTopicModal.tsx';
+import TopicDetailsModal from './TopicDetailsModal.tsx';
 
 interface TopicItemProps {
     subjectId: string;
@@ -20,6 +21,7 @@ export default function TopicItem({
     const { toggleTopic, deleteTopic } = useStudy();
     const { playSound } = useSound();
     const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
     return (
         <>
@@ -44,16 +46,34 @@ export default function TopicItem({
                     <CheckCircle2 className="w-3 h-3" />
                 </motion.button>
 
-                <span className={`flex-1 text-sm font-google-sans transition-all ${topic.isCompleted ? 'text-slate-400 line-through' : 'text-slate-600 dark:text-slate-300'
-                    }`}>
-                    {topic.name}
-                </span>
+                <div
+                    className="flex-1 cursor-pointer"
+                    onClick={() => setIsDetailsOpen(true)}
+                >
+                    <span className={`block text-sm font-google-sans transition-all ${topic.isCompleted ? 'text-slate-400 line-through' : 'text-slate-600 dark:text-slate-300'
+                        }`}>
+                        {topic.name}
+                    </span>
+                    {(topic.notes || (topic.links && topic.links.length > 0)) && (
+                        <div className="flex gap-2 mt-0.5">
+                            {topic.notes && <div className="w-1 h-1 rounded-full bg-blue-400" title="Has Notes" />}
+                            {topic.links && topic.links.length > 0 && <div className="w-1 h-1 rounded-full bg-emerald-400" title="Has Links" />}
+                        </div>
+                    )}
+                </div>
 
                 <div className="flex items-center gap-1 opacity-0 group-hover/topic:opacity-100 transition-opacity">
                     <button
+                        onClick={() => setIsDetailsOpen(true)}
+                        className="p-1.5 text-slate-300 hover:text-blue-500 dark:text-slate-600 dark:hover:text-blue-400 transition-all"
+                        title="View Details & Notes"
+                    >
+                        <Info className="w-3.5 h-3.5" />
+                    </button>
+                    <button
                         onClick={() => setIsEditOpen(true)}
                         className="p-1.5 text-slate-300 hover:text-amber-500 dark:text-slate-600 dark:hover:text-amber-400 transition-all"
-                        title="Edit Topic"
+                        title="Edit Topic Name"
                     >
                         <Pencil className="w-3.5 h-3.5" />
                     </button>
@@ -66,6 +86,17 @@ export default function TopicItem({
                     </button>
                 </div>
             </motion.div>
+
+            <AnimatePresence>
+                {isDetailsOpen && (
+                    <TopicDetailsModal
+                        subjectId={subjectId}
+                        chapterId={chapterId}
+                        topic={topic}
+                        onClose={() => setIsDetailsOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
 
             {isEditOpen && (
                 <EditTopicModal

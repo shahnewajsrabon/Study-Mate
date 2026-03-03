@@ -19,8 +19,12 @@ export interface StudyContextType {
     exportData: () => void;
     importData: (jsonData: string) => Promise<boolean>;
     importSyllabusData: (subjects: TemplateSubject[]) => void;
-    saveStudySession: (durationInSeconds: number, subjectId?: string, sessionGoal?: string) => Promise<void>;
+    saveStudySession: (durationInSeconds: number, subjectId?: string, sessionGoal?: string, mood?: import('../types/study.ts').MoodType) => Promise<void>;
     permanentlyDeleteAllUserData: () => Promise<void>;
+    updateTopicNotes: (subjectId: string, chapterId: string, topicId: string, notes: string) => Promise<void>;
+    addTopicLink: (subjectId: string, chapterId: string, topicId: string, link: Omit<import('../types/study.ts').ExternalLink, 'id'>) => Promise<void>;
+    deleteTopicLink: (subjectId: string, chapterId: string, topicId: string, linkId: string) => Promise<void>;
+    updateTopicConfidence: (subjectId: string, chapterId: string, topicId: string, confidence: number) => Promise<void>;
     flashcardSets: import('../types/study.ts').FlashcardSet[];
     addFlashcardSet: (set: Omit<import('../types/study.ts').FlashcardSet, 'id' | 'createdAt'>) => Promise<void>;
     deleteFlashcardSet: (id: string) => Promise<void>;

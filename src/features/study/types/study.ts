@@ -5,11 +5,23 @@ export type BadgeEntry = {
     earnedAt: string;
 };
 
+export type ExternalLink = {
+    id: string;
+    title: string;
+    url: string;
+    type: 'youtube' | 'article' | 'wikipedia' | 'other';
+};
+
+export type MoodType = 'great' | 'good' | 'okay' | 'tired' | 'stressed';
+
 export type Topic = {
     id: string;
     name: string;
     isCompleted: boolean;
     completedAt?: string | null;
+    notes?: string;
+    links?: ExternalLink[];
+    confidence?: 1 | 2 | 3 | 4 | 5;
 };
 
 export type Chapter = {
@@ -67,6 +79,13 @@ export type UserProfile = {
     role: 'student' | 'admin';
     scheduledSessions?: ScheduledSession[];
     majorExams?: MajorExam[];
+    sessionHistory?: {
+        date: string;
+        duration: number;
+        subjectId?: string;
+        goal?: string;
+        mood?: MoodType;
+    }[];
 };
 
 export type Flashcard = {
@@ -75,6 +94,11 @@ export type Flashcard = {
     answer: string;
     isMastered: boolean;
     lastReviewed?: string;
+    // SRS Data (Phase 2)
+    interval?: number;
+    easeFactor?: number;
+    reps?: number;
+    nextReview?: string;
 };
 
 export type FlashcardSet = {

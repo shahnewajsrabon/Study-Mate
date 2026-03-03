@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useStudy } from '../features/study/hooks/useStudy.ts';
-import type { Subject } from '../features/study/types/study.ts';
+import type { Subject, MoodType } from '../features/study/types/study.ts';
 import { useAuth } from '../shared/context/AuthContext.tsx';
 import { useSound } from '../shared/context/SoundContext.tsx';
-import { Play, Pause, Save, Trophy, RotateCcw, Volume2, VolumeX, CheckCircle2 } from 'lucide-react';
+import { Play, Pause, Save, Trophy, RotateCcw, Volume2, VolumeX, CheckCircle2, Smile, Meh, Frown, Zap, Coffee } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../shared/lib/firebase.ts';
+import LofiPlayer from '../features/timer/components/LofiPlayer.tsx';
 
 interface LeaderboardEntry {
     userId: string;
@@ -18,6 +19,14 @@ type TimerMode = 'stopwatch' | 'pomodoro' | 'countdown';
 type TimeRange = 'today' | 'week' | 'month' | 'all_time';
 
 import { useToast } from '../shared/context/ToastContext.tsx';
+
+const MOODS: { type: MoodType; icon: React.ElementType; label: string; color: string }[] = [
+    { type: 'great', icon: Zap, label: 'Energized', color: 'text-yellow-500 bg-yellow-100' },
+    { type: 'good', icon: Smile, label: 'Good', color: 'text-emerald-500 bg-emerald-100' },
+    { type: 'okay', icon: Meh, label: 'Okay', color: 'text-blue-500 bg-blue-100' },
+    { type: 'tired', icon: Coffee, label: 'Tired', color: 'text-amber-600 bg-amber-100' },
+    { type: 'stressed', icon: Frown, label: 'Stressed', color: 'text-rose-500 bg-rose-100' },
+];
 
 export default function Timer() {
     const toast = useToast();
@@ -38,6 +47,8 @@ export default function Timer() {
     const [selectedSubject, setSelectedSubject] = useState<string>('');
     const [sessionGoal, setSessionGoal] = useState('');
     const [sessionSaved, setSessionSaved] = useState(false);
+    const [showMoodModal, setShowMoodModal] = useState(false);
+    const [pendingDuration, setPendingDuration] = useState(0);
 
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
@@ -192,8 +203,14 @@ export default function Timer() {
             return;
         }
 
-        await saveStudySession(duration, selectedSubject, sessionGoal);
+        setPendingDuration(duration);
+        setShowMoodModal(true);
+    };
+
+    const confirmSaveWithMood = async (mood: MoodType) => {
+        await saveStudySession(pendingDuration, selectedSubject, sessionGoal, mood);
         setSessionSaved(true);
+        setShowMoodModal(false);
         playSound('success');
         toast.success('Session Saved! Great Job.');
     };
@@ -293,6 +310,9 @@ export default function Timer() {
                             </select>
                         </div>
                     </div>
+
+                    {/* Lofi Player Widget */}
+                    <LofiPlayer />
 
                     {/* Timer Circle */}
                     <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center relative overflow-hidden transition-colors min-h-[400px]">
@@ -545,6 +565,55 @@ export default function Timer() {
                         <div className="bg-emerald-500 rounded-full p-1"><CheckCircle2 className="w-4 h-4 text-white" /></div>
                         <span className="font-medium">Session Saved! Great Job.</span>
                     </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Mood Selector Modal */}
+            <AnimatePresence>
+                {showMoodModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowMoodModal(false)}
+                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 dark:border-slate-700"
+                        >
+                            <div className="text-center mb-8">
+                                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                                    <Trophy className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <h3 className="text-2xl font-black text-slate-800 dark:text-white">Session Complete!</h3>
+                                <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">How are you feeling after this session?</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-3">
+                                {MOODS.map((mood) => (
+                                    <button
+                                        key={mood.type}
+                                        onClick={() => confirmSaveWithMood(mood.type)}
+                                        className="group flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-700 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-none border border-transparent hover:border-slate-100 dark:hover:border-slate-600 transition-all"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`p-2.5 rounded-xl ${mood.color} transition-transform group-hover:scale-110`}>
+                                                <mood.icon className="w-5 h-5" />
+                                            </div>
+                                            <span className="font-bold text-slate-700 dark:text-slate-200">{mood.label}</span>
+                                        </div>
+                                        <div className="w-6 h-6 rounded-full border-2 border-slate-200 dark:border-slate-600 group-hover:border-blue-500 transition-colors flex items-center justify-center">
+                                            <div className="w-2.5 h-2.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
         </div>
