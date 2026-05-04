@@ -2,9 +2,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper function to check if user is the hardcoded admin
+    // Helper function to check if user is an admin
     function isAdmin() {
-      return request.auth.token.email == 'channel.data.transfer@gmail.com';
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
     // User Profile Rules

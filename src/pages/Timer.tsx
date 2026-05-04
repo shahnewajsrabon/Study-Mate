@@ -1,24 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useStudy } from '../features/study/hooks/useStudy.ts';
 import type { Subject, MoodType } from '../features/study/types/study.ts';
 import { useAuth } from '../shared/context/AuthContext.tsx';
 import { useSound } from '../shared/context/SoundContext.tsx';
 import { Play, Pause, Save, Trophy, RotateCcw, Volume2, VolumeX, CheckCircle2, Smile, Meh, Frown, Zap, Coffee } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
-import { db } from '../shared/lib/firebase.ts';
 import LofiPlayer from '../features/timer/components/LofiPlayer.tsx';
-
-interface LeaderboardEntry {
-    userId: string;
-    userName: string;
-    displayTime: number;
-}
-
-type TimerMode = 'stopwatch' | 'pomodoro' | 'countdown';
-type TimeRange = 'today' | 'week' | 'month' | 'all_time';
-
 import { useToast } from '../shared/context/ToastContext.tsx';
+import { useTimerLogic, formatTime } from '../features/timer/hooks/useTimerLogic.ts';
+import { useLeaderboard, type TimeRange } from '../features/timer/hooks/useLeaderboard.ts';
 
 const MOODS: { type: MoodType; icon: React.ElementType; label: string; color: string }[] = [
     { type: 'great', icon: Zap, label: 'Energized', color: 'text-yellow-500 bg-yellow-100' },
@@ -34,156 +24,24 @@ export default function Timer() {
     const { user } = useAuth();
     const { playSound, isMuted, toggleMute } = useSound();
 
-    // --- State ---
-    const [mode, setMode] = useState<TimerMode>('stopwatch');
-    const [isActive, setIsActive] = useState(false);
-    const [seconds, setSeconds] = useState(0); // Current display time
-    const [initialTime, setInitialTime] = useState(0); // For progress calculation
-    const [customMinutes, setCustomMinutes] = useState(30);
     const [activeTab, setActiveTab] = useState<'timer' | 'leaderboard'>('timer');
-    const [timeRange, setTimeRange] = useState<TimeRange>('today');
     const [searchQuery, setSearchQuery] = useState('');
 
     const [selectedSubject, setSelectedSubject] = useState<string>('');
-    const [sessionGoal, setSessionGoal] = useState('');
+    const [selectedTopic, setSelectedTopic] = useState<string>('');
     const [sessionSaved, setSessionSaved] = useState(false);
     const [showMoodModal, setShowMoodModal] = useState(false);
     const [pendingDuration, setPendingDuration] = useState(0);
 
-    const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-    const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
+    const {
+        mode, isActive, seconds, initialTime,
+        customMinutes, sessionGoal, setSessionGoal, toggleTimer, resetTimer, 
+        handleModeChange, handleCustomMinutesChange, progressPercent
+    } = useTimerLogic();
 
-    const intervalRef = useRef<number | null>(null);
-
-    // --- Notifications ---
-    useEffect(() => {
-        if (Notification.permission === 'default') {
-            Notification.requestPermission();
-        }
-    }, []);
-
-    const sendNotification = (title: string, body: string) => {
-        if (Notification.permission === 'granted') {
-            new Notification(title, { body, icon: '/vite.svg' });
-        }
-    };
-
-    // --- Timer Logic ---
-    useEffect(() => {
-        if (isActive) {
-            intervalRef.current = window.setInterval(() => {
-                setSeconds((prev) => {
-                    if (mode === 'stopwatch') {
-                        return prev + 1;
-                    } else {
-                        // Countdown Logic
-                        if (prev <= 1) {
-                            // Timer Finished
-                            setIsActive(false);
-                            playSound('complete');
-                            sendNotification("Time's Up! ⏰", "Your study session is complete. Take a break!");
-                            return 0;
-                        }
-                        return prev - 1;
-                    }
-                });
-            }, 1000);
-        } else if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-        }
-        return () => {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-        };
-    }, [isActive, mode, playSound]);
-
-    // Initialize Timer based on Mode
-    useEffect(() => {
-        setIsActive(false);
-        setSessionSaved(false);
-        if (mode === 'stopwatch') {
-            setSeconds(0);
-            setInitialTime(0);
-        } else if (mode === 'pomodoro' || mode === 'countdown') {
-            const sec = customMinutes * 60;
-            setSeconds(sec);
-            setInitialTime(sec);
-        }
-    }, [mode, customMinutes]);
-
-    // --- Leaderboard Fetch ---
-    useEffect(() => {
-        const fetchLeaderboard = async () => {
-            if (!user) return;
-            setLoadingLeaderboard(true);
-            try {
-                const usersRef = collection(db, 'users');
-                let orderByField = 'userProfile.todayStudyTime';
-
-                if (timeRange === 'week') orderByField = 'userProfile.weeklyStudyTime';
-                else if (timeRange === 'month') orderByField = 'userProfile.monthlyStudyTime';
-                else if (timeRange === 'all_time') orderByField = 'userProfile.totalStudyTime';
-
-                const q = query(usersRef, orderBy(orderByField, 'desc'), limit(10));
-                const querySnapshot = await getDocs(q);
-
-                const entries: LeaderboardEntry[] = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.userProfile) {
-                        let displayTime = 0;
-                        if (timeRange === 'today') displayTime = data.userProfile.todayStudyTime || 0;
-                        else if (timeRange === 'week') displayTime = data.userProfile.weeklyStudyTime || 0;
-                        else if (timeRange === 'month') displayTime = data.userProfile.monthlyStudyTime || 0;
-                        else displayTime = data.userProfile.totalStudyTime || 0;
-
-                        entries.push({
-                            userId: doc.id,
-                            userName: data.userProfile.name || 'Anonymous',
-                            displayTime
-                        });
-                    }
-                });
-                setLeaderboard(entries);
-            } catch (error) {
-                console.error("Error fetching leaderboard:", error);
-            } finally {
-                setLoadingLeaderboard(false);
-            }
-        };
-        fetchLeaderboard();
-    }, [user, activeTab, timeRange]); // Reload when switching tab or range
-
-    // --- Document Title Update ---
-    useEffect(() => {
-        if (isActive) {
-            document.title = `${formatTime(seconds)} - ${sessionGoal ? sessionGoal : (mode === 'pomodoro' ? 'Focus' : 'Timer')}`;
-        } else {
-            document.title = 'Study Tracker';
-        }
-        return () => {
-            document.title = 'Study Tracker';
-        };
-    }, [isActive, seconds, mode, sessionGoal]);
-
-    const toggleTimer = () => {
-        if (!isActive && mode !== 'stopwatch' && seconds === 0) {
-            // Restart if finished
-            setSeconds(initialTime);
-        }
-        setIsActive(!isActive);
-        playSound(isActive ? 'click' : 'click');
-    };
-
-    const resetTimer = () => {
-        setIsActive(false);
-        setSessionSaved(false);
-        if (mode === 'stopwatch') {
-            setSeconds(0);
-        } else {
-            setSeconds(initialTime);
-        }
-        playSound('click');
-    };
+    const {
+        timeRange, setTimeRange, leaderboard, loadingLeaderboard
+    } = useLeaderboard(activeTab);
 
     const handleSaveSession = async () => {
         if (!selectedSubject) {
@@ -208,21 +66,11 @@ export default function Timer() {
     };
 
     const confirmSaveWithMood = async (mood: MoodType) => {
-        await saveStudySession(pendingDuration, selectedSubject, sessionGoal, mood);
+        await saveStudySession(pendingDuration, selectedSubject, sessionGoal, mood, selectedTopic);
         setSessionSaved(true);
         setShowMoodModal(false);
         playSound('success');
         toast.success('Session Saved! Great Job.');
-    };
-
-    const formatTime = (totalSeconds: number) => {
-        const h = Math.floor(totalSeconds / 3600);
-        const m = Math.floor((totalSeconds % 3600) / 60);
-        const s = totalSeconds % 60;
-        if (h > 0) {
-            return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        }
-        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     };
 
     const formatDuration = (totalSeconds: number) => {
@@ -231,13 +79,6 @@ export default function Timer() {
         const s = totalSeconds % 60; // Show seconds too for leaderboards to look cooler
         return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     };
-
-    // Calculate Progress for Circular Timer
-    // For stopwatch, we can just spin or show full
-    // For countdown, we calc percentage
-    const progressPercent = mode === 'stopwatch'
-        ? 100
-        : Math.max(0, (seconds / initialTime) * 100);
 
     const radius = 120;
     const circumference = 2 * Math.PI * radius;
@@ -296,18 +137,39 @@ export default function Timer() {
                                 disabled={isActive}
                             />
                             <select
-                                className="w-1/3 bg-slate-50 dark:bg-slate-700 border-none rounded-xl px-3 py-3 text-slate-600 dark:text-slate-300 font-medium focus:ring-2 focus:ring-blue-500 cursor-pointer text-sm"
+                                className="w-[45%] bg-slate-50 dark:bg-slate-700 border-none rounded-xl px-3 py-3 text-slate-600 dark:text-slate-300 font-medium focus:ring-2 focus:ring-blue-500 cursor-pointer text-sm"
                                 value={selectedSubject}
-                                onChange={(e) => setSelectedSubject(e.target.value)}
+                                onChange={(e) => {
+                                    setSelectedSubject(e.target.value);
+                                    setSelectedTopic(''); // Reset topic when subject changes
+                                }}
                                 disabled={isActive}
                                 title="Select Subject"
                                 aria-label="Select Subject"
+                                id="subject-select"
                             >
                                 <option value="">Subject</option>
                                 {subjects.map((sub: Subject) => (
                                     <option key={sub.id} value={sub.id}>{sub.name}</option>
                                 ))}
                             </select>
+
+                            {selectedSubject && (
+                                <select
+                                    className="w-[45%] bg-slate-50 dark:bg-slate-700 border-none rounded-xl px-3 py-3 text-slate-600 dark:text-slate-300 font-medium focus:ring-2 focus:ring-blue-500 cursor-pointer text-sm animate-in fade-in slide-in-from-right-2"
+                                    value={selectedTopic}
+                                    onChange={(e) => setSelectedTopic(e.target.value)}
+                                    disabled={isActive}
+                                    title="Select Topic"
+                                    aria-label="Select Topic"
+                                    id="topic-select"
+                                >
+                                    <option value="">Specific Topic</option>
+                                    {subjects.find(s => s.id === selectedSubject)?.chapters.flatMap(c => c.topics).map(topic => (
+                                        <option key={topic.id} value={topic.id}>{topic.name}</option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
                     </div>
 
@@ -397,27 +259,47 @@ export default function Timer() {
                         {/* Mode Switcher */}
                         <div className="mt-8 flex gap-2">
                             <button
-                                onClick={() => { setMode('stopwatch'); setCustomMinutes(0); }}
+                                onClick={() => handleModeChange('stopwatch')}
                                 className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${mode === 'stopwatch' ? 'bg-blue-100 text-blue-700' : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                                     }`}
                             >
                                 Stopwatch
                             </button>
                             <button
-                                onClick={() => { setMode('pomodoro'); setCustomMinutes(25); }}
+                                onClick={() => handleModeChange('pomodoro', 25)}
                                 className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${mode === 'pomodoro' ? 'bg-rose-100 text-rose-700' : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                                     }`}
                             >
                                 Pomodoro
                             </button>
                             <button
-                                onClick={() => { setMode('countdown'); setCustomMinutes(30); }}
+                                onClick={() => handleModeChange('countdown', 30)}
                                 className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${mode === 'countdown' ? 'bg-amber-100 text-amber-700' : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                                     }`}
                             >
                                 Countdown
                             </button>
                         </div>
+
+                        {/* Break Presets */}
+                        {!isActive && (
+                            <div className="mt-4 flex gap-2 animate-in fade-in slide-in-from-top-2">
+                                <button
+                                    onClick={() => handleModeChange('countdown', 5)}
+                                    className="px-3 py-1.5 text-xs font-bold rounded-lg border border-emerald-100 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all flex items-center gap-1.5"
+                                >
+                                    <Coffee className="w-3.5 h-3.5" />
+                                    Short Break (5m)
+                                </button>
+                                <button
+                                    onClick={() => handleModeChange('countdown', 15)}
+                                    className="px-3 py-1.5 text-xs font-bold rounded-lg border border-blue-100 dark:border-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all flex items-center gap-1.5"
+                                >
+                                    <Zap className="w-3.5 h-3.5" />
+                                    Long Break (15m)
+                                </button>
+                            </div>
+                        )}
 
                         {/* Duration Slider/Input for Pomodoro/Countdown */}
                         {(!isActive && (mode === 'pomodoro' || mode === 'countdown')) && (
@@ -429,7 +311,7 @@ export default function Timer() {
                                     max="120"
                                     step="5"
                                     value={customMinutes}
-                                    onChange={(e) => setCustomMinutes(Number(e.target.value))}
+                                    onChange={(e) => handleCustomMinutesChange(Number(e.target.value))}
                                     className="w-32 accent-blue-600 cursor-pointer"
                                     title="Study Duration (Minutes)"
                                     aria-label="Study Duration (Minutes)"

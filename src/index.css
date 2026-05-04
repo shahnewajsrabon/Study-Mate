@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.cdnfonts.com/css/google-sans');
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* eslint-disable */
 @theme {

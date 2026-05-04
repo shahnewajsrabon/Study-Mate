@@ -35,18 +35,19 @@ export default function StudyHeatmap({ sessions }: StudyHeatmapProps) {
 
     // Grouping into weeks for the grid
     const weeks: Date[][] = [];
-    let currentWeek: Date[] = [];
+    let currentWeek: (Date | null)[] = [];
 
-    // Fill leading days if start day is not Sunday
-    const firstDay = dates[0].getDay();
-    for (let i = 0; i < firstDay; i++) {
-        // Just empty slots
+    // Fill leading days if start day of the first day is not Sunday (0)
+    const firstDayOfWeek = dates[0].getDay();
+    for (let i = 0; i < firstDayOfWeek; i++) {
+        currentWeek.push(null);
     }
 
-    dates.forEach((date, i) => {
+    dates.forEach((date: Date, i: number) => {
         currentWeek.push(date);
-        if (date.getDay() === 6 || i === dates.length - 1) {
-            weeks.push(currentWeek);
+        if (currentWeek.length === 7 || i === dates.length - 1) {
+            while (currentWeek.length < 7) currentWeek.push(null);
+            weeks.push(currentWeek as Date[]);
             currentWeek = [];
         }
     });
@@ -72,20 +73,24 @@ export default function StudyHeatmap({ sessions }: StudyHeatmapProps) {
 
             <div className="flex gap-1 overflow-x-auto pb-4 scrollbar-hide">
                 <div className="grid grid-rows-7 grid-flow-col gap-1.5">
-                    {dates.map((date) => {
-                        const dateStr = format(date, 'yyyy-MM-dd');
-                        const minutes = Math.round((studyData[dateStr] || 0) / 60);
-                        const isToday = isSameDay(date, today);
+                    {weeks.map((week, wIdx) =>
+                        week.map((date, dIdx) => {
+                            if (!date) return <div key={`empty-${wIdx}-${dIdx}`} className="w-3.5 h-3.5 rounded-sm bg-transparent" />;
 
-                        return (
-                            <motion.div
-                                key={dateStr}
-                                whileHover={{ scale: 1.2, zIndex: 10 }}
-                                title={`${format(date, 'MMM d, yyyy')}: ${minutes} mins`}
-                                className={`w-3.5 h-3.5 rounded-sm transition-colors cursor-pointer relative ${getColorLevel(minutes)} ${isToday ? 'ring-2 ring-blue-400 ring-offset-2 dark:ring-offset-slate-900' : ''}`}
-                            />
-                        );
-                    })}
+                            const dateStr = format(date, 'yyyy-MM-dd');
+                            const minutes = Math.round((studyData[dateStr] || 0) / 60);
+                            const isToday = isSameDay(date, today);
+
+                            return (
+                                <motion.div
+                                    key={dateStr}
+                                    whileHover={{ scale: 1.2, zIndex: 10 }}
+                                    title={`${format(date, 'MMM d, yyyy')}: ${minutes} mins`}
+                                    className={`w-3.5 h-3.5 rounded-sm transition-colors cursor-pointer relative ${getColorLevel(minutes)} ${isToday ? 'ring-2 ring-blue-400 ring-offset-2 dark:ring-offset-slate-900' : ''}`}
+                                />
+                            );
+                        })
+                    )}
                 </div>
             </div>
 

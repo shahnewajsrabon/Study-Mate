@@ -83,6 +83,7 @@ export type UserProfile = {
         date: string;
         duration: number;
         subjectId?: string;
+        topicId?: string;
         goal?: string;
         mood?: MoodType;
     }[];
@@ -108,4 +109,14 @@ export type FlashcardSet = {
     title: string;
     cards: Flashcard[];
     createdAt: string;
+};
+export type StudySession = {
+    id: string;
+    startTime: string;
+    endTime: string;
+    duration: number;
+    subjectId?: string;
+    topicId?: string;
+    goal?: string;
+    mood?: MoodType;
 };

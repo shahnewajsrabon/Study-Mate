@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useOutlet } from 'react-router-dom';
-import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, Calendar, Users, ShieldCheck, Layers } from 'lucide-react';
+import { Settings as SettingsIcon, LayoutDashboard, TrendingUp, LogOut, Timer, Moon, Sun, Calendar, Users, ShieldCheck, Layers, FileText } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useTheme } from '../../context/ThemeContext.tsx';
 import { useProfile } from '../../../features/profile/hooks/useProfile.ts';
@@ -210,6 +210,23 @@ export default function Layout() {
                             <TrendingUp className="w-5 h-5" />
                             Analytics
                         </Link>
+                        
+                        <Link
+                            to="/notes"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${isActive('/notes')
+                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                }`}
+                        >
+                            <FileText className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive('/notes') ? 'text-white' : 'text-slate-500 group-hover:text-blue-600 dark:text-slate-500 dark:group-hover:text-blue-400'}`} />
+                            <span className="font-medium">Notes</span>
+                            {isActive('/notes') && (
+                                <motion.div
+                                    layoutId="activeTab"
+                                    className="absolute left-0 w-1 h-8 bg-white rounded-r-full opacity-30"
+                                />
+                            )}
+                        </Link>
 
                         <Link
                             to="/timer"
@@ -347,6 +364,15 @@ export default function Layout() {
                 >
                     <TrendingUp className="w-6 h-6" />
                     <span>Stats</span>
+                </Link>
+
+                <Link
+                    to="/notes"
+                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/notes') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
+                        }`}
+                >
+                    <FileText className="w-6 h-6" />
+                    <span>Notes</span>
                 </Link>
             </nav>
 

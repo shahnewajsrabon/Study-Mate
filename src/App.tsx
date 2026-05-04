@@ -1,14 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Dashboard from './pages/Dashboard.tsx';
-import SubjectDetails from './pages/SubjectDetails.tsx';
-import Settings from './pages/Settings.tsx';
-import Analytics from './pages/Analytics.tsx';
-import Timer from './pages/Timer.tsx';
-import Chat from './pages/Chat.tsx';
 import Layout from './shared/components/layout/Layout.tsx';
 import Login from './pages/Login.tsx';
-import Planner from './pages/Planner.tsx';
-import Flashcards from './pages/Flashcards.tsx';
 import { ToastProvider } from './shared/context/ToastContext.tsx';
 import { AuthProvider, useAuth } from './shared/context/AuthContext.tsx';
 import { useProfile } from './features/profile/hooks/useProfile.ts';
@@ -18,6 +10,15 @@ import { PlannerProvider } from './features/study/context/PlannerProvider.tsx';
 import { SocialProvider } from './features/social/context/SocialProvider.tsx';
 import { Suspense, lazy } from 'react';
 const Admin = lazy(() => import('./pages/Admin.tsx'));
+const Dashboard = lazy(() => import('./pages/Dashboard.tsx'));
+const SubjectDetails = lazy(() => import('./pages/SubjectDetails.tsx'));
+const Settings = lazy(() => import('./pages/Settings.tsx'));
+const Analytics = lazy(() => import('./pages/Analytics.tsx'));
+const Timer = lazy(() => import('./pages/Timer.tsx'));
+const Chat = lazy(() => import('./pages/Chat.tsx'));
+const Planner = lazy(() => import('./pages/Planner.tsx'));
+const Notes = lazy(() => import('./pages/Notes.tsx'));
+const Flashcards = lazy(() => import('./pages/Flashcards.tsx'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -50,30 +51,31 @@ function App() {
             <PlannerProvider>
               <SocialProvider>
                 <BrowserRouter basename="/Study-Mate/">
-                  <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/" element={
-                      <ProtectedRoute>
-                        <Layout />
-                      </ProtectedRoute>
-                    }>
-                      <Route index element={<Dashboard />} />
-                      <Route path="subject/:id" element={<SubjectDetails />} />
-                      <Route path="planner" element={<Planner />} />
-                      <Route path="analytics" element={<Analytics />} />
-                      <Route path="timer" element={<Timer />} />
-                      <Route path="flashcards" element={<Flashcards />} />
-                      <Route path="chat" element={<Chat />} />
-                      <Route path="settings" element={<Settings />} />
-                      <Route path="admin" element={
-                        <AdminRoute>
-                          <Suspense fallback={<div className="p-8 text-center">Loading Admin...</div>}>
+                  <Suspense fallback={<div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-500">Loading...</div>}>
+                    <Routes>
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/" element={
+                        <ProtectedRoute>
+                          <Layout />
+                        </ProtectedRoute>
+                      }>
+                        <Route index element={<Dashboard />} />
+                        <Route path="subject/:id" element={<SubjectDetails />} />
+                        <Route path="planner" element={<Planner />} />
+                        <Route path="analytics" element={<Analytics />} />
+                        <Route path="notes" element={<Notes />} />
+                        <Route path="timer" element={<Timer />} />
+                        <Route path="flashcards" element={<Flashcards />} />
+                        <Route path="chat" element={<Chat />} />
+                        <Route path="settings" element={<Settings />} />
+                        <Route path="admin" element={
+                          <AdminRoute>
                             <Admin />
-                          </Suspense>
-                        </AdminRoute>
-                      } />
-                    </Route>
-                  </Routes>
+                          </AdminRoute>
+                        } />
+                      </Route>
+                    </Routes>
+                  </Suspense>
                 </BrowserRouter>
               </SocialProvider>
             </PlannerProvider>

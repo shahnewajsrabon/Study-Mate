@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XPath, YAxis, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, Legend } from 'recharts';
 import type { StudySession, Subject } from '../types/study.ts';
 
 interface FocusChartsProps {
@@ -17,7 +17,7 @@ export default function FocusCharts({ sessions, subjects }: FocusChartsProps) {
             distribution[name] = (distribution[name] || 0) + session.duration;
         });
 
-        return Object.entries(distribution).map(([name, value]) => ({
+        return Object.entries(distribution).map(([name, value]: [string, number]) => ({
             name,
             value: Math.round(value / 60) // converting to minutes
         })).sort((a, b) => b.value - a.value);
