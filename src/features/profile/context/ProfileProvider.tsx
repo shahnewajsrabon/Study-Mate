@@ -40,22 +40,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
             return;
         }
 
-        const adminEmail = 'channel.data.transfer@gmail.com';
-        const isTargetAdmin = user.email === adminEmail;
-
         const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 if (data && data.userProfile) {
                     let mergedProfile = data.userProfile as UserProfile;
-
-                    // Admin enforcement logic
-                    if (isTargetAdmin && mergedProfile.role !== 'admin') {
-                        mergedProfile = { ...mergedProfile, role: 'admin' };
-                    } else if (!isTargetAdmin && mergedProfile.role === 'admin') {
-                        mergedProfile = { ...mergedProfile, role: 'student' };
-                        updateDoc(doc(db, 'users', user.uid), { 'userProfile.role': 'student' });
-                    }
 
                     setUserProfile(mergedProfile);
                 }

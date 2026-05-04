@@ -12,7 +12,6 @@ import logo from '../../../assets/logo.png';
 import InstallPrompt from '../ui/InstallPrompt.tsx';
 import type { BeforeInstallPromptEvent } from '../../types/index.ts';
 import { useSmartReminders } from '../../hooks/useSmartReminders.ts';
-import AIBuddy from '../../../features/study/components/AIBuddy.tsx';
 
 const TOUR_STEPS: TourStep[] = [
     {
@@ -377,7 +376,6 @@ export default function Layout() {
             </nav>
 
             {installPromptEvent && <InstallPrompt deferredPrompt={installPromptEvent} onInstall={handleInstall} />}
-            <AIBuddy />
         </div>
     );
 }

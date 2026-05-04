@@ -106,6 +106,26 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
 
             const updatedHistory = [...(userProfile?.sessionHistory || []), sessionEntry];
 
+            // Badge Logic
+            const currentBadges = userProfile?.earnedBadges || [];
+            const newBadges: import('../types/study.ts').BadgeEntry[] = [];
+            const hasBadge = (type: string) => currentBadges.some(b => b.type === type);
+            
+            if (updatedHistory.length === 1 && !hasBadge('start_strong')) {
+                newBadges.push({ type: 'start_strong', earnedAt: new Date().toISOString() });
+            }
+            if (userProfile?.currentStreak && userProfile.currentStreak >= 7 && !hasBadge('streak_master')) {
+                newBadges.push({ type: 'streak_master', earnedAt: new Date().toISOString() });
+            }
+            const currentHour = new Date().getHours();
+            if ((currentHour >= 22 || currentHour < 4) && !hasBadge('night_owl')) {
+                newBadges.push({ type: 'night_owl', earnedAt: new Date().toISOString() });
+            }
+
+            if (newBadges.length > 0) {
+                newBadges.forEach(b => toast.success(`Unlocked Badge: ${b.type.replace('_', ' ').toUpperCase()}! 🏆`));
+            }
+
             await updateProfile({
                 totalStudyTime: (userProfile?.totalStudyTime || 0) + durationInSeconds,
                 todayStudyTime: (userProfile?.todayStudyTime || 0) + durationInSeconds,
@@ -113,7 +133,8 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
                 monthlyStudyTime: (userProfile?.monthlyStudyTime || 0) + durationInSeconds,
                 xp: (userProfile?.xp || 0) + xpGained,
                 sessionHistory: updatedHistory,
-                lastStudyDate: new Date().toISOString()
+                lastStudyDate: new Date().toISOString(),
+                earnedBadges: [...currentBadges, ...newBadges]
             });
 
             addXP(xpGained);

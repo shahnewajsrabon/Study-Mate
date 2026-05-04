@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useStudy } from '../features/study/hooks/useStudy.ts';
 import type { Subject, MoodType } from '../features/study/types/study.ts';
 import { useAuth } from '../shared/context/AuthContext.tsx';
+import { useSocial } from '../features/social/hooks/useSocial.ts';
 import { useSound } from '../shared/context/SoundContext.tsx';
 import { Play, Pause, Save, Trophy, RotateCcw, Volume2, VolumeX, CheckCircle2, Smile, Meh, Frown, Zap, Coffee } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,9 +24,11 @@ export default function Timer() {
     const { saveStudySession, subjects } = useStudy();
     const { user } = useAuth();
     const { playSound, isMuted, toggleMute } = useSound();
+    const { groups } = useSocial();
 
     const [activeTab, setActiveTab] = useState<'timer' | 'leaderboard'>('timer');
     const [searchQuery, setSearchQuery] = useState('');
+    const [filterGroup, setFilterGroup] = useState<string>('global');
 
     const [selectedSubject, setSelectedSubject] = useState<string>('');
     const [selectedTopic, setSelectedTopic] = useState<string>('');
@@ -39,9 +42,12 @@ export default function Timer() {
         handleModeChange, handleCustomMinutesChange, progressPercent
     } = useTimerLogic();
 
+    const selectedGroupObj = filterGroup === 'global' ? null : groups.find(g => g.id === filterGroup);
+    const filterMemberIds = selectedGroupObj ? selectedGroupObj.members.map(m => m.userId) : undefined;
+
     const {
         timeRange, setTimeRange, leaderboard, loadingLeaderboard
-    } = useLeaderboard(activeTab);
+    } = useLeaderboard(activeTab, filterMemberIds);
 
     const handleSaveSession = async () => {
         if (!selectedSubject) {
@@ -333,6 +339,20 @@ export default function Timer() {
                                 <Trophy className="w-6 h-6 text-yellow-500" />
                                 <h2 className="text-xl font-bold text-slate-800 dark:text-white">Leaderboard</h2>
                             </div>
+                            
+                            {/* Group Filter Dropdown */}
+                            {groups.length > 0 && (
+                                <select
+                                    value={filterGroup}
+                                    onChange={(e) => setFilterGroup(e.target.value)}
+                                    className="bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 max-w-[140px] truncate"
+                                >
+                                    <option value="global">Global Top 10</option>
+                                    {groups.map(g => (
+                                        <option key={g.id} value={g.id}>{g.name}</option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
 
                         {/* Search Bar */}
