@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './shared/components/layout/Layout.tsx';
-import Login from './pages/Login.tsx';
+import Layout from './shared/components/layout/Layout.tsx';
 import { ToastProvider } from './shared/context/ToastContext.tsx';
 import { AuthProvider, useAuth } from './shared/context/AuthContext.tsx';
 import { useProfile } from './features/profile/hooks/useProfile.ts';
@@ -53,12 +53,7 @@ function App() {
                 <BrowserRouter basename="/Track-ED/">
                   <Suspense fallback={<div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-500">Loading...</div>}>
                     <Routes>
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/" element={
-                        <ProtectedRoute>
-                          <Layout />
-                        </ProtectedRoute>
-                      }>
+                      <Route path="/" element={<Layout />}>
                         <Route index element={<Dashboard />} />
                         <Route path="subject/:id" element={<SubjectDetails />} />
                         <Route path="planner" element={<Planner />} />
