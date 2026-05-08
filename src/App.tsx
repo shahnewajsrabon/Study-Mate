@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './shared/components/layout/Layout.tsx';
-import Layout from './shared/components/layout/Layout.tsx';
 import { ToastProvider } from './shared/context/ToastContext.tsx';
 import { AuthProvider, useAuth } from './shared/context/AuthContext.tsx';
 import { useProfile } from './features/profile/hooks/useProfile.ts';
