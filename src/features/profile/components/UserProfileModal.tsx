@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { db } from '../../../shared/lib/firebase.ts';
-import { doc, getDoc } from 'firebase/firestore';
+import { supabase } from '../../../shared/lib/supabase.ts';
 import { X, Trophy, Flame, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { UserProfile, BadgeType } from '../../study/types/study.ts';
@@ -35,12 +34,15 @@ export default function UserProfileModal({ uid, isOpen, onClose }: UserProfileMo
             const fetchProfile = async () => {
                 setLoading(true);
                 try {
-                    const docRef = doc(db, 'users', uid);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        setProfile(docSnap.data().userProfile as UserProfile);
+                    const { data } = await supabase
+                        .from('profiles')
+                        .select('user_profile')
+                        .eq('id', uid)
+                        .single();
+                        
+                    if (data && data.user_profile) {
+                        setProfile(data.user_profile as UserProfile);
                     } else {
-                        // Handle user not found or no profile
                         setProfile(null);
                     }
                 } catch (error) {

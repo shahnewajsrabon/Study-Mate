@@ -3,7 +3,7 @@ import { useSound } from '../../../shared/context/SoundContext.tsx';
 
 export type TimerMode = 'stopwatch' | 'pomodoro' | 'countdown';
 
-export function useTimerLogic() {
+export function useTimerLogic(isStrictFocus: boolean = false) {
     const { playSound } = useSound();
     
     const [mode, setMode] = useState<TimerMode>('stopwatch');
@@ -12,8 +12,10 @@ export function useTimerLogic() {
     const [initialTime, setInitialTime] = useState(0); 
     const [customMinutes, setCustomMinutes] = useState(30);
     const [sessionGoal, setSessionGoal] = useState('');
+    const [continuousRunTime, setContinuousRunTime] = useState(0);
 
     const intervalRef = useRef<number | null>(null);
+    const hasSuggestedBreak = useRef(false);
 
     // Request Notification permission
     useEffect(() => {
@@ -27,6 +29,20 @@ export function useTimerLogic() {
             new Notification(title, { body, icon: '/vite.svg' });
         }
     }, []);
+
+    // Strict Focus Mode - Visibility Change
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden && isActive && isStrictFocus) {
+                sendNotification("Focus Mode Alert! 🚨", "You switched tabs! Get back to your study session!");
+                // Optionally play a sound
+                playSound('click');
+            }
+        };
+        
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [isActive, isStrictFocus, sendNotification, playSound]);
 
     // Core Timer Loop
     useEffect(() => {
@@ -46,6 +62,19 @@ export function useTimerLogic() {
                         return prev - 1;
                     }
                 });
+                
+                // Track continuous runtime for smart breaks
+                setContinuousRunTime((prev) => {
+                    const newTime = prev + 1;
+                    // Suggest break after 50 mins (3000 seconds)
+                    if (newTime >= 3000 && !hasSuggestedBreak.current) {
+                        hasSuggestedBreak.current = true;
+                        sendNotification("Break Time? ☕", "You've been studying for 50 minutes straight. Consider taking a 10-minute break!");
+                        playSound('complete');
+                    }
+                    return newTime;
+                });
+                
             }, 1000);
         } else if (intervalRef.current) {
             clearInterval(intervalRef.current);
@@ -58,6 +87,8 @@ export function useTimerLogic() {
     // Handle Mode Changes directly (fixes React cascading render lint warnings)
     const handleModeChange = (newMode: TimerMode, newMinutes?: number) => {
         setIsActive(false);
+        setContinuousRunTime(0);
+        hasSuggestedBreak.current = false;
         setMode(newMode);
         if (newMode === 'stopwatch') {
             setSeconds(0);
@@ -96,6 +127,8 @@ export function useTimerLogic() {
         if (!isActive && mode !== 'stopwatch' && seconds === 0) {
             // Restart if finished
             setSeconds(initialTime);
+            setContinuousRunTime(0);
+            hasSuggestedBreak.current = false;
         }
         setIsActive(!isActive);
         playSound('click');
@@ -103,6 +136,8 @@ export function useTimerLogic() {
 
     const resetTimer = () => {
         setIsActive(false);
+        setContinuousRunTime(0);
+        hasSuggestedBreak.current = false;
         if (mode === 'stopwatch') {
             setSeconds(0);
         } else {
@@ -133,7 +168,8 @@ export function useTimerLogic() {
         resetTimer,
         handleModeChange,
         handleCustomMinutesChange,
-        progressPercent
+        progressPercent,
+        continuousRunTime
     };
 }
 

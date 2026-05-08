@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { db } from '../../../shared/lib/firebase.ts';
-import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { supabase } from '../../../shared/lib/supabase.ts';
 import type { Note } from '../types/notes.ts';
 import { useAuth } from '../../../shared/context/AuthContext.tsx';
+
+import type { DatabaseNote } from '../../../shared/types/database.ts';
 
 export function useNotes() {
     const { user } = useAuth();
@@ -19,42 +20,68 @@ export function useNotes() {
             return;
         }
 
-        const q = query(
-            collection(db, 'notes'),
-            where('userId', '==', user.uid)
-        );
+        const fetchNotes = async () => {
+            const { data, error } = await supabase
+                .from('notes')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('updated_at', { ascending: false });
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const fetched: Note[] = [];
-            snapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                fetched.push({ id: docSnap.id, ...data } as Note);
-            });
-            
-            // Sort by updatedAt descending
-            fetched.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-            
-            setNotes(fetched);
-            setLoading(false);
-        }, (err) => {
-            console.error("Notes fetch error:", err);
-            setLoading(false);
-        });
+            if (error) {
+                console.error("Notes fetch error:", error);
+                setLoading(false);
+                return;
+            }
 
-        return () => unsubscribe();
+            if (data) {
+                const mappedNotes = (data as DatabaseNote[]).map(d => ({
+                    ...d,
+                    userId: d.user_id,
+                    subjectId: d.subject_id,
+                    topicId: d.topic_id,
+                    isMarkdown: d.is_markdown,
+                    createdAt: d.created_at,
+                    updatedAt: d.updated_at
+                })) as Note[];
+                setNotes(mappedNotes);
+            }
+            setLoading(false);
+        };
+
+        fetchNotes();
+
+        const subscription = supabase
+            .channel('notes-channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'notes', filter: `user_id=eq.${user.id}` }, () => {
+                fetchNotes();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(subscription);
+        };
     }, [user]);
 
     const createNote = useCallback(async (noteParam: Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
         if (!user) return null;
         try {
-            const newNote = {
-                ...noteParam,
-                userId: user.uid,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
+            const insertData: Partial<DatabaseNote> = {
+                user_id: user.id,
+                subject_id: noteParam.subjectId,
+                topic_id: noteParam.topicId,
+                title: noteParam.title,
+                content: noteParam.content,
+                is_markdown: noteParam.isMarkdown
             };
-            const docRef = await addDoc(collection(db, 'notes'), newNote);
-            return docRef.id;
+
+            const { data, error } = await supabase
+                .from('notes')
+                .insert([insertData])
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data.id;
         } catch (error) {
             console.error("Error creating note:", error);
             return null;
@@ -63,8 +90,18 @@ export function useNotes() {
 
     const updateNote = useCallback(async (id: string, updates: Partial<Omit<Note, 'id' | 'userId' | 'createdAt'>>) => {
         try {
-            const docRef = doc(db, 'notes', id);
-            await updateDoc(docRef, { ...updates, updatedAt: new Date().toISOString() });
+            const dbReadyUpdates: Partial<DatabaseNote> = {
+                updated_at: new Date().toISOString()
+            };
+            
+            if (updates.title !== undefined) dbReadyUpdates.title = updates.title;
+            if (updates.content !== undefined) dbReadyUpdates.content = updates.content;
+            if (updates.isMarkdown !== undefined) dbReadyUpdates.is_markdown = updates.isMarkdown;
+            if (updates.subjectId !== undefined) dbReadyUpdates.subject_id = updates.subjectId;
+            if (updates.topicId !== undefined) dbReadyUpdates.topic_id = updates.topicId;
+
+            const { error } = await supabase.from('notes').update(dbReadyUpdates).eq('id', id);
+            if (error) throw error;
             return true;
         } catch (error) {
             console.error("Error updating note:", error);
@@ -74,7 +111,8 @@ export function useNotes() {
 
     const deleteNote = useCallback(async (id: string) => {
         try {
-            await deleteDoc(doc(db, 'notes', id));
+            const { error } = await supabase.from('notes').delete().eq('id', id);
+            if (error) throw error;
             return true;
         } catch (error) {
             console.error("Error deleting note:", error);

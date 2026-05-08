@@ -28,6 +28,35 @@ export function useAnalyticsLogic() {
 
     const totalMinutes = Math.round(history.reduce((acc: number, s: { duration: number }) => acc + s.duration, 0) / 60);
 
+    // Calculate Subject Balance Score
+    const subjectTimes: Record<string, number> = {};
+    sessions.forEach(s => {
+        if (s.subjectId) {
+            subjectTimes[s.subjectId] = (subjectTimes[s.subjectId] || 0) + s.duration;
+        }
+    });
+    const times = Object.values(subjectTimes);
+    let balanceScore = 100;
+    if (times.length > 1) {
+        const maxTime = Math.max(...times);
+        const minTime = Math.min(...times);
+        balanceScore = maxTime > 0 ? Math.round(100 - ((maxTime - minTime) / maxTime * 100)) : 100;
+    } else if (times.length === 1) {
+        balanceScore = 10; // Poor balance if only 1 subject
+    }
+
+    // Study Pattern Insights (Most Productive Hour)
+    const hourCounts = new Array(24).fill(0);
+    sessions.forEach(s => {
+        const hour = new Date(s.startTime).getHours();
+        hourCounts[hour] += s.duration;
+    });
+    const maxDuration = Math.max(...hourCounts);
+    const maxHour = hourCounts.indexOf(maxDuration);
+    const mostProductiveHour = maxDuration > 0 
+        ? `${maxHour.toString().padStart(2, '0')}:00 - ${(maxHour + 1).toString().padStart(2, '0')}:00`
+        : 'N/A';
+
     const saveGoal = () => {
         updateProfile({ dailyGoal: tempGoal * 3600 });
         setIsEditingGoal(false);
@@ -43,6 +72,8 @@ export function useAnalyticsLogic() {
         streak,
         sessions,
         totalMinutes,
-        saveGoal
+        saveGoal,
+        balanceScore,
+        mostProductiveHour
     };
 }

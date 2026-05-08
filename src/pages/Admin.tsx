@@ -18,21 +18,15 @@ import {
     UserMinus,
     Zap
 } from 'lucide-react';
-import { db } from '../shared/lib/firebase.ts';
-import { collection, query, onSnapshot, orderBy, limit, doc, updateDoc } from 'firebase/firestore';
+import { supabase } from '../shared/lib/supabase.ts';
 import { AnimatePresence } from 'framer-motion';
 import { useProfile } from '../features/profile/hooks/useProfile.ts';
+import type { DatabaseProfile } from '../shared/types/database.ts';
+import type { UserProfile } from '../features/study/types/study.ts';
 
 interface UserAdminData {
     id: string;
-    userProfile: {
-        name: string;
-        level: number;
-        xp: number;
-        role: string;
-        totalStudyTime: number;
-        currentStreak: number;
-    };
+    userProfile: UserProfile;
     lastActive?: string;
 }
 
@@ -54,25 +48,40 @@ export default function Admin() {
 
     useEffect(() => {
         if (!isAdmin) return;
-        const q = query(collection(db, 'users'), orderBy('userProfile.xp', 'desc'), limit(100));
+        
+        const fetchUsers = async () => {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('id, user_profile, updated_at')
+                .limit(100);
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const loadedUsers: UserAdminData[] = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                if (data.userProfile) {
-                    loadedUsers.push({
-                        id: doc.id,
-                        userProfile: data.userProfile,
-                        lastActive: data.lastActive
-                    });
-                }
-            });
-            setUsers(loadedUsers);
-            setLoading(false);
-        });
+            if (!error && data) {
+                const loadedUsers: UserAdminData[] = [];
+                (data as DatabaseProfile[]).forEach(doc => {
+                    if (doc.user_profile) {
+                        loadedUsers.push({
+                            id: doc.id,
+                            userProfile: doc.user_profile as UserProfile,
+                            lastActive: doc.updated_at
+                        });
+                    }
+                });
+                
+                // Sort by xp
+                loadedUsers.sort((a, b) => (b.userProfile.xp || 0) - (a.userProfile.xp || 0));
+                
+                setUsers(loadedUsers);
+                setLoading(false);
+            }
+        };
 
-        return () => unsubscribe();
+        fetchUsers();
+        
+        const channel = supabase.channel('admin-profiles')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, fetchUsers)
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
     }, [isAdmin]);
 
     const totalStudyTime = users.reduce((acc, u) => acc + (u.userProfile.totalStudyTime || 0), 0);
@@ -126,10 +135,16 @@ export default function Admin() {
     const updateUserMetric = async (userId: string, path: string, value: string | number | boolean) => {
         setIsUpdating(true);
         try {
-            const userRef = doc(db, 'users', userId);
-            await updateDoc(userRef, {
-                [`userProfile.${path}`]: value
-            });
+            // Fetch current profile to update specific json path
+            const { data, error } = await supabase.from('profiles').select('user_profile').eq('id', userId).single();
+            if (error) throw error;
+            
+            const updatedProfile = { ...data.user_profile, [path]: value };
+
+            await supabase.from('profiles').update({
+                user_profile: updatedProfile
+            }).eq('id', userId);
+
             // Update local state if needed (onSnapshot usually handles this but for immediate UI feel)
             if (selectedUser && selectedUser.id === userId) {
                 setSelectedUser({

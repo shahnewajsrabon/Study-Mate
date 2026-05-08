@@ -15,6 +15,7 @@ import { Plus, Trophy, BookMarked, PieChart, Heart } from 'lucide-react';
 import UpcomingExams from '../features/study/components/UpcomingExams.tsx';
 import { useSocial } from '../features/social/hooks/useSocial.ts';
 import ReviewCard from '../features/social/components/ReviewCard.tsx';
+import SRSReviewWidget from '../features/study/components/SRSReviewWidget.tsx';
 
 const container: Variants = {
     hidden: { opacity: 0, y: 10 },
@@ -108,6 +109,7 @@ export default function Dashboard() {
                 <div className="lg:col-span-4 flex flex-col gap-4 md:gap-6 order-1">
                     <DailyGoalCard />
                     <DailyPathWidget />
+                    <SRSReviewWidget />
                 </div>
 
                 {/* Center Column: Leaderboard */}

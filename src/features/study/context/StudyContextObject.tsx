@@ -1,6 +1,7 @@
 import { createContext } from 'react';
 import type { Subject } from '../types/study.ts';
 import { type TemplateSubject } from '../data/syllabusTemplates.ts';
+import { type SRSRating } from '../utils/srsUtils.ts';
 
 export interface StudyContextType {
     subjects: Subject[];
@@ -28,7 +29,7 @@ export interface StudyContextType {
     flashcardSets: import('../types/study.ts').FlashcardSet[];
     addFlashcardSet: (set: Omit<import('../types/study.ts').FlashcardSet, 'id' | 'createdAt'>) => Promise<void>;
     deleteFlashcardSet: (id: string) => Promise<void>;
-    toggleFlashcardMastered: (setId: string, cardId: string) => Promise<void>;
+    rateFlashcard: (setId: string, cardId: string, rating: SRSRating) => Promise<void>;
     updateFlashcardSet: (id: string, updates: Partial<import('../types/study.ts').FlashcardSet>) => Promise<void>;
 }
 

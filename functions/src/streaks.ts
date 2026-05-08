@@ -1,7 +1,7 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as admin from "firebase-admin";
 
-export const streakMaintenance = onSchedule("every day 00:00", async (event) => {
+export const streakMaintenance = onSchedule("every day 00:00", async () => {
   const db = admin.firestore();
   const usersSnapshot = await db.collection("users").get();
   

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { db } from '../../../shared/lib/firebase.ts';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { supabase } from '../../../shared/lib/supabase.ts';
 import { Trophy, Medal } from 'lucide-react';
 import { useAuth } from '../../../shared/context/AuthContext.tsx';
 import { motion } from 'framer-motion';
+
+import type { DatabaseProfile } from '../../../shared/types/database.ts';
+import type { UserProfile } from '../../study/types/study.ts';
 
 interface LeaderboardUser {
     uid: string;
@@ -20,28 +22,32 @@ export default function Leaderboard() {
     useEffect(() => {
         const fetchLeaderboard = async () => {
             try {
-                const q = query(
-                    collection(db, 'users'),
-                    orderBy('userProfile.syllabusCompletionPercentage', 'desc'),
-                    limit(10)
-                );
+                // Fetch profiles. user_profile is JSONB. We fetch limit(100) and sort client-side
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('id, user_profile')
+                    .limit(100);
 
-                const querySnapshot = await getDocs(q);
+                if (error) throw error;
+
                 const fetchedLeaders: LeaderboardUser[] = [];
 
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.userProfile) {
+                (data as DatabaseProfile[] | null)?.forEach((doc) => {
+                    if (doc.user_profile) {
+                        const profile = doc.user_profile as UserProfile;
                         fetchedLeaders.push({
                             uid: doc.id,
-                            name: data.userProfile.name || 'Anonymous',
-                            percentage: data.userProfile.syllabusCompletionPercentage || 0,
-                            grade: data.userProfile.grade || 'Student'
+                            name: profile.name || 'Anonymous',
+                            percentage: profile.syllabusCompletionPercentage || 0,
+                            grade: profile.grade || 'Student'
                         });
                     }
                 });
 
-                setLeaders(fetchedLeaders);
+                // Sort descending
+                fetchedLeaders.sort((a, b) => b.percentage - a.percentage);
+
+                setLeaders(fetchedLeaders.slice(0, 10));
             } catch (error) {
                 console.error("Error fetching leaderboard:", error);
             } finally {
@@ -78,7 +84,7 @@ export default function Leaderboard() {
                     </div>
                 ) : (
                     leaders.map((leader, index) => {
-                        const isMe = user?.uid === leader.uid;
+                        const isMe = user?.id === leader.uid;
 
                         let rankIcon = null;
                         if (index === 0) rankIcon = <Medal className="w-5 h-5 text-yellow-500" />;

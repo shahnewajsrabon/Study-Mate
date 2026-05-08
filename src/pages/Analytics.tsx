@@ -3,7 +3,7 @@ import { useStudy } from '../features/study/hooks/useStudy.ts';
 import StudyHeatmap from '../features/study/components/StudyHeatmap.tsx';
 import FocusCharts from '../features/study/components/FocusCharts.tsx';
 import { useAnalyticsLogic } from '../features/study/hooks/useAnalyticsLogic.ts';
-import { BarChart3, TrendingUp, Target, Award, Clock, Flame } from 'lucide-react';
+import { BarChart3, TrendingUp, Target, Award, Clock, Flame, Download, Scale, Sun } from 'lucide-react';
 
 export default function Analytics() {
     const { subjects } = useStudy();
@@ -13,7 +13,7 @@ export default function Analytics() {
 
     const {
         userProfile, isEditingGoal, setIsEditingGoal, tempGoal, setTempGoal,
-        currentTitle, streak, sessions, totalMinutes, saveGoal
+        currentTitle, streak, sessions, totalMinutes, saveGoal, balanceScore, mostProductiveHour
     } = analytics;
 
     const stats = [
@@ -21,7 +21,20 @@ export default function Analytics() {
         { label: 'Sessions', value: sessions.length, icon: <BarChart3 className="w-5 h-5" />, color: 'bg-emerald-500' },
         { label: 'Streak', value: `${streak} Days`, icon: <Flame className="w-5 h-5" />, color: 'bg-orange-500' },
         { label: 'Rank', value: currentTitle, icon: <Award className="w-5 h-5" />, color: 'bg-indigo-600' },
+        { label: 'Balance Score', value: `${balanceScore}%`, icon: <Scale className="w-5 h-5" />, color: 'bg-purple-500' },
+        { label: 'Best Hour', value: mostProductiveHour, icon: <Sun className="w-5 h-5" />, color: 'bg-amber-400' },
     ];
+
+    const exportCSV = () => {
+        const headers = "Date,Subject,Duration(s),Mood\n";
+        const rows = sessions.map(s => `${s.startTime},${subjects.find(sub => sub.id === s.subjectId)?.name || s.subjectId},${s.duration},${s.mood}`).join("\n");
+        const blob = new Blob([headers + rows], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `study_sessions_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+    };
 
     return (
         <div className="space-y-10">
@@ -42,6 +55,14 @@ export default function Analytics() {
                     </div>
 
                     <div className="flex gap-4">
+                        <button 
+                            onClick={exportCSV}
+                            className="px-4 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        >
+                            <Download className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Export CSV</span>
+                        </button>
+
                         <div className="px-6 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-3 group">
                             <Target className="w-5 h-5 text-amber-500" />
                             <div>
@@ -82,7 +103,7 @@ export default function Analytics() {
 
             <div className="space-y-8">
                 {/* Top Stats */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                     {stats.map((stat, idx) => (
                         <motion.div
                             key={stat.label}

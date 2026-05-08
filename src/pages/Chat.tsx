@@ -3,13 +3,13 @@ import { useAuth } from '../shared/context/AuthContext.tsx';
 import { useSocial } from '../features/social/hooks/useSocial.ts';
 import type { Group, ChatMessage, GroupMember, Challenge, Review } from '../features/social/types/social.ts';
 import ReviewCard from '../features/social/components/ReviewCard.tsx';
-import { db } from '../shared/lib/firebase.ts';
-import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { Send, MessageCircle, Plus, Users, Hash, ChevronLeft, Loader2, Copy, LogOut, Trophy, Target, Flame, Calendar, PlusCircle, CheckCircle2, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AnimatedPage from '../shared/components/ui/AnimatedPage.tsx';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { supabase } from '../shared/lib/supabase.ts';
+import type { DatabaseMessage } from '../shared/types/database.ts';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
     return twMerge(clsx(inputs));
@@ -22,6 +22,14 @@ const formatTime = (timestamp: { toDate: () => Date } | number | Date | null | u
     const date = typeof timestamp === 'object' && 'toDate' in timestamp && typeof timestamp.toDate === 'function' ? timestamp.toDate() : new Date(timestamp as string | number | Date);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
+
+const mapDatabaseMessage = (d: DatabaseMessage): ChatMessage => ({
+    id: d.id,
+    senderId: d.sender_id,
+    senderName: d.sender_name,
+    text: d.text,
+    timestamp: d.timestamp
+});
 
 export default function Chat() {
     const { user } = useAuth();
@@ -47,29 +55,30 @@ export default function Chat() {
     useEffect(() => {
         if (!selectedGroup) return;
 
-        // But doing it synchronously inside useEffect triggers the warning.
-        // Better: depend on selectedGroup.id and let the new snapshot replace messages.
-        // For now, let's just remove the explicit clear and trust the snapshot listener to fire quickly.
-        // Or if we want to clear, use a ref or cleanup function?
-        // Let's rely on snapshot.
+        const fetchMessages = async () => {
+            const { data, error } = await supabase
+                .from('group_messages')
+                .select('*')
+                .eq('group_id', selectedGroup.id)
+                .order('timestamp', { ascending: true })
+                .limit(50);
+                
+            if (!error && data) {
+                setMessages((data as DatabaseMessage[]).map(mapDatabaseMessage));
+            } else if (error) {
+                console.error("Msg Load Err", error);
+            }
+        };
 
-        const q = query(
-            collection(db, 'groups', selectedGroup.id, 'messages'),
-            orderBy('timestamp', 'asc'),
-            limit(50)
-        );
+        fetchMessages();
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const msgs: ChatMessage[] = [];
-            snapshot.forEach(doc => {
-                msgs.push({ id: doc.id, ...doc.data() } as ChatMessage);
-            });
-            setMessages(msgs);
-        }, (err) => console.error("Msg Load Err", err));
+        const channel = supabase.channel(`messages-${selectedGroup.id}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'group_messages', filter: `group_id=eq.${selectedGroup.id}` }, fetchMessages)
+            .subscribe();
 
         return () => {
-            unsubscribe();
-            setMessages([]); // Cleanup function runs when effect unmounts or before re-running. This is safe!
+            supabase.removeChannel(channel);
+            setMessages([]);
         };
     }, [selectedGroup]);
 
@@ -322,7 +331,7 @@ export default function Chat() {
                                         )}
 
                                         {messages.map((msg) => {
-                                            const isMe = msg.senderId === user?.uid;
+                                            const isMe = msg.senderId === user?.id;
                                             return (
                                                 <motion.div
                                                     key={msg.id}
@@ -336,7 +345,7 @@ export default function Chat() {
                                                     <div className={cn("max-w-[75%]", isMe ? "items-end" : "items-start")}>
                                                         <div className="flex items-baseline gap-2 mb-1">
                                                             <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{msg.senderName}</span>
-                                                            <span className="text-[10px] text-slate-400">{formatTime(msg.timestamp)}</span>
+                                                            <span className="text-[10px] text-slate-400">{formatTime(msg.timestamp ? new Date(msg.timestamp) : null)}</span>
                                                         </div>
                                                         <div className={cn(
                                                             "px-4 py-2 rounded-2xl text-sm shadow-sm",
@@ -410,7 +419,7 @@ export default function Chat() {
                                             </div>
                                         )}
                                         {challenges.filter((c: Challenge) => c.groupId === selectedGroup.id).map((challenge: Challenge) => {
-                                            const isParticipating = challenge.participants.includes(user?.uid || '');
+                                            const isParticipating = challenge.participants.includes(user?.id || '');
                                             const daysLeft = Math.ceil((new Date(challenge.endDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
 
                                             return (
@@ -503,7 +512,7 @@ export default function Chat() {
                                                         <div>
                                                             <div className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                                                 {member.name}
-                                                                {member.userId === user?.uid && <span className="text-[10px] bg-indigo-500 text-white px-1.5 rounded-full">Me</span>}
+                                                                {member.userId === user?.id && <span className="text-[10px] bg-indigo-500 text-white px-1.5 rounded-full">Me</span>}
                                                             </div>
                                                             <div className="text-xs text-slate-500">Joined {new Date(member.joinedAt).toLocaleDateString()}</div>
                                                         </div>

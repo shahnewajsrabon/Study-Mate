@@ -54,11 +54,14 @@ export type MajorExam = {
 
 export type Subject = {
     id: string;
+    userId?: string;
     name: string;
     color: string;
     icon?: string;
     chapters: Chapter[];
+    stats?: Record<string, number>;
     examDate?: string;
+    createdAt?: string;
 };
 
 export type UserProfile = {
@@ -95,20 +98,22 @@ export type Flashcard = {
     answer: string;
     isMastered: boolean;
     lastReviewed?: string;
-    // SRS Data (Phase 2)
-    interval?: number;
-    easeFactor?: number;
-    reps?: number;
-    nextReview?: string;
+    // SRS Data (SM-2 Algorithm)
+    interval: number;      // Days until next review
+    easeFactor: number;    // Multiplier for interval (default 2.5)
+    reps: number;          // Number of successful consecutive reviews
+    nextReview: string;    // ISO Date string
 };
 
 export type FlashcardSet = {
     id: string;
+    userId?: string;
     subjectId: string;
     chapterId?: string;
     title: string;
+    description?: string;
     cards: Flashcard[];
-    createdAt: string;
+    createdAt?: string;
 };
 export type StudySession = {
     id: string;

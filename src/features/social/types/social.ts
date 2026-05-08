@@ -1,5 +1,3 @@
-import { Timestamp } from 'firebase/firestore';
-
 export type GroupMember = {
     userId: string;
     name: string;
@@ -12,7 +10,7 @@ export type ChatMessage = {
     senderId: string;
     senderName: string;
     text: string;
-    timestamp: Timestamp | null;
+    timestamp: string | null;
 };
 
 export type Group = {

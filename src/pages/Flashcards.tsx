@@ -1,24 +1,28 @@
 import { useState, useMemo } from 'react';
 import { useStudy } from '../features/study/hooks/useStudy.ts';
-import { Plus, Search, Layers, ChevronRight, Brain, BookOpen, Trash2 } from 'lucide-react';
+import { Plus, Search, Layers, ChevronRight, Brain, BookOpen, Trash2, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedPage from '../shared/components/ui/AnimatedPage.tsx';
 import FlashcardCard from '../features/study/components/FlashcardCard.tsx';
 import { clsx } from 'clsx';
+import { isPast, parseISO } from 'date-fns';
 
 export default function Flashcards() {
-    const { subjects, flashcardSets, addFlashcardSet, deleteFlashcardSet, toggleFlashcardMastered, updateFlashcardSet } = useStudy();
+    const { subjects, flashcardSets, addFlashcardSet, deleteFlashcardSet, rateFlashcard, updateFlashcardSet } = useStudy();
     const [selectedSubjectId, setSelectedSubjectId] = useState<string | 'all'>('all');
     const [activeSetId, setActiveSetId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [filterDue, setFilterDue] = useState(false);
 
     const filteredSets = useMemo(() => {
         return flashcardSets.filter(set => {
             const matchesSubject = selectedSubjectId === 'all' || set.subjectId === selectedSubjectId;
             const matchesSearch = set.title.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesSubject && matchesSearch;
+            const hasDueCards = set.cards.some(c => !c.nextReview || isPast(parseISO(c.nextReview)));
+            const matchesDue = !filterDue || hasDueCards;
+            return matchesSubject && matchesSearch && matchesDue;
         });
-    }, [flashcardSets, selectedSubjectId, searchQuery]);
+    }, [flashcardSets, selectedSubjectId, searchQuery, filterDue]);
 
     const activeSet = useMemo(() => {
         return flashcardSets.find(s => s.id === activeSetId);
@@ -35,7 +39,16 @@ export default function Flashcards() {
             title,
             subjectId: subId,
             cards: [
-                { id: crypto.randomUUID(), question: "Example Question", answer: "Example Answer", isMastered: false }
+                { 
+                    id: crypto.randomUUID(), 
+                    question: "Example Question", 
+                    answer: "Example Answer", 
+                    isMastered: false,
+                    interval: 0,
+                    reps: 0,
+                    easeFactor: 2.5,
+                    nextReview: new Date().toISOString()
+                }
             ]
         });
     };
@@ -87,10 +100,29 @@ export default function Flashcards() {
 
                         <div className="space-y-1">
                             <button
-                                onClick={() => setSelectedSubjectId('all')}
+                                onClick={() => setFilterDue(!filterDue)}
+                                className={clsx(
+                                    "w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-between group",
+                                    filterDue ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                )}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Sparkles className={clsx("w-4 h-4", filterDue ? "text-white" : "text-indigo-500")} />
+                                    Due for Review
+                                </div>
+                                {filterDue && <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+                            </button>
+
+                            <div className="h-px bg-slate-100 dark:bg-slate-700 my-2" />
+
+                            <button
+                                onClick={() => {
+                                    setSelectedSubjectId('all');
+                                    setFilterDue(false);
+                                }}
                                 className={clsx(
                                     "w-full text-left px-4 py-2 rounded-xl text-sm font-bold transition-all",
-                                    selectedSubjectId === 'all' ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                    selectedSubjectId === 'all' && !filterDue ? "bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
                                 )}
                             >
                                 All Subjects
@@ -144,7 +176,7 @@ export default function Flashcards() {
                                         <FlashcardCard
                                             key={card.id}
                                             {...card}
-                                            onToggleMastered={() => toggleFlashcardMastered(activeSet.id, card.id)}
+                                            onRate={(rating) => rateFlashcard(activeSet.id, card.id, rating)}
                                         />
                                     ))}
                                     <button
@@ -152,12 +184,21 @@ export default function Flashcards() {
                                             const q = prompt("Question:");
                                             const a = prompt("Answer:");
                                             if (q && a) {
-                                                const newCard = { id: crypto.randomUUID(), question: q, answer: a, isMastered: false };
+                                                const newCard = { 
+                                                    id: crypto.randomUUID(), 
+                                                    question: q, 
+                                                    answer: a, 
+                                                    isMastered: false,
+                                                    interval: 0,
+                                                    reps: 0,
+                                                    easeFactor: 2.5,
+                                                    nextReview: new Date().toISOString()
+                                                };
                                                 const updatedCards = [...activeSet.cards, newCard];
                                                 updateFlashcardSet(activeSet.id, { cards: updatedCards });
                                             }
                                         }}
-                                        className="h-80 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl flex flex-col items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-600 transition-all p-8 gap-4"
+                                        className="h-96 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl flex flex-col items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-600 transition-all p-8 gap-4"
                                         title="Add New Card to this Set"
                                     >
                                         <Plus className="w-10 h-10" />

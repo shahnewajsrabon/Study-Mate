@@ -35,12 +35,13 @@ export default function Timer() {
     const [sessionSaved, setSessionSaved] = useState(false);
     const [showMoodModal, setShowMoodModal] = useState(false);
     const [pendingDuration, setPendingDuration] = useState(0);
+    const [isStrictFocus, setIsStrictFocus] = useState(false);
 
     const {
         mode, isActive, seconds, initialTime,
         customMinutes, sessionGoal, setSessionGoal, toggleTimer, resetTimer, 
         handleModeChange, handleCustomMinutesChange, progressPercent
-    } = useTimerLogic();
+    } = useTimerLogic(isStrictFocus);
 
     const selectedGroupObj = filterGroup === 'global' ? null : groups.find(g => g.id === filterGroup);
     const filterMemberIds = selectedGroupObj ? selectedGroupObj.members.map(m => m.userId) : undefined;
@@ -96,12 +97,22 @@ export default function Timer() {
                 <div>
                     <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white transition-colors">Focus Timer</h1>
                 </div>
-                <button
-                    onClick={toggleMute}
-                    className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                >
-                    {!isMuted ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setIsStrictFocus(!isStrictFocus)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors ${isStrictFocus ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent'}`}
+                        title="Strict Focus Mode (Warns if you switch tabs)"
+                    >
+                        <Zap className="w-3.5 h-3.5" />
+                        Focus Mode {isStrictFocus ? 'ON' : 'OFF'}
+                    </button>
+                    <button
+                        onClick={toggleMute}
+                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                    >
+                        {!isMuted ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
+                    </button>
+                </div>
             </header>
 
             {/* Mobile Tabs */}
@@ -346,6 +357,8 @@ export default function Timer() {
                                     value={filterGroup}
                                     onChange={(e) => setFilterGroup(e.target.value)}
                                     className="bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 max-w-[140px] truncate"
+                                    title="Filter by Group"
+                                    aria-label="Filter by Group"
                                 >
                                     <option value="global">Global Top 10</option>
                                     {groups.map(g => (
@@ -400,7 +413,7 @@ export default function Timer() {
                                 .map((entry, index) => (
                                     <div
                                         key={entry.userId}
-                                        className={`flex items-center justify-between p-3 rounded-2xl transition-all ${entry.userId === user?.uid
+                                        className={`flex items-center justify-between p-3 rounded-2xl transition-all ${entry.userId === user?.id
                                             ? 'bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800'
                                             : 'hover:bg-slate-50 dark:hover:bg-slate-700/30 border border-transparent'
                                             }`}
@@ -424,7 +437,7 @@ export default function Timer() {
                                                 </div>
 
                                                 <div>
-                                                    <p className={`font-bold text-sm ${entry.userId === user?.uid ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-white'}`}>
+                                                    <p className={`font-bold text-sm ${entry.userId === user?.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-white'}`}>
                                                         {entry.userName}
                                                     </p>
                                                     <div className="flex items-center gap-1.5 mt-0.5">

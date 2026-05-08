@@ -3,13 +3,14 @@ import { useAuth } from '../../../shared/context/AuthContext.tsx';
 import { useToast } from '../../../shared/context/ToastContext.tsx';
 import { useProfile } from '../../../features/profile/hooks/useProfile.ts';
 import { type TemplateSubject } from '../data/syllabusTemplates.ts';
-import { db } from '../../../shared/lib/firebase.ts';
-import { doc, collection, addDoc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
+import { supabase } from '../../../shared/lib/supabase.ts';
 import { StudyContext, type StudyContextType } from './StudyContextObject.tsx';
 import { useSubjectsManager } from '../hooks/useSubjectsManager.ts';
 import { useFlashcardsManager } from '../hooks/useFlashcardsManager.ts';
 
 const STORAGE_KEY_SUBJECTS = 'study-tracker-subjects';
+
+import type { Subject } from '../types/study.ts';
 
 export function StudyProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
@@ -22,10 +23,8 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     const resetData = useCallback(async () => {
         if (!user) return;
         try {
-            const q = query(collection(db, 'subjects'), where('userId', '==', user.uid));
-            const snapshot = await getDocs(q);
-            const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
-            await Promise.all(deletePromises);
+            const { error } = await supabase.from('subjects').delete().eq('user_id', user.id);
+            if (error) throw error;
             subjectManager.setSubjects([]);
             localStorage.removeItem(STORAGE_KEY_SUBJECTS);
             toast.success("Progress reset successfully!");
@@ -57,13 +56,15 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
             const data = JSON.parse(jsonData);
             if (data.userProfile) updateProfile(data.userProfile);
             if (data.subjects && user) {
-                for (const sub of data.subjects) {
-                    await addDoc(collection(db, 'subjects'), {
-                        ...sub,
-                        userId: user.uid,
-                        id: undefined // Let Firebase create a new id
-                    });
-                }
+                const mappedInserts = data.subjects.map((sub: Subject) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const { userId, createdAt, ...rest } = sub;
+                    return {
+                        ...rest,
+                        user_id: user.id
+                    };
+                });
+                await supabase.from('subjects').insert(mappedInserts);
             }
             return true;
         } catch (error) {
@@ -75,13 +76,12 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     const importSyllabusData = useCallback(async (templateSubjects: TemplateSubject[]) => {
         if (!user) return;
         try {
-            for (const sub of templateSubjects) {
-                await addDoc(collection(db, 'subjects'), {
-                    ...sub,
-                    userId: user.uid,
-                    createdAt: new Date().toISOString()
-                });
-            }
+            const inserts = templateSubjects.map(sub => ({
+                ...sub,
+                user_id: user.id
+            }));
+            const { error } = await supabase.from('subjects').insert(inserts);
+            if (error) throw error;
             toast.success("Syllabus imported!");
         } catch (error) {
             console.error("Error importing syllabus:", error);
@@ -148,17 +148,11 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     const permanentlyDeleteAllUserData = useCallback(async () => {
         if (!user) return;
         try {
-            const q = query(collection(db, 'subjects'), where('userId', '==', user.uid));
-            const snapshot = await getDocs(q);
-            const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
-            await Promise.all(deletePromises);
+            await supabase.from('subjects').delete().eq('user_id', user.id);
+            await supabase.from('flashcard_sets').delete().eq('user_id', user.id);
+            await supabase.from('notes').delete().eq('user_id', user.id);
+            await supabase.from('profiles').delete().eq('id', user.id);
 
-            const flashcardQ = query(collection(db, 'flashcardSets'), where('userId', '==', user.uid));
-            const flashcardSnapshot = await getDocs(flashcardQ);
-            const flashcardDeletePromises = flashcardSnapshot.docs.map(d => deleteDoc(d.ref));
-            await Promise.all(flashcardDeletePromises);
-
-            await deleteDoc(doc(db, 'users', user.uid));
             subjectManager.setSubjects([]);
             flashcardManager.setFlashcardSets([]);
             localStorage.removeItem(STORAGE_KEY_SUBJECTS);

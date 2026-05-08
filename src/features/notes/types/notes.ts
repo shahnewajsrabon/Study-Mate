@@ -5,6 +5,7 @@ export interface Note {
     topicId?: string; 
     title: string;
     content: string; // Stored natively as raw markdown
+    isMarkdown?: boolean;
     createdAt: string;
     updatedAt: string;
 }

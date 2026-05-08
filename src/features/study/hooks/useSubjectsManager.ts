@@ -1,11 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
-import { db } from '../../../shared/lib/firebase.ts';
-import { collection, doc, query, where, onSnapshot, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { supabase } from '../../../shared/lib/supabase.ts';
+import type { DatabaseSubject } from '../../../shared/types/database.ts';
 import type { Subject, Chapter, Topic } from '../types/study.ts';
 import { useAuth } from '../../../shared/context/AuthContext.tsx';
 import { useToast } from '../../../shared/context/ToastContext.tsx';
 
 const STORAGE_KEY_SUBJECTS = 'study-tracker-subjects';
+
+// --- Mapping Utilities ---
+const mapDatabaseSubject = (d: DatabaseSubject): Subject => ({
+    ...d,
+    userId: d.user_id,
+    createdAt: d.created_at
+} as Subject);
 
 export function useSubjectsManager() {
     const { user } = useAuth();
@@ -30,28 +37,48 @@ export function useSubjectsManager() {
             return;
         }
 
-        const q = query(collection(db, 'subjects'), where('userId', '==', user.uid));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const subjectsList: Subject[] = snapshot.docs.map(d => ({
-                id: d.id,
-                ...d.data()
-            } as Subject));
-            setSubjects(subjectsList);
-            localStorage.setItem(STORAGE_KEY_SUBJECTS, JSON.stringify(subjectsList));
-        });
+        const fetchSubjects = async () => {
+            const { data, error } = await supabase
+                .from('subjects')
+                .select('*')
+                .eq('user_id', user.id);
+                
+            if (error) {
+                console.error('Error fetching subjects:', error);
+                return;
+            }
+            
+            if (data) {
+                const mappedSubjects = (data as DatabaseSubject[]).map(mapDatabaseSubject);
+                setSubjects(mappedSubjects);
+                localStorage.setItem(STORAGE_KEY_SUBJECTS, JSON.stringify(mappedSubjects));
+            }
+        };
 
-        return () => unsubscribe();
+        fetchSubjects();
+
+        const subscription = supabase
+            .channel('subjects-channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'subjects', filter: `user_id=eq.${user.id}` }, () => {
+                fetchSubjects(); // Simple approach: refetch on any change
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(subscription);
+        };
     }, [user]);
 
     const addSubject = useCallback(async (subject: Omit<Subject, 'id' | 'chapters'>) => {
         if (!user) return;
         try {
-            await addDoc(collection(db, 'subjects'), {
+            const { error } = await supabase.from('subjects').insert([{
                 ...subject,
-                userId: user.uid,
+                user_id: user.id,
                 chapters: [],
-                createdAt: new Date().toISOString()
-            });
+            }]);
+            
+            if (error) throw error;
             toast.success("Subject added!");
         } catch (error) {
             console.error("Error adding subject:", error);
@@ -62,7 +89,18 @@ export function useSubjectsManager() {
     const editSubject = useCallback(async (id: string, updates: Partial<Subject>) => {
         if (!user) return;
         try {
-            await updateDoc(doc(db, 'subjects', id), updates);
+            // Pick only database-supported fields
+            const dbReadyUpdates: Partial<DatabaseSubject> = {};
+            
+            if (updates.name !== undefined) dbReadyUpdates.name = updates.name;
+            if (updates.color !== undefined) dbReadyUpdates.color = updates.color;
+            if (updates.icon !== undefined) dbReadyUpdates.icon = updates.icon;
+            if (updates.chapters !== undefined) dbReadyUpdates.chapters = updates.chapters;
+            if (updates.stats !== undefined) dbReadyUpdates.stats = updates.stats;
+            
+            const { error } = await supabase.from('subjects').update(dbReadyUpdates).eq('id', id);
+            
+            if (error) throw error;
             toast.success("Subject updated!");
         } catch (error) {
             console.error("Error updating subject:", error);
@@ -73,7 +111,8 @@ export function useSubjectsManager() {
     const deleteSubject = useCallback(async (id: string) => {
         if (!user) return;
         try {
-            await deleteDoc(doc(db, 'subjects', id));
+            const { error } = await supabase.from('subjects').delete().eq('id', id);
+            if (error) throw error;
             toast.success("Subject deleted!");
         } catch (error) {
             console.error("Error deleting subject:", error);
