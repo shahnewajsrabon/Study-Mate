@@ -5,7 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/Study-Mate/",
+  base: "/Track-ED/",
   plugins: [
     react(),
     tailwindcss(),
