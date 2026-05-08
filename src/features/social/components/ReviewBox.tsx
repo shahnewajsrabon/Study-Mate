@@ -28,46 +28,41 @@ export default function ReviewBox({ onClose }: ReviewBoxProps) {
             setIsSubmitting(false);
         }
     };
-
     return (
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-charcoal/30 backdrop-blur-md z-[110] flex items-center justify-center p-6"
         >
             <motion.div
-                initial={{ scale: 0.9, y: 20 }}
+                initial={{ scale: 0.95, y: 10 }}
                 animate={{ scale: 1, y: 0 }}
-                className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-700 relative overflow-hidden"
+                className="zen-card max-w-lg w-full p-12 relative overflow-hidden"
             >
-                {/* Background Decoration */}
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-
-                <div className="flex items-center justify-between mb-6 relative">
-                    <div className="flex items-center gap-3">
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-2xl text-blue-600 dark:text-blue-400">
+                <div className="flex items-center justify-between mb-10 relative">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-sage-50 dark:bg-sage-900/20 rounded-2xl text-sage-500">
                             <MessageSquareHeart className="w-6 h-6" />
                         </div>
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Write a Review</h2>
+                        <h2 className="text-3xl font-serif font-bold text-charcoal dark:text-white">Wall of Love</h2>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors text-slate-400"
+                        className="p-2 text-slate-300 hover:text-charcoal transition-colors"
                         title="Close Review"
                         aria-label="Close Review"
                     >
-                        <X className="w-5 h-5" />
+                        <X className="w-6 h-6" />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6 relative">
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 text-center">
-                            Rate your experience
+                <form onSubmit={handleSubmit} className="space-y-10 relative">
+                    <div className="text-center space-y-6">
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">
+                            Overall Impression
                         </label>
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center gap-3">
                             {[1, 2, 3, 4, 5].map((star) => (
                                 <button
                                     key={star}
@@ -75,14 +70,14 @@ export default function ReviewBox({ onClose }: ReviewBoxProps) {
                                     onClick={() => setRating(star)}
                                     onMouseEnter={() => setHover(star)}
                                     onMouseLeave={() => setHover(0)}
-                                    className="p-1 focus:outline-none transition-transform active:scale-90"
+                                    className="p-1 focus:outline-none transition-all active:scale-90"
                                     title={`Rate ${star} star${star > 1 ? 's' : ''}`}
                                     aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
                                 >
                                     <Star
-                                        className={`w-10 h-10 transition-all ${(hover || rating) >= star
-                                            ? 'text-amber-400 fill-amber-400 scale-110'
-                                            : 'text-slate-200 dark:text-slate-700'
+                                        className={`w-12 h-12 transition-all silky-transition ${(hover || rating) >= star
+                                            ? 'text-sage-500 fill-sage-500 scale-110 shadow-lg shadow-sage-500/20'
+                                            : 'text-slate-100 dark:text-slate-800'
                                             }`}
                                     />
                                 </button>
@@ -90,34 +85,34 @@ export default function ReviewBox({ onClose }: ReviewBoxProps) {
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                            Your Feedback
+                    <div className="space-y-4">
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                            Your Journey
                         </label>
                         <textarea
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
                             required
-                            rows={4}
-                            className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none placeholder:text-slate-400"
-                            placeholder="How has TrackEd helped you? What features do you love?"
+                            rows={5}
+                            className="w-full px-6 py-5 rounded-[2rem] bg-bone dark:bg-slate-900/50 border-2 border-transparent focus:border-sage-200 dark:focus:border-sage-900/30 text-charcoal dark:text-white focus:outline-none transition-all resize-none font-serif text-lg italic placeholder:text-slate-300"
+                            placeholder="Share a piece of your story..."
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={isSubmitting || !comment.trim()}
-                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                        className="w-full bg-sage-600 hover:bg-sage-700 text-white font-bold py-5 rounded-[2rem] shadow-xl shadow-sage-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3"
                     >
                         {isSubmitting ? (
                             <>
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                Submitting...
+                                <span className="uppercase tracking-[0.2em] text-xs">Sending...</span>
                             </>
                         ) : (
                             <>
                                 <Send className="w-5 h-5" />
-                                Share My Review
+                                <span className="uppercase tracking-[0.2em] text-xs">Share Review</span>
                             </>
                         )}
                     </button>

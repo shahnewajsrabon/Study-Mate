@@ -89,7 +89,7 @@ export default function Layout() {
     const isActive = (path: string) => location.pathname === path;
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 pb-20 md:pb-0 font-sans transition-colors duration-300">
+        <div className="min-h-screen bg-bone dark:bg-[#1a1a1a] text-charcoal dark:text-slate-100 pb-20 md:pb-0 font-sans transition-colors duration-300">
 
             {showTour && (
                 <TourOverlay
@@ -100,279 +100,152 @@ export default function Layout() {
             )}
 
             {/* Mobile Header */}
-            <header className="glass sticky top-0 z-20 px-4 py-3 flex items-center justify-between md:hidden transition-colors duration-300">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-md">
+            <header className="sticky top-0 z-20 px-6 py-4 flex items-center justify-between md:hidden bg-bone/80 dark:bg-[#1a1a1a]/80 backdrop-blur-md transition-colors duration-300">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-sage-500 flex items-center justify-center text-white font-serif font-bold text-xs">
                         {level}
                     </div>
-                    <div>
-                        <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                            TrackEd
-                        </h1>
-                    </div>
+                    <h1 className="text-xl font-serif font-bold text-charcoal dark:text-white">
+                        TrackEd
+                    </h1>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={toggleTheme}
-                        className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 rounded-full transition-colors backdrop-blur-sm"
+                        className="p-2 text-slate-400 dark:text-slate-500 hover:text-sage-500 transition-colors"
                         aria-label="Toggle Theme"
                     >
                         {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                     </button>
-                    <Link to="/settings" className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 rounded-full transition-colors backdrop-blur-sm">
+                    <Link to="/settings" className="p-2 text-slate-400 dark:text-slate-500 hover:text-sage-500 transition-colors">
                         <SettingsIcon className="w-5 h-5" />
                     </Link>
                 </div>
             </header>
 
             {/* Desktop Sidebar & Content Wrapper */}
-            <div className="md:flex max-w-7xl mx-auto">
+            <div className="md:flex max-w-7xl mx-auto md:p-4 lg:p-6">
                 {/* Desktop Sidebar (Hidden on Mobile) */}
-                <aside className="hidden md:flex flex-col w-72 h-[calc(100vh-2rem)] sticky top-4 m-4 rounded-3xl glass shadow-2xl shadow-slate-200/60 dark:shadow-slate-900/50 p-6 transition-all duration-300 z-10">
-                    <div className="flex items-center justify-between mb-10 pl-2">
+                <aside className="hidden md:flex flex-col w-72 h-[calc(100vh-3rem)] sticky top-6 m-2 zen-card p-8 transition-all duration-300 z-10">
+                    <div className="flex items-center justify-between mb-12 pl-2">
                         <div className="flex items-center gap-3">
-                            <img src={logo} alt="TrackEd Logo" className="w-10 h-10 rounded-xl object-contain shadow-md" />
-                            <h1 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">TrackEd</h1>
+                            <img src={logo} alt="TrackEd Logo" className="w-8 h-8 object-contain grayscale opacity-70" />
+                            <h1 className="text-2xl font-serif font-bold text-charcoal dark:text-white tracking-tight">TrackEd</h1>
                         </div>
-                        <button
-                            onClick={toggleTheme}
-                            className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-700/50 rounded-xl transition-colors"
-                            aria-label="Toggle Theme"
-                        >
-                            {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                        </button>
                     </div>
 
-                    {/* User Profile & XP (Desktop) */}
-                    <div className="mb-8 px-2">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/30 ring-2 ring-white dark:ring-slate-700">
+                    {/* User Profile & XP (Desktop) - Simplified */}
+                    <div className="mb-10 px-2 text-center">
+                        <div className="inline-block relative mb-4">
+                            <div className="w-16 h-16 rounded-3xl bg-sage-50 dark:bg-sage-900/20 flex items-center justify-center text-sage-600 dark:text-sage-400 font-serif font-bold text-2xl">
                                 {level}
                             </div>
-                            <div>
-                                <h3 className="font-bold text-slate-800 dark:text-white leading-tight">{userProfile.name}</h3>
-                                <p className="text-xs font-medium text-blue-600 dark:text-blue-400">{currentTitle}</p>
-                            </div>
                         </div>
+                        <h3 className="font-serif font-bold text-xl text-charcoal dark:text-white leading-tight">{userProfile.name}</h3>
+                        <p className="text-xs font-bold text-sage-500 uppercase tracking-[0.2em] mt-1">{currentTitle}</p>
 
-                        <div className="space-y-1.5">
-                            <div className="flex justify-between text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                                <span>{userProfile.xp} XP</span>
-                                <span>{nextLevelXP ? `${nextLevelXP} XP` : 'MAX'}</span>
-                            </div>
-                            <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner ring-1 ring-slate-900/5 dark:ring-white/5">
+                        <div className="mt-6 space-y-2">
+                            <div className="w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                 <motion.div
-                                    className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
+                                    className="h-full bg-sage-500 rounded-full"
                                     initial={{ width: 0 }}
                                     animate={{ width: `${progress}%` }}
-                                    transition={{ duration: 1, ease: "easeOut" }}
+                                    transition={{ duration: 1, ease: "circOut" }}
                                 />
+                            </div>
+                            <div className="flex justify-center text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+                                <span>{userProfile.xp} / {nextLevelXP || 'MAX'} XP</span>
                             </div>
                         </div>
                     </div>
 
-                    <nav className="space-y-1.5 flex-1">
-                        <Link
-                            to="/"
-                            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive('/')
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 font-medium translate-x-1'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
-                                }`}
-                        >
-                            <LayoutDashboard className="w-5 h-5" />
-                            Dashboard
-                        </Link>
-                        <Link
-                            to="/planner"
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${isActive('/planner')
-                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                                }`}
-                        >
-                            <Calendar className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive('/planner') ? 'text-white' : 'text-slate-500 group-hover:text-blue-600 dark:text-slate-500 dark:group-hover:text-blue-400'}`} />
-                            <span className="font-medium">Planner</span>
-                            {isActive('/planner') && (
-                                <motion.div
-                                    layoutId="activeTab"
-                                    className="absolute left-0 w-1 h-8 bg-white rounded-r-full opacity-30"
-                                />
-                            )}
-                        </Link>
+                    <nav className="space-y-1 flex-1">
+                        {[
+                            { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+                            { path: '/planner', label: 'Planner', icon: Calendar },
+                            { path: '/analytics', label: 'Analytics', icon: TrendingUp },
+                            { path: '/notes', label: 'Notes', icon: FileText },
+                            { path: '/timer', label: 'Timer', icon: Timer },
+                            { path: '/chat', label: 'Study Groups', icon: Users },
+                            { path: '/flashcards', label: 'Flashcards', icon: Layers },
+                            { path: '/settings', label: 'Settings', icon: SettingsIcon },
+                        ].map((item) => {
+                            const ActiveIcon = item.icon;
+                            return (
+                                <Link
+                                    key={item.path}
+                                    to={item.path}
+                                    className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group ${isActive(item.path)
+                                        ? 'bg-sage-50 dark:bg-sage-900/20 text-sage-600 dark:text-sage-400 font-bold'
+                                        : 'text-slate-400 dark:text-slate-500 hover:text-charcoal dark:hover:text-white hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
+                                        }`}
+                                >
+                                    <ActiveIcon className={`w-5 h-5 silky-transition ${isActive(item.path) ? 'text-sage-600 dark:text-sage-400' : 'text-slate-300 dark:text-slate-600 group-hover:text-sage-400'}`} />
+                                    <span className="text-sm font-medium tracking-tight">{item.label}</span>
+                                </Link>
+                            );
+                        })}
 
-                        <Link
-                            to="/analytics"
-                            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive('/analytics')
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 font-medium translate-x-1'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
-                                }`}
-                        >
-                            <TrendingUp className="w-5 h-5" />
-                            Analytics
-                        </Link>
-                        
-                        <Link
-                            to="/notes"
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${isActive('/notes')
-                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                                }`}
-                        >
-                            <FileText className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive('/notes') ? 'text-white' : 'text-slate-500 group-hover:text-blue-600 dark:text-slate-500 dark:group-hover:text-blue-400'}`} />
-                            <span className="font-medium">Notes</span>
-                            {isActive('/notes') && (
-                                <motion.div
-                                    layoutId="activeTab"
-                                    className="absolute left-0 w-1 h-8 bg-white rounded-r-full opacity-30"
-                                />
-                            )}
-                        </Link>
-
-                        <Link
-                            to="/timer"
-                            id="nav-timer"
-                            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${location.pathname === '/timer'
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 font-medium translate-x-1'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
-                                }`}
-                        >
-                            <Timer className="w-5 h-5" />
-                            Timer
-                        </Link>
-                        <Link
-                            to="/chat"
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${isActive('/chat')
-                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                                }`}
-                        >
-                            <Users className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive('/chat') ? 'text-white' : 'text-slate-500 group-hover:text-blue-600 dark:text-slate-500 dark:group-hover:text-blue-400'}`} />
-                            <span className="font-medium">Study Groups</span>
-                            {isActive('/chat') && (
-                                <motion.div
-                                    layoutId="activeTab"
-                                    className="absolute left-0 w-1 h-8 bg-white rounded-r-full opacity-30"
-                                />
-                            )}
-                        </Link>
-                        <Link
-                            to="/flashcards"
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${isActive('/flashcards')
-                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                                }`}
-                        >
-                            <Layers className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive('/flashcards') ? 'text-white' : 'text-slate-500 group-hover:text-blue-600 dark:text-slate-500 dark:group-hover:text-blue-400'}`} />
-                            <span className="font-medium">Flashcards</span>
-                            {isActive('/flashcards') && (
-                                <motion.div
-                                    layoutId="activeTab"
-                                    className="absolute left-0 w-1 h-8 bg-white rounded-r-full opacity-30"
-                                />
-                            )}
-                        </Link>
-                        <Link
-                            to="/settings"
-                            id="nav-settings"
-                            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive('/settings')
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 font-medium translate-x-1'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
-                                }`}
-                        >
-                            <SettingsIcon className="w-5 h-5" />
-                            Settings
-                        </Link>
                         {isAdmin && (
                             <Link
                                 to="/admin"
-                                className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive('/admin')
-                                    ? 'bg-rose-600 text-white shadow-lg shadow-rose-500/30 font-medium translate-x-1'
-                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                                className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group ${isActive('/admin')
+                                    ? 'bg-charcoal text-white font-bold'
+                                    : 'text-slate-400 dark:text-slate-500 hover:text-charcoal dark:hover:text-white hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
                                     }`}
                             >
                                 <ShieldCheck className="w-5 h-5" />
-                                Admin Panel
+                                <span className="text-sm font-medium tracking-tight">Admin Panel</span>
                             </Link>
                         )}
                     </nav>
 
-                    <div className="mt-auto pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
+                    <div className="mt-auto pt-6">
                         <button
                             onClick={logout}
-                            className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors w-full text-left mb-4 group"
+                            className="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:text-red-500 transition-colors w-full text-left group"
                         >
-                            <LogOut className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-                            Sign Out
+                            <LogOut className="w-5 h-5 silky-transition group-hover:-translate-x-1" />
+                            <span className="text-sm font-medium">Sign Out</span>
                         </button>
-                        <div className="text-xs text-center text-slate-400 dark:text-slate-500 font-medium">
-                            <p>Empowering Students</p>
-                            <p className="mt-1 opacity-70">© 2026 TrackEd</p>
+                        <div className="mt-6 flex flex-col items-center gap-4">
+                            <button
+                                onClick={toggleTheme}
+                                className="p-2 text-slate-300 hover:text-sage-500 transition-colors"
+                            >
+                                {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                            </button>
+                            <p className="text-[10px] text-slate-300 uppercase tracking-[0.2em]">© 2026 TrackEd</p>
                         </div>
                     </div>
                 </aside>
 
                 {/* Main Content Area */}
-                <main className="flex-1 p-4 md:p-8">
+                <main className="flex-1 p-6 md:p-10 lg:p-12">
                     <AnimatePresence mode="wait">
                         {element && cloneElement(element, { key: location.pathname })}
                     </AnimatePresence>
                 </main>
             </div>
 
-            {/* Mobile Bottom Navigation */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex justify-around pt-3 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-colors duration-300">
-                <Link
-                    to="/"
-                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
-                        }`}
-                >
-                    <LayoutDashboard className="w-6 h-6" />
-                    <span>Home</span>
-                </Link>
-
-                <Link
-                    to="/planner"
-                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/planner') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
-                        }`}
-                >
-                    <Calendar className="w-6 h-6" />
-                    <span>Planner</span>
-                </Link>
-
-                <Link
-                    to="/timer"
-                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/timer') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
-                        }`}
-                >
-                    <Timer className="w-6 h-6" />
-                    <span>Timer</span>
-                </Link>
-
-                <Link
-                    to="/chat"
-                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/chat') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
-                        }`}
-                >
-                    <Users className="w-6 h-6" />
-                    <span>Groups</span>
-                </Link>
-
-                <Link
-                    to="/analytics"
-                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/analytics') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
-                        }`}
-                >
-                    <TrendingUp className="w-6 h-6" />
-                    <span>Stats</span>
-                </Link>
-
-                <Link
-                    to="/notes"
-                    className={`flex flex-col items-center gap-1 text-xs ${isActive('/notes') ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-500'
-                        }`}
-                >
-                    <FileText className="w-6 h-6" />
-                    <span>Notes</span>
-                </Link>
+            {/* Mobile Bottom Navigation - Minimalist */}
+            <nav className="fixed bottom-6 left-6 right-6 bg-white/90 dark:bg-[#242424]/90 backdrop-blur-xl border border-slate-100 dark:border-slate-800 flex justify-around p-2 md:hidden z-20 rounded-3xl shadow-2xl transition-colors duration-300">
+                {[
+                    { path: '/', icon: LayoutDashboard },
+                    { path: '/planner', icon: Calendar },
+                    { path: '/timer', icon: Timer },
+                    { path: '/chat', icon: Users },
+                    { path: '/notes', icon: FileText },
+                ].map((item) => (
+                    <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`p-3 rounded-2xl transition-all ${isActive(item.path) ? 'bg-sage-500 text-white shadow-lg shadow-sage-500/20' : 'text-slate-300 dark:text-slate-600'
+                            }`}
+                    >
+                        <item.icon className="w-6 h-6" />
+                    </Link>
+                ))}
             </nav>
 
             {installPromptEvent && <InstallPrompt deferredPrompt={installPromptEvent} onInstall={handleInstall} />}

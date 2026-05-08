@@ -73,24 +73,30 @@ export default function DailyPathWidget() {
 
     return (
         <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className={`rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm ${insight.bg} transition-colors relative overflow-hidden group`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="zen-card p-8 relative overflow-hidden h-full flex flex-col"
         >
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                <insight.icon className={`w-20 h-20 ${insight.color}`} />
+            <div className="absolute top-0 right-0 p-8 opacity-5">
+                <insight.icon className="w-32 h-32 text-charcoal" />
             </div>
 
-            <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-3">
-                    <div className={`p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm ${insight.color}`}>
-                        <insight.icon className="w-5 h-5" />
+            <div className="relative z-10 space-y-6">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-sage-50 dark:bg-sage-900/20 rounded-xl">
+                        <insight.icon className="w-5 h-5 text-sage-500" />
                     </div>
-                    <h3 className={`font-bold text-sm uppercase tracking-wider ${insight.color}`}>Daily AI Insight</h3>
+                    <h3 className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em]">Daily Insight</h3>
                 </div>
 
-                <h4 className="text-lg font-bold text-slate-800 dark:text-white mb-2">{insight.title}</h4>
-                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{insight.message}</p>
+                <div className="space-y-3">
+                    <h4 className="text-2xl font-serif font-bold text-charcoal dark:text-white leading-tight">{insight.title}</h4>
+                    <p className="text-slate-500 dark:text-slate-400 text-base leading-relaxed font-medium">{insight.message}</p>
+                </div>
+
+                <div className="pt-4">
+                    <div className="h-1 w-12 bg-sage-500 rounded-full" />
+                </div>
             </div>
         </motion.div>
     );

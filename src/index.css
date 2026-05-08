@@ -1,55 +1,52 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.cdnfonts.com/css/google-sans');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Public+Sans:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
 /* eslint-disable */
 @theme {
-  --font-sans: "Outfit", "Hind Siliguri", sans-serif;
-  --font-google: "Google Sans", "Product Sans", sans-serif;
+  --font-sans: "Public Sans", "Hind Siliguri", sans-serif;
+  --font-serif: "Playfair Display", serif;
+  --color-sage-50: #f4f5f4;
+  --color-sage-100: #e9ece9;
+  --color-sage-500: #8A9A8F;
+  --color-sage-600: #76867B;
+  --color-bone: #FAF9F6;
+  --color-charcoal: #2F3E46;
 }
 
 /* Custom variant for class-based dark mode in Tailwind v4 */
 @variant dark (&:where(.dark, .dark *));
 
-.font-google-sans {
-  font-family: "Google Sans", "Product Sans", sans-serif;
-}
-
 /* Force apply font globally */
 html,
 body,
 #root {
-  font-family: "Outfit", "Hind Siliguri", sans-serif;
+  font-family: var(--font-sans);
+  background-color: var(--color-bone);
+  color: var(--color-charcoal);
   scroll-behavior: smooth;
 }
 
 body {
-  background-color: #f8fafc;
-  /* slate-50 */
-  background-image:
-    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(20, 184, 166, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(236, 72, 153, 0.08) 0px, transparent 50%);
-  background-attachment: fixed;
+  background-color: #FAF9F6;
+  background-image: none;
 }
 
 .dark body {
-  background-color: #0f172a;
-  /* slate-900 */
-  background-image:
-    radial-gradient(at 0% 0%, rgba(29, 78, 216, 0.1) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(13, 148, 136, 0.1) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(79, 70, 229, 0.1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(219, 39, 119, 0.1) 0px, transparent 50%);
+  background-color: #1a1a1a;
+  background-image: none;
+  color: #e5e5e5;
 }
 
+h1, h2, h3, .font-serif {
+  font-family: var(--font-serif);
+  letter-spacing: -0.02em;
+}
 
-/* Custom scrollbar for better look */
+/* Minimalist Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -57,57 +54,52 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(148, 163, 184, 0.4);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-  border-radius: 9999px;
+  background-color: #E8E6E1;
+  border-radius: 10px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(148, 163, 184, 0.6);
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #333;
 }
 
-/* Utility for glassmorphism */
-.glass {
-  background: rgba(255, 255, 255, 0.75);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+/* Minimalist Card System */
+.zen-card {
+  background: white;
+  border: 1px solid #E8E6E1;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px -10px rgba(0, 0, 0, 0.05);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.dark .glass {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+.zen-card:hover {
+  border-color: var(--color-sage-500);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px -15px rgba(138, 154, 143, 0.2);
+}
+
+.dark .zen-card {
+  background: #242424;
+  border-color: #333;
   box-shadow: none;
 }
 
-.glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.dark .zen-card:hover {
+  border-color: var(--color-sage-500);
 }
 
-.glass-card:hover {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  transform: translateY(-2px);
+/* Utility for silky smooth transitions */
+.silky-transition {
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.dark .glass-card {
-  background: rgba(30, 41, 59, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+.bg-sage {
+  background-color: var(--color-sage-500);
 }
 
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
+.text-sage {
+  color: var(--color-sage-500);
 }
 
-.animate-shimmer {
-  animation: shimmer 2s infinite;
-}
+.border-sage {
+  border-color: var(--color-sage-500);
+}

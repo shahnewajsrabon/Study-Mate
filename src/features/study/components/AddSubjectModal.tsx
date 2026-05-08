@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStudy } from '../hooks/useStudy.ts';
-import { X, Book, Save } from 'lucide-react';
+import { X, Save } from 'lucide-react';
 
 const COLORS = [
     'bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500',
@@ -29,55 +29,54 @@ export default function AddSubjectModal({ onClose }: AddSubjectModalProps) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 transition-colors">
-                <div className="flex justify-between items-center p-4 border-b border-slate-100 dark:border-slate-700">
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2 transition-colors">
-                        <Book className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                        Add New Subject
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-charcoal/20 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="zen-card w-full max-w-lg overflow-hidden p-10 animate-in zoom-in-95 duration-500">
+                <div className="flex justify-between items-center mb-10">
+                    <h3 className="text-3xl font-serif font-bold text-charcoal dark:text-white">
+                        New Subject
                     </h3>
-                    <button onClick={onClose} aria-label="Close" className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
-                        <X className="w-5 h-5" />
+                    <button onClick={onClose} aria-label="Close" className="p-2 text-slate-300 hover:text-charcoal transition-colors">
+                        <X className="w-6 h-6" />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 transition-colors">Subject Name</label>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="space-y-4">
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Subject Name</label>
                         <input
                             autoFocus
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="e.g. Physics"
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                            placeholder="e.g. Theoretical Physics"
+                            className="w-full px-0 py-4 bg-transparent border-b-2 border-slate-100 dark:border-slate-800 text-2xl font-serif text-charcoal dark:text-white focus:outline-none focus:border-sage-500 transition-all placeholder:text-slate-200 dark:placeholder:text-slate-800"
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 transition-colors">Color Tag</label>
-                        <div className="flex flex-wrap gap-2">
+                    <div className="space-y-4">
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Visual Identity</label>
+                        <div className="flex flex-wrap gap-4">
                             {COLORS.map((color) => (
                                 <button
                                     key={color}
                                     type="button"
                                     onClick={() => setSelectedColor(color)}
                                     aria-label={`Select color ${color}`}
-                                    className={`w-8 h-8 rounded-full ${color} transition-all ${selectedColor === color ? 'ring-2 ring-offset-2 ring-slate-400 dark:ring-slate-500 scale-110' : 'hover:scale-105 opacity-80 hover:opacity-100'
+                                    className={`w-10 h-10 rounded-2xl ${color} transition-all silky-transition ${selectedColor === color ? 'ring-4 ring-sage-50 dark:ring-sage-900/30 scale-110 shadow-lg shadow-black/5' : 'opacity-40 hover:opacity-100 hover:scale-105'
                                         }`}
                                 />
                             ))}
                         </div>
                     </div>
 
-                    <div className="pt-2">
+                    <div className="pt-6">
                         <button
                             type="submit"
                             disabled={!name.trim()}
-                            className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                            className="w-full bg-sage-600 hover:bg-sage-700 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white font-bold py-5 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-xl shadow-sage-500/10"
                         >
                             <Save className="w-5 h-5" />
-                            Create Subject
+                            <span className="uppercase tracking-[0.2em] text-xs">Create Subject</span>
                         </button>
                     </div>
                 </form>
